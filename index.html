@@ -7,60 +7,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f9fafb;
-      color: #111827;
-    }
-    header {
-      background: #1f2937;
-      color: white;
-      padding: 3rem 1rem;
-      text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-    }
-    header p {
-      margin: 1rem 0 0;
-      font-size: 1.2rem;
-    }
-    section {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
-    }
-    .cta-button {
-      display: inline-block;
-      margin-top: 1.5rem;
-      background: #2563eb;
-      color: white;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      border-radius: 5px;
-      text-decoration: none;
-    }
-    .iframe-wrapper {
-      margin-top: 2rem;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-    }
-    footer {
-      background: #e5e7eb;
-      padding: 2rem;
-      text-align: center;
-      color: #4b5563;
-      font-size: 0.9rem;
-    }
+    body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; background:#f9fafb; color:#111827; }
+    header { background:#1f2937; color:#fff; padding:3rem 1rem; text-align:center; }
+    header h1 { margin:0; font-size:2.5rem; }
+    header p { margin:1rem 0 0; font-size:1.2rem; opacity:.9; }
+    section { max-width:1000px; margin:2rem auto; padding:0 1rem; }
+    .cta-button { display:inline-block; margin-top:1.25rem; background:#2563eb; color:#fff; padding:.75rem 1.25rem; border-radius:10px; text-decoration:none; }
+    .iframe-wrapper { margin-top:1.5rem; border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08); background:#fff; }
+    iframe { width:100%; height:680px; border:0; display:block; }
+    footer { background:#e5e7eb; padding:2rem; text-align:center; color:#4b5563; font-size:.95rem; }
   </style>
 </head>
 <body>
@@ -76,12 +31,19 @@
     <p>Just nu bjuder vi in 5 företag att testa tjänsten gratis eller till reducerat pris.</p>
   </section>
 
-  <section>
-    <h2 id="demo">Testa BotJahl direkt</h2>
+  <section id="demo">
+    <h2>Testa BotJahl direkt</h2>
     <div class="iframe-wrapper">
-      <iframe src="https://filipwestjahl.github.io/ai-chatbot-frontend/?customerId=1234"></iframe>
+      <!-- BYT bara USER/REPO om ditt widget-repo heter annorlunda -->
+      <iframe
+        id="botjahl-demo"
+        src="https://filipwestjahl.github.io/ai-chatbot-frontend/?customerId=1234"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        sandbox="allow-scripts allow-forms allow-same-origin"
+      ></iframe>
     </div>
-    <p style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem; color: #6b7280;">Demo-boten är tränad på ett fiktivt företag.</p>
+    <p style="text-align:center;margin-top:8px;color:#6b7280;">Demo-boten är tränad på ett fiktivt företag.</p>
   </section>
 
   <section>
@@ -95,11 +57,9 @@
 
   <section>
     <h2>Intresserad?</h2>
-    <p>Fyll i vårt <a href="#">kontaktformulär</a> eller mejla oss direkt så berättar vi mer.</p>
+    <p>Maila oss: <a href="mailto:faijahl75@gmail.com">faijahl75@gmail.com</a></p>
   </section>
 
-  <footer>
-    &copy; 2025 BotJahl – Enkelt. Smart. Anpassat.
-  </footer>
+  <footer>&copy; 2025 BotJahl – Enkelt. Smart. Anpassat.</footer>
 </body>
 </html>
