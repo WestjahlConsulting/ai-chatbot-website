@@ -58,123 +58,156 @@
     </div>
   </div>
 
-  <script>
-    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+<script>
+  const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
 
-    const qs = new URLSearchParams(location.search);
-    if (qs.get("cid")) document.getElementById("cid").value = qs.get("cid");
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("cid")) document.getElementById("cid").value = qs.get("cid");
 
-    const tokenKey = "botjahl.portal.token";
-    const customerKey = "botjahl.portal.customer";
+  const tokenKey = "botjahl.portal.token";
+  const customerKey = "botjahl.portal.customer";
 
-    const loginCard = document.getElementById("login-card");
-    const app = document.getElementById("app");
-    const who = document.getElementById("who");
-    const filesUl = document.getElementById("files");
-    const logUl = document.getElementById("log");
+  const loginCard = document.getElementById("login-card");
+  const app = document.getElementById("app");
+  const who = document.getElementById("who");
+  const filesUl = document.getElementById("files");
+  const logUl = document.getElementById("log");
 
-    function setAuth(token, cid) {
-      if (token) localStorage.setItem(tokenKey, token);
-      if (cid) localStorage.setItem(customerKey, cid);
-    }
-    function getToken(){ return localStorage.getItem(tokenKey); }
-    function getCid(){ return localStorage.getItem(customerKey); }
-    function logout(){
-      localStorage.removeItem(tokenKey);
-      localStorage.removeItem(customerKey);
-      app.style.display="none"; loginCard.style.display="block";
-    }
+  function setAuth(token, cid) { if (token) localStorage.setItem(tokenKey, token); if (cid) localStorage.setItem(customerKey, cid); }
+  function getToken(){ return localStorage.getItem(tokenKey); }
+  function getCid(){ return localStorage.getItem(customerKey); }
+  function authHeader(){ return { Authorization: "Bearer " + getToken(), "Content-Type":"application/json" }; }
+  function logout(){ localStorage.removeItem(tokenKey); localStorage.removeItem(customerKey); app.style.display="none"; loginCard.style.display="block"; }
 
-    async function login(){
-      const customerId = document.getElementById("cid").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const msg = document.getElementById("loginMsg");
-      msg.textContent = "";
-      try{
-        const r = await fetch(API + "/api/portal/login", {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({ customerId, email })
-        });
-        const data = await r.json();
-        if(!r.ok) throw new Error(data || "Felaktiga uppgifter.");
-        setAuth(data.token, customerId);
-        who.textContent = `Inloggad som ${data.customerName} (${customerId})`;
-        loginCard.style.display="none"; app.style.display="block";
-        await refreshFiles();
-      }catch(e){ msg.textContent = e.message || "Kunde inte logga in."; }
-    }
-
-    async function refreshFiles(){
-      filesUl.innerHTML = "<li>Laddar…</li>";
-      const r = await fetch(API + "/api/uploads/files", {
-        headers: { Authorization: "Bearer " + getToken() }
+  async function login(){
+    const customerId = document.getElementById("cid").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const msg = document.getElementById("loginMsg");
+    msg.textContent = "";
+    try{
+      const r = await fetch(API + "/api/portal/login", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ customerId, email })
       });
       const data = await r.json();
-      filesUl.innerHTML = "";
-      if(!r.ok){ filesUl.innerHTML = "<li class='warn'>Kunde inte hämta filer.</li>"; return; }
-      if(data.length===0){ filesUl.innerHTML = "<li>Inga filer ännu.</li>"; return; }
-      for(const name of data){ const li=document.createElement("li"); li.textContent=name; filesUl.appendChild(li); }
+      if(!r.ok) throw new Error(data || "Felaktiga uppgifter.");
+      setAuth(data.token, customerId);
+      who.textContent = `Inloggad som ${data.customerName} (${customerId})`;
+      loginCard.style.display="none"; app.style.display="block";
+      await refreshStatus();
+    }catch(e){ msg.textContent = e.message || "Kunde inte logga in."; }
+  }
+
+  async function refreshStatus(){
+    filesUl.innerHTML = "<li>Laddar…</li>";
+    const r = await fetch(API + "/api/uploads/status", { headers: { Authorization: "Bearer " + getToken() }});
+    const data = await r.json();
+    filesUl.innerHTML = "";
+    if(!r.ok){ filesUl.innerHTML = "<li class='warn'>Kunde inte hämta status.</li>"; return; }
+    if(data.length===0){ filesUl.innerHTML = "<li>Inga filer ännu.</li>"; return; }
+
+    for(const it of data){
+      const li = document.createElement("li");
+      const when = new Date(it.lastModified).toLocaleString();
+      li.innerHTML = `
+        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+          <div>
+            <div><strong>${it.objectName.split('/').pop()}</strong></div>
+            <div class="muted" style="font-size:13px">
+              ${it.contentType} • ${(it.sizeBytes/1024/1024).toFixed(2)} MB • Uppdaterad ${when}
+              ${it.indexed ? ` • <span class="ok">indexerad</span> ${it.indexedAtUtc ? '('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}` : ' • <span class="warn">ej indexerad</span>'}
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" data-act="reindex" data-name="${it.objectName}">Reindex</button>
+            <button class="btn secondary" data-act="delete" data-name="${it.objectName}">Ta bort</button>
+          </div>
+        </div>`;
+      filesUl.appendChild(li);
     }
 
-    async function upload(){
-      const files = document.getElementById("file").files;
-      if(!files || files.length===0) return;
-      for(const f of files){
-        const li = document.createElement("li");
-        li.textContent = `Laddar upp ${f.name}…`;
-        logUl.appendChild(li);
+    // action handlers
+    filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b=>{
+      b.onclick = () => reindexOne(b.dataset.name);
+    });
+    filesUl.querySelectorAll('button[data-act="delete"]').forEach(b=>{
+      b.onclick = () => deleteOne(b.dataset.name);
+    });
+  }
 
-        // start
-        const start = await fetch(API + "/api/uploads/start", {
-          method:"POST",
-          headers: {
-            "Content-Type":"application/json",
-            Authorization: "Bearer " + getToken()
-          },
-          body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
-        });
-        const sdata = await start.json();
-        if(!start.ok){ li.textContent = `Fel: ${sdata}`; continue; }
+  async function reindexAll(){
+    const r = await fetch(API + "/api/uploads/reindex", {
+      method:"POST", headers: authHeader(), body: JSON.stringify({ objectName: null })
+    });
+    await refreshStatus();
+  }
+  async function reindexOne(name){
+    const r = await fetch(API + "/api/uploads/reindex", {
+      method:"POST", headers: authHeader(), body: JSON.stringify({ objectName: name })
+    });
+    await refreshStatus();
+  }
+  async function deleteOne(name){
+    if(!confirm("Ta bort filen?")) return;
+    const r = await fetch(API + "/api/uploads/file", {
+      method:"DELETE", headers: authHeader(), body: JSON.stringify({ objectName: name })
+    });
+    await refreshStatus();
+  }
 
-        // PUT till SAS-url
-        const put = await fetch(sdata.uploadUrl, {
-          method: "PUT",
-          headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": f.type || "application/octet-stream" },
-          body: f
-        });
-        if(!put.ok){ li.textContent = `Fel vid PUT`; continue; }
+  async function upload(){
+    const files = document.getElementById("file").files;
+    if(!files || files.length===0) return;
+    for(const f of files){
+      const li = document.createElement("li");
+      li.textContent = `Laddar upp ${f.name}…`;
+      logUl.appendChild(li);
 
-        // complete
-        const complete = await fetch(API + "/api/uploads/complete", {
-          method:"POST",
-          headers: {
-            "Content-Type":"application/json",
-            Authorization: "Bearer " + getToken()
-          },
-          body: JSON.stringify({ objectName: sdata.objectName, sizeBytes: f.size, contentType: f.type || "application/octet-stream" })
-        });
-        const cdata = await complete.json().catch(()=>({}));
-        if(!complete.ok){ li.textContent = `Fel vid complete`; continue; }
+      const start = await fetch(API + "/api/uploads/start", {
+        method:"POST", headers: authHeader(),
+        body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
+      });
+      const sdata = await start.json();
+      if(!start.ok){ li.textContent = `Fel: ${sdata}`; continue; }
 
-        li.innerHTML = `<span class="ok">✔</span> Klar: ${f.name}`;
-      }
-      await refreshFiles();
+      const put = await fetch(sdata.uploadUrl, {
+        method: "PUT",
+        headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": f.type || "application/octet-stream" },
+        body: f
+      });
+      if(!put.ok){ li.textContent = `Fel vid PUT`; continue; }
+
+      const complete = await fetch(API + "/api/uploads/complete", {
+        method:"POST", headers: authHeader(),
+        body: JSON.stringify({ objectName: sdata.objectName, sizeBytes: f.size, contentType: f.type || "application/octet-stream" })
+      });
+      if(!complete.ok){ li.textContent = `Fel vid complete`; continue; }
+
+      li.innerHTML = `<span class="ok">✔</span> Klar: ${f.name}`;
     }
+    await refreshStatus();
+  }
 
-    document.getElementById("loginBtn").onclick = login;
-    document.getElementById("logoutBtn").onclick = logout;
-    document.getElementById("refreshBtn").onclick = refreshFiles;
-    document.getElementById("uploadBtn").onclick = upload;
+  document.getElementById("loginBtn").onclick = login;
+  document.getElementById("logoutBtn").onclick = logout;
+  document.getElementById("refreshBtn").onclick = refreshStatus;
+  document.getElementById("uploadBtn").onclick = upload;
 
-    // Autoåterställ session om token finns
-    (async function boot(){
-      if(getToken() && getCid()){
-        loginCard.style.display="none"; app.style.display="block";
-        who.textContent = `Inloggad (${getCid()})`;
-        await refreshFiles();
-      }
-    })();
-  </script>
+  // Lägg till knappen "Reindex alla" i din markup: <button id="reindexAllBtn" class="btn">Reindex alla</button>
+  const reindexAllBtn = document.createElement("button");
+  reindexAllBtn.id = "reindexAllBtn";
+  reindexAllBtn.className = "btn";
+  reindexAllBtn.textContent = "Reindex alla";
+  document.querySelector(".card h2").parentElement.querySelector(".right")?.appendChild(reindexAllBtn);
+  reindexAllBtn.onclick = reindexAll;
+
+  (async function boot(){
+    if(getToken() && getCid()){
+      loginCard.style.display="none"; app.style.display="block";
+      who.textContent = `Inloggad (${getCid()})`;
+      await refreshStatus();
+    }
+  })();
+</script>
 </body>
 </html>

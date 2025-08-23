@@ -1,107 +1,226 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BotJahl – Din AI-chattbot för hemsidan</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>BotJahl – AI-chattbot för din hemsida</title>
+  <meta name="description" content="BotJahl är en AI-chattbot som du enkelt bäddar in på din webbplats. Starta gratis i 14 dagar – plug-in & run." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; background:#f9fafb; color:#111827; }
-    header { background:#1f2937; color:#fff; padding:3rem 1rem; text-align:center; }
-    header h1 { margin:0; font-size:2.5rem; }
-    header p { margin:1rem 0 0; font-size:1.2rem; opacity:.9; }
-    section { max-width:1000px; margin:2rem auto; padding:0 1rem; }
-    .cta-button { display:inline-block; margin-top:1.25rem; background:#2563eb; color:#fff; padding:.75rem 1.25rem; border-radius:10px; text-decoration:none; }
-    .iframe-wrapper { margin-top:1.5rem; border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08); background:#fff; }
-    iframe { width:100%; height:680px; border:0; display:block; }
-    footer { background:#e5e7eb; padding:2rem; text-align:center; color:#4b5563; font-size:.95rem; }
+    :root{
+      --bg:#0b1220; --bg2:#0f172a; --card:#0f172a; --muted:#9aa4b2; --fg:#e5e7eb;
+      --brand:#60a5fa; --brand-2:#22d3ee; --accent:#a78bfa; --ok:#34d399; --warn:#f59e0b;
+      --stroke:rgba(148,163,184,.18);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:radial-gradient(1200px 600px at 10% -10%,rgba(96,165,250,.25),transparent),radial-gradient(900px 500px at 90% -20%,rgba(34,211,238,.2),transparent),linear-gradient(180deg,var(--bg),var(--bg2)); color:var(--fg)}
+    a{color:inherit}
+    .container{max-width:1100px;margin:0 auto;padding:0 20px}
+    .glass{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)); border:1px solid var(--stroke); backdrop-filter:saturate(160%) blur(8px); border-radius:16px}
+    .btn{display:inline-flex;align-items:center;gap:8px; padding:12px 16px; border-radius:12px; text-decoration:none; font-weight:600; cursor:pointer; border:1px solid transparent}
+    .btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand-2)); color:#0a0f1f}
+    .btn.secondary{background:transparent; border-color:var(--stroke)}
+    .btn.ghost{background:transparent; color:var(--fg); opacity:.85}
+    .muted{color:var(--muted)}
+    .badge{display:inline-block; padding:6px 10px; border:1px solid var(--stroke); border-radius:999px; font-size:12px; color:var(--muted)}
+    .grid{display:grid; gap:18px}
+
+    /* Nav */
+    nav{position:sticky; top:0; z-index:50; border-bottom:1px solid var(--stroke); background:rgba(10,15,31,.55); backdrop-filter:blur(8px)}
+    nav .row{display:flex; align-items:center; justify-content:space-between; padding:12px 0}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+    .brand svg{width:28px; height:28px}
+    .nav-links{display:flex; gap:10px; align-items:center}
+    .nav-links a{padding:8px 12px; border-radius:10px; text-decoration:none}
+    .nav-links a:hover{background:rgba(255,255,255,.06)}
+
+    /* Hero */
+    .hero{padding:64px 0 30px}
+    .hero .wrap{display:grid; grid-template-columns:1.15fr .85fr; gap:26px}
+    .card{padding:18px; border-radius:16px; border:1px solid var(--stroke); background:linear-gradient(180deg,rgba(17,24,39,.7),rgba(17,24,39,.45))}
+    h1{font-size:clamp(28px,4.2vw,46px); line-height:1.05; margin:0 0 10px; letter-spacing:-.3px}
+    h2{font-size:clamp(20px,2.4vw,28px); margin:0 0 8px}
+    p{line-height:1.6; margin:8px 0}
+
+    /* Demo iframe */
+    .iframe-wrapper{border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(2,6,23,.45); background:#0b1220}
+    iframe{width:100%; height:680px; border:0; display:block}
+
+    /* Sections */
+    section{padding:42px 0}
+    .feature{display:flex; gap:12px; align-items:flex-start}
+    .dot{width:10px;height:10px;border-radius:50%; margin-top:7px; background:linear-gradient(90deg,var(--brand),var(--accent)); box-shadow:0 0 16px rgba(96,165,250,.6)}
+
+    /* Forms */
+    form{display:grid; gap:12px}
+    input{background:rgba(255,255,255,.04); border:1px solid var(--stroke); border-radius:12px; padding:12px 14px; color:var(--fg)}
+    input::placeholder{color:#94a3b8}
+    pre{white-space:pre-wrap; background:rgba(2,6,23,.55); border:1px dashed var(--stroke); padding:12px; border-radius:12px; overflow:auto}
+
+    /* Footer */
+    footer{border-top:1px solid var(--stroke); color:var(--muted); padding:24px 0; text-align:center}
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .hero .wrap{grid-template-columns:1fr}
+    }
+    html { scroll-behavior:smooth; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>BotJahl</h1>
-    <p>Din AI-assistent – svarar på frågor, dygnet runt.</p>
-    <a href="#demo" class="cta-button">Testa live-demoboten</a>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container row">
+      <a href="#" class="brand" aria-label="BotJahl startsida">
+        <!-- LOGOTYP (inline SVG) -->
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
+          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
+          <circle cx="29" cy="20" r="2.4" fill="#0a0f1f"/>
+          <path d="M30 38l-6-4-6 4 2.5-6.5" fill="url(#g2)" opacity=".9"/>
+          <defs>
+            <linearGradient id="g1" x1="4" y1="6" x2="46" y2="36" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        BotJahl
+      </a>
+      <div class="nav-links">
+        <a href="#demo">Demo</a>
+        <a href="#starta">Starta gratis</a>
+        <a href="admin.html" class="btn secondary" aria-label="Öppna adminportalen">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero container">
+    <div class="wrap">
+      <div class="card glass">
+        <span class="badge">Plug-in & run</span>
+        <h1>AI-chattbot som svarar med ditt innehåll</h1>
+        <p class="muted">Bädda in på din webbplats på några minuter. Träna boten med dina PDF:er, DOCX eller webbsidor. Starta gratis i 14 dagar – ingen kod krävs.</p>
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <a class="btn primary" href="#starta">Starta gratis</a>
+          <a class="btn ghost" href="admin.html">Logga in i portalen</a>
+        </div>
+      </div>
+      <div class="card glass">
+        <div class="feature"><span class="dot"></span><div><strong>Enkelt att installera</strong><div class="muted">Kopiera och klistra in en färdig &lt;iframe&gt;-kod.</div></div></div>
+        <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Ladda upp dokument – vi indexerar automatiskt.</div></div></div>
+        <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Provperiod 14 dagar, därefter trygg kortbetalning via Stripe.</div></div></div>
+      </div>
+    </div>
   </header>
 
-  <section>
-    <h2>Vad är BotJahl?</h2>
-    <p>BotJahl är en smart AI-chattbot som du enkelt kan koppla till din hemsida. Den svarar på vanliga kundfrågor, är tillgänglig 24/7 och tränas på just ditt innehåll – t.ex. FAQ eller interna dokument.</p>
-    <p>Just nu bjuder vi in 5 företag att testa tjänsten gratis eller till reducerat pris.</p>
-  </section>
-
+  <!-- DEMO -->
   <section id="demo">
-    <h2>Testa BotJahl direkt</h2>
-    <div class="iframe-wrapper">
-      <!-- DEMO: använder din nya testkund c26143b och din Azure API-basadress -->
-      <iframe
-        id="botjahl-demo"
-        src="https://filipwestjahl.github.io/ai-chatbot-frontend/?customerId=c26143b&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
-        loading="lazy"
-        referrerpolicy="no-referrer"
-        sandbox="allow-scripts allow-forms allow-same-origin"
-      ></iframe>
+    <div class="container">
+      <h2>Testa BotJahl direkt</h2>
+      <p class="muted">Demot är kopplat till vår testkund. Fråga vad boten kan hjälpa till med.</p>
+      <div class="iframe-wrapper glass">
+        <iframe
+          id="botjahl-demo"
+          src="https://filipwestjahl.github.io/ai-chatbot-frontend/?customerId=c26143b&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          sandbox="allow-scripts allow-forms allow-same-origin"
+          title="BotJahl demo-chatt"
+          aria-label="Inbäddad demo av BotJahl"
+        ></iframe>
+      </div>
     </div>
-    <p style="text-align:center;margin-top:8px;color:#6b7280;">Demo-boten är kopplad till vår testkund.</p>
   </section>
 
-  <section>
-    <h2>Kom igång på 5 minuter</h2>
-    <ol>
-      <li>Skicka oss dina frågor, dokument eller FAQ</li>
-      <li>Vi tränar din AI-bot</li>
-      <li>Du får en enkel kodsnutt att klistra in på din sida</li>
-    </ol>
-  </section>
-
+  <!-- SIGNUP -->
   <section id="starta">
-  <h2>Starta gratis i 14 dagar</h2>
-  <form id="signup" style="display:grid;gap:8px;max-width:520px">
-    <input name="name" placeholder="Företagsnamn" required />
-    <input name="websiteUrl" placeholder="Webbplats (https://...)" required />
-    <input name="email" type="email" placeholder="E-post" required />
-    <button>Skapa min bot</button>
-  </form>
-  <div id="signup-result" style="margin-top:12px;"></div>
-</section>
-
-<script>
-document.getElementById('signup').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const f = e.target;
-  const body = {
-    name: f.name.value.trim(),
-    websiteUrl: f.websiteUrl.value.trim(),
-    email: f.email.value.trim()
-  };
-  const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-  const res = await fetch(API + "/api/public/signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  const out = document.getElementById('signup-result');
-  if (!res.ok) {
-    out.textContent = "Något gick fel. Testa igen.";
-    return;
-  }
-  const data = await res.json();
-  out.innerHTML = `
-    <p><strong>Klart!</strong> Ditt kund-ID är <code>${data.customerId}</code>.</p>
-    <p>Klistra in denna kodsnutt på din sida:</p>
-    <pre style="white-space:pre-wrap;background:#f3f4f6;padding:8px;border-radius:8px">${data.snippet.replace(/</g,"&lt;")}</pre>
-    ${data.checkoutUrl ? `<p>Slutför din kostnadsfria provperiod (14 dagar) här: <a href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>` : ""}
-  `;
-});
-</script>
-
-
-  <section>
-    <h2>Intresserad?</h2>
-    <p>Maila oss: <a href="mailto:faijahl75@gmail.com">faijahl75@gmail.com</a></p>
+    <div class="container">
+      <h2>Starta gratis i 14 dagar</h2>
+      <div class="card glass">
+        <form id="signup">
+          <input name="name" placeholder="Företagsnamn" autocomplete="organization" required />
+          <input name="websiteUrl" placeholder="Webbplats (https://…)" inputmode="url" required />
+          <input name="email" type="email" placeholder="E-post" autocomplete="email" required />
+          <div class="grid" style="grid-template-columns:1fr auto">
+            <p class="muted" style="margin:0">Du får ett kund-ID och färdig kod att klistra in på din sida.</p>
+            <button class="btn primary" type="submit">Skapa min bot</button>
+          </div>
+        </form>
+        <div id="signup-result" style="margin-top:14px"></div>
+      </div>
+    </div>
   </section>
 
-  <footer>&copy; 2025 BotJahl – Enkelt. Smart. Anpassat.</footer>
+  <!-- CONTACT -->
+  <section>
+    <div class="container">
+      <h2>Frågor?</h2>
+      <p class="muted">Maila oss: <a href="mailto:faijahl75@gmail.com">faijahl75@gmail.com</a> eller <a href="admin.html">logga in i portalen</a> om du redan är kund.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div>
+  </footer>
+
+  <script>
+    // Signup – hantera även 409 (dubblett) och visa snippet oavsett
+    document.getElementById('signup').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const body = {
+        name: f.name.value.trim(),
+        websiteUrl: f.websiteUrl.value.trim(),
+        email: f.email.value.trim()
+      };
+      const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+      const out = document.getElementById('signup-result');
+
+      out.innerHTML = `<span class="muted">Skapar bot…</span>`;
+
+      try{
+        const res = await fetch(API + "/api/public/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.status === 409 && data.customerId) {
+          // Företaget finns redan – visa existerande bot
+          out.innerHTML = `
+            <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
+            <p>Klistra in denna kodsnutt på din sida:</p>
+            <pre>${(data.snippet||"").replace(/</g,"&lt;")}</pre>
+            <p class="muted">Behöver du uppdatera betalmetod? Öppna portalen via <a href="admin.html">Admin</a>.</p>
+          `;
+          return;
+        }
+
+        if (!res.ok) {
+          out.innerHTML = `<p style="color:#fca5a5">Något gick fel. Testa igen.</p>`;
+          return;
+        }
+
+        out.innerHTML = `
+          <p><strong>Klart!</strong> Ditt kund-ID är <code>${data.customerId}</code>.</p>
+          <p>Klistra in denna kodsnutt på din sida:</p>
+          <pre>${(data.snippet||"").replace(/</g,"&lt;")}</pre>
+          ${data.checkoutUrl ? `<p>Slutför din kostnadsfria provperiod (14 dagar): <a class="btn secondary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>` : ""}
+          <p class="muted">Du kan när som helst ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(data.customerId)}">Admin</a>.</p>
+        `;
+      }catch(err){
+        out.innerHTML = `<p style="color:#fca5a5">Nätverksfel: ${err.message||"okänt fel"}</p>`;
+      }
+    });
+  </script>
 </body>
 </html>
