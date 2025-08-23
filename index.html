@@ -55,6 +55,48 @@
     </ol>
   </section>
 
+  <section id="starta">
+  <h2>Starta gratis i 14 dagar</h2>
+  <form id="signup" style="display:grid;gap:8px;max-width:520px">
+    <input name="name" placeholder="Företagsnamn" required />
+    <input name="websiteUrl" placeholder="Webbplats (https://...)" required />
+    <input name="email" type="email" placeholder="E-post" required />
+    <button>Skapa min bot</button>
+  </form>
+  <div id="signup-result" style="margin-top:12px;"></div>
+</section>
+
+<script>
+document.getElementById('signup').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const body = {
+    name: f.name.value.trim(),
+    websiteUrl: f.websiteUrl.value.trim(),
+    email: f.email.value.trim()
+  };
+  const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+  const res = await fetch(API + "/api/public/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  const out = document.getElementById('signup-result');
+  if (!res.ok) {
+    out.textContent = "Något gick fel. Testa igen.";
+    return;
+  }
+  const data = await res.json();
+  out.innerHTML = `
+    <p><strong>Klart!</strong> Ditt kund-ID är <code>${data.customerId}</code>.</p>
+    <p>Klistra in denna kodsnutt på din sida:</p>
+    <pre style="white-space:pre-wrap;background:#f3f4f6;padding:8px;border-radius:8px">${data.snippet.replace(/</g,"&lt;")}</pre>
+    ${data.checkoutUrl ? `<p>Slutför din kostnadsfria provperiod (14 dagar) här: <a href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>` : ""}
+  `;
+});
+</script>
+
+
   <section>
     <h2>Intresserad?</h2>
     <p>Maila oss: <a href="mailto:faijahl75@gmail.com">faijahl75@gmail.com</a></p>
