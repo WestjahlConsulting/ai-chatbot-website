@@ -84,7 +84,7 @@
           <input name="websiteUrl" placeholder="Webbplats (https://…)" inputmode="url" required />
           <input name="email" type="email" placeholder="E-post" autocomplete="email" required />
           <div class="grid grid-1-auto">
-            <p class="muted">Du får ett kund-ID och färdig kod att klistra in på din sida.</p>
+            <p class="muted">Du får ett kund-ID och en betalningslänk. Kodsnutten lämnas först när betalmetod är lagd.</p>
             <button class="btn primary" type="submit">Skapa min bot</button>
           </div>
         </form>
@@ -127,11 +127,14 @@
         const data = await res.json().catch(() => ({}));
 
         if (res.status === 409 && data.customerId) {
+          // Företaget finns redan – visa ALDRIG snippet här.
           out.innerHTML = `
             <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
-            <p>Klistra in denna kodsnutt på din sida:</p>
-            <pre>${(data.snippet||"").replace(/</g,"&lt;")}</pre>
-            <p class="muted">Behöver du uppdatera betalmetod? Öppna portalen via <a href="admin.html">Admin</a>.</p>
+            <div class="grid grid-auto-2auto">
+              <a class="btn primary" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
+              <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
+            </div>
+            <p class="muted">Kodsnutten lämnas endast när betalmetod är lagd. Om du redan har slutfört checkout kan du hämta den via ”Hämta kodsnutt”.</p>
           `;
           return;
         }
@@ -141,12 +144,20 @@
           return;
         }
 
+        // 200 OK – ny kund. Visa ALDRIG snippet här. Endast checkout-länk + vägledning.
+        const cid = data.customerId;
         out.innerHTML = `
-          <p><strong>Klart!</strong> Ditt kund-ID är <code>${data.customerId}</code>.</p>
-          <p>Klistra in denna kodsnutt på din sida:</p>
-          <pre>${(data.snippet||"").replace(/</g,"&lt;")}</pre>
-          ${data.checkoutUrl ? `<p>Slutför din kostnadsfria provperiod (14 dagar): <a class="btn secondary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>` : ""}
-          <p class="muted">Du kan när som helst ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(data.customerId)}">Admin</a>.</p>
+          <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
+          ${data.checkoutUrl ? `
+            <p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>
+          ` : `
+            <p class="warn">Kunde inte skapa Checkout-länk just nu. Försök igen eller kontakta support.</p>
+          `}
+          <p class="muted">
+            När du har lagt in betalmetod kan du hämta din kodsnutt här:
+            <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
+            eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
+          </p>
         `;
       }catch(err){
         out.innerHTML = `<p class="warn">Nätverksfel: ${err.message||"okänt fel"}</p>`;

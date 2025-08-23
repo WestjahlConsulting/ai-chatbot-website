@@ -43,4 +43,73 @@
     <div id="warn" class="card hidden"></div>
 
     <div class="card glass">
-      <h2>1)
+      <h2>1) Kodsnutt att klistra in</h2>
+      <pre><code id="snippet">Laddar…</code></pre>
+      <div class="grid grid-1-2auto">
+        <p class="muted">Placera där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
+        <button id="copy" class="btn secondary">Kopiera snutten</button>
+        <a class="btn ghost" href="index.html">Till startsidan</a>
+      </div>
+    </div>
+
+    <div class="card glass">
+      <h2>2) Live-förhandsvisning</h2>
+      <div id="iframe-host" class="iframe-wrapper"><p class="muted">&nbsp;Laddar widget…</p></div>
+    </div>
+
+    <div class="card glass">
+      <h2>Hantera betalning</h2>
+      <div class="grid grid-auto-2auto">
+        <button id="portal" class="btn primary">Öppna kundportal</button>
+        <a class="btn secondary" href="admin.html">Ladda upp dokument i Admin</a>
+      </div>
+      <p class="muted" id="status"></p>
+    </div>
+  </main>
+
+  <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
+
+<script>
+  (async function () {
+    const qs = new URLSearchParams(location.search);
+    const cid = qs.get("cid") || qs.get("customerId");
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+
+    const warn = document.getElementById("warn");
+    if (!cid) {
+      warn.classList.remove("hidden");
+      warn.innerHTML = "<strong>Saknar kund-ID.</strong> Den här sidan öppnas normalt av Stripe med parametern <code>?cid=…</code>.";
+      return;
+    }
+
+    try{
+      const r = await fetch(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
+      const data = await r.json().catch(()=> ({}));
+      if(!r.ok || !data.snippet){
+        warn.classList.remove("hidden");
+        warn.innerHTML = "Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in betalmetod i portalen.";
+        return;
+      }
+      // Visa snutten + live-iframe
+      document.getElementById("snippet").textContent = data.snippet;
+      const host = document.getElementById("iframe-host");
+      host.innerHTML = "";
+      const iframe = document.createElement("iframe");
+      // (data.snippet innehåller redan src – vi gör en enkel parse)
+      const m = data.snippet.match(/src="([^"]+)"/i);
+      iframe.src = m ? m[1] : "";
+      iframe.title = "BotJahl förhandsvisning";
+      host.appendChild(iframe);
+
+      document.getElementById("copy").onclick = async () => {
+        await navigator.clipboard.writeText(data.snippet);
+        const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
+      };
+    }catch{
+      warn.classList.remove("hidden");
+      warn.textContent = "Nätverksfel – försök igen.";
+    }
+  })();
+</script>
+</body>
+</html>
