@@ -2,212 +2,163 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BotJahl – Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg:#f9fafb;--fg:#0f172a;--muted:#64748b;--card:#fff;--btn:#2563eb}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
-    .wrap{max-width:980px;margin:28px auto;padding:0 16px}
-    .card{background:var(--card);border-radius:16px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px;margin-top:16px}
-    h1{margin:0 0 8px} .muted{color:var(--muted)}
-    input,button{font:inherit} input{padding:10px;border:1px solid #cbd5e1;border-radius:10px;width:100%}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .btn{appearance:none;border:0;border-radius:10px;padding:10px 14px;color:#fff;background:var(--btn);cursor:pointer}
-    .file{padding:10px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc}
-    ul{margin:8px 0 0;padding-left:18px}
-    li{margin:4px 0}
-    .right{display:flex;justify-content:flex-end;gap:8px}
-    .ok{color:#16a34a} .warn{color:#b45309}
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>BotJahl – Adminportal</title>
+  <meta name="description" content="Ladda upp dokument (PDF/DOCX/TXT/MD), se status och reindexera – allt för att träna din bot.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
-  <div class="wrap">
-    <h1>BotJahl – Admin</h1>
-    <p class="muted">Logga in med ditt kund-ID och e-post. Ladda sedan upp PDF/DOCX för att träna boten.</p>
-
-    <div id="login-card" class="card">
-      <h2>Logga in</h2>
-      <div class="row">
-        <div><label>Kund-ID</label><input id="cid" placeholder="cxxxxxx" /></div>
-        <div><label>E-post</label><input id="email" type="email" placeholder="du@företag.se" /></div>
+  <!-- NAV -->
+  <nav>
+    <div class="container row">
+      <a href="index.html" class="brand" aria-label="BotJahl startsida">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
+          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
+          <circle cx="29" cy="20" r="2.4" fill="#0a0f1f"/>
+          <path d="M30 38l-6-4-6 4 2.5-6.5" fill="url(#g2)" opacity=".9"/>
+          <defs>
+            <linearGradient id="g1" x1="4" y1="6" x2="46" y2="36"><stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+            <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
+          </defs>
+        </svg>
+        BotJahl
+      </a>
+      <div class="nav-links">
+        <a href="index.html#demo">Demo</a>
+        <a href="index.html" class="btn ghost">Till startsidan</a>
       </div>
-      <div class="right" style="margin-top:10px"><button id="loginBtn" class="btn">Logga in</button></div>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="page container">
+    <span class="badge">Adminportal</span>
+    <h1>Träna och hantera din bot</h1>
+    <p class="muted">
+      Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
+      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+    </p>
+  </header>
+
+  <main class="container grid">
+    <!-- LOGIN -->
+    <div id="login-card" class="card glass">
+      <h2>Logga in</h2>
+      <div class="row2">
+        <div><label for="cid">Kund-ID</label><input id="cid" placeholder="cxxxxxx" /></div>
+        <div><label for="email">E-post</label><input id="email" type="email" placeholder="du@företag.se" /></div>
+      </div>
+      <div class="grid grid-auto-2auto">
+        <button id="loginBtn" class="btn primary">Logga in</button>
+        <a class="btn secondary" href="index.html">Till startsidan</a>
+      </div>
       <p id="loginMsg" class="warn"></p>
     </div>
 
-    <div id="app" style="display:none">
-      <div class="card">
-        <h2>Uppladdning</h2>
+    <!-- APP -->
+    <div id="app" class="hidden">
+      <div class="card glass">
+        <div class="grid grid-1-2auto align-end">
+          <div>
+            <h2>Uppladdning</h2>
+            <p class="muted">Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.</p>
+          </div>
+          <button id="reindexAllBtn" class="btn secondary">Reindexera alla</button>
+          <button id="logoutBtn" class="btn ghost">Logga ut</button>
+        </div>
+
         <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
-        <div class="right" style="margin-top:10px"><button id="uploadBtn" class="btn">Ladda upp</button></div>
+
+        <div class="grid grid-auto-2auto">
+          <button id="uploadBtn" class="btn primary">Ladda upp</button>
+          <button id="refreshBtn" class="btn secondary">Uppdatera status</button>
+        </div>
         <ul id="log"></ul>
       </div>
 
-      <div class="card">
-        <h2>Dina filer</h2>
-        <button id="refreshBtn" class="btn">Uppdatera lista</button>
+      <div class="card glass">
+        <h2>Dina dokument</h2>
         <ul id="files"></ul>
       </div>
 
-      <div class="card">
+      <div class="card glass">
         <h2>Session</h2>
-        <button id="logoutBtn" class="btn">Logga ut</button>
         <p class="muted" id="who"></p>
+        <div class="grid grid-auto-2auto">
+          <a class="btn secondary" href="index.html">Till startsidan</a>
+          <a class="btn secondary" href="success.html?cid=" id="successLink">Visa min kodsnutt</a>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 
-<script>
-  const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+  <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
-  const qs = new URLSearchParams(location.search);
-  if (qs.get("cid")) document.getElementById("cid").value = qs.get("cid");
+  <script>
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    const qs = new URLSearchParams(location.search);
+    const presetCid = qs.get("cid"); if (presetCid) document.getElementById("cid").value = presetCid;
 
-  const tokenKey = "botjahl.portal.token";
-  const customerKey = "botjahl.portal.customer";
+    const tokenKey = "botjahl.portal.token";
+    const customerKey = "botjahl.portal.customer";
 
-  const loginCard = document.getElementById("login-card");
-  const app = document.getElementById("app");
-  const who = document.getElementById("who");
-  const filesUl = document.getElementById("files");
-  const logUl = document.getElementById("log");
+    const loginCard = document.getElementById("login-card");
+    const app = document.getElementById("app");
+    const who = document.getElementById("who");
+    const filesUl = document.getElementById("files");
+    const logUl = document.getElementById("log");
+    const successLink = document.getElementById("successLink");
 
-  function setAuth(token, cid) { if (token) localStorage.setItem(tokenKey, token); if (cid) localStorage.setItem(customerKey, cid); }
-  function getToken(){ return localStorage.getItem(tokenKey); }
-  function getCid(){ return localStorage.getItem(customerKey); }
-  function authHeader(){ return { Authorization: "Bearer " + getToken(), "Content-Type":"application/json" }; }
-  function logout(){ localStorage.removeItem(tokenKey); localStorage.removeItem(customerKey); app.style.display="none"; loginCard.style.display="block"; }
+    function setAuth(token, cid) { if (token) localStorage.setItem(tokenKey, token); if (cid) localStorage.setItem(customerKey, cid); }
+    function getToken(){ return localStorage.getItem(tokenKey); }
+    function getCid(){ return localStorage.getItem(customerKey); }
+    function authHeader(){ return { Authorization: "Bearer " + getToken(), "Content-Type":"application/json" }; }
+    function logout(){ localStorage.removeItem(tokenKey); localStorage.removeItem(customerKey); app.classList.add("hidden"); loginCard.classList.remove("hidden"); }
 
-  async function login(){
-    const customerId = document.getElementById("cid").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const msg = document.getElementById("loginMsg");
-    msg.textContent = "";
-    try{
-      const r = await fetch(API + "/api/portal/login", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ customerId, email })
-      });
+    async function login(){
+      const customerId = document.getElementById("cid").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const msg = document.getElementById("loginMsg");
+      msg.textContent = "";
+      try{
+        const r = await fetch(API + "/api/portal/login", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ customerId, email })
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data || "Felaktiga uppgifter.");
+        setAuth(data.token, customerId);
+        who.textContent = `Inloggad som ${data.customerName} (${customerId})`;
+        successLink.href = "success.html?cid=" + encodeURIComponent(customerId);
+        loginCard.classList.add("hidden");
+        app.classList.remove("hidden");
+        await refreshStatus();
+      }catch(e){ msg.textContent = e.message || "Kunde inte logga in."; }
+    }
+
+    async function refreshStatus(){
+      filesUl.innerHTML = "<li class='muted'>Laddar…</li>";
+      const r = await fetch(API + "/api/uploads/status", { headers: { Authorization: "Bearer " + getToken() }});
       const data = await r.json();
-      if(!r.ok) throw new Error(data || "Felaktiga uppgifter.");
-      setAuth(data.token, customerId);
-      who.textContent = `Inloggad som ${data.customerName} (${customerId})`;
-      loginCard.style.display="none"; app.style.display="block";
-      await refreshStatus();
-    }catch(e){ msg.textContent = e.message || "Kunde inte logga in."; }
-  }
+      filesUl.innerHTML = "";
+      if(!r.ok){ filesUl.innerHTML = "<li class='warn'>Kunde inte hämta status.</li>"; return; }
+      if(data.length===0){ filesUl.innerHTML = "<li class='muted'>Inga filer ännu.</li>"; return; }
 
-  async function refreshStatus(){
-    filesUl.innerHTML = "<li>Laddar…</li>";
-    const r = await fetch(API + "/api/uploads/status", { headers: { Authorization: "Bearer " + getToken() }});
-    const data = await r.json();
-    filesUl.innerHTML = "";
-    if(!r.ok){ filesUl.innerHTML = "<li class='warn'>Kunde inte hämta status.</li>"; return; }
-    if(data.length===0){ filesUl.innerHTML = "<li>Inga filer ännu.</li>"; return; }
-
-    for(const it of data){
-      const li = document.createElement("li");
-      const when = new Date(it.lastModified).toLocaleString();
-      li.innerHTML = `
-        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
-          <div>
-            <div><strong>${it.objectName.split('/').pop()}</strong></div>
-            <div class="muted" style="font-size:13px">
-              ${it.contentType} • ${(it.sizeBytes/1024/1024).toFixed(2)} MB • Uppdaterad ${when}
-              ${it.indexed ? ` • <span class="ok">indexerad</span> ${it.indexedAtUtc ? '('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}` : ' • <span class="warn">ej indexerad</span>'}
+      for(const it of data){
+        const li = document.createElement("li");
+        const when = new Date(it.lastModified).toLocaleString();
+        li.innerHTML = `
+          <div class="row">
+            <div>
+              <div><strong>${it.objectName.split('/').pop()}</strong></div>
+              <div class="muted" style="font-size:13px">
+                ${it.contentType} • ${(it.sizeBytes/1024/1024).toFixed(2)} MB • Uppdaterad ${when}
+                ${it.indexed ? \` • <span class="ok">indexerad</span> ${it.indexedAtUtc ? '('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}\` : ' • <span class="warn">ej indexerad</span>'}
+              </div>
             </div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn" data-act="reindex" data-name="${it.objectName}">Reindex</button>
-            <button class="btn secondary" data-act="delete" data-name="${it.objectName}">Ta bort</button>
-          </div>
-        </div>`;
-      filesUl.appendChild(li);
-    }
-
-    // action handlers
-    filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b=>{
-      b.onclick = () => reindexOne(b.dataset.name);
-    });
-    filesUl.querySelectorAll('button[data-act="delete"]').forEach(b=>{
-      b.onclick = () => deleteOne(b.dataset.name);
-    });
-  }
-
-  async function reindexAll(){
-    const r = await fetch(API + "/api/uploads/reindex", {
-      method:"POST", headers: authHeader(), body: JSON.stringify({ objectName: null })
-    });
-    await refreshStatus();
-  }
-  async function reindexOne(name){
-    const r = await fetch(API + "/api/uploads/reindex", {
-      method:"POST", headers: authHeader(), body: JSON.stringify({ objectName: name })
-    });
-    await refreshStatus();
-  }
-  async function deleteOne(name){
-    if(!confirm("Ta bort filen?")) return;
-    const r = await fetch(API + "/api/uploads/file", {
-      method:"DELETE", headers: authHeader(), body: JSON.stringify({ objectName: name })
-    });
-    await refreshStatus();
-  }
-
-  async function upload(){
-    const files = document.getElementById("file").files;
-    if(!files || files.length===0) return;
-    for(const f of files){
-      const li = document.createElement("li");
-      li.textContent = `Laddar upp ${f.name}…`;
-      logUl.appendChild(li);
-
-      const start = await fetch(API + "/api/uploads/start", {
-        method:"POST", headers: authHeader(),
-        body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
-      });
-      const sdata = await start.json();
-      if(!start.ok){ li.textContent = `Fel: ${sdata}`; continue; }
-
-      const put = await fetch(sdata.uploadUrl, {
-        method: "PUT",
-        headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": f.type || "application/octet-stream" },
-        body: f
-      });
-      if(!put.ok){ li.textContent = `Fel vid PUT`; continue; }
-
-      const complete = await fetch(API + "/api/uploads/complete", {
-        method:"POST", headers: authHeader(),
-        body: JSON.stringify({ objectName: sdata.objectName, sizeBytes: f.size, contentType: f.type || "application/octet-stream" })
-      });
-      if(!complete.ok){ li.textContent = `Fel vid complete`; continue; }
-
-      li.innerHTML = `<span class="ok">✔</span> Klar: ${f.name}`;
-    }
-    await refreshStatus();
-  }
-
-  document.getElementById("loginBtn").onclick = login;
-  document.getElementById("logoutBtn").onclick = logout;
-  document.getElementById("refreshBtn").onclick = refreshStatus;
-  document.getElementById("uploadBtn").onclick = upload;
-
-  // Lägg till knappen "Reindex alla" i din markup: <button id="reindexAllBtn" class="btn">Reindex alla</button>
-  const reindexAllBtn = document.createElement("button");
-  reindexAllBtn.id = "reindexAllBtn";
-  reindexAllBtn.className = "btn";
-  reindexAllBtn.textContent = "Reindex alla";
-  document.querySelector(".card h2").parentElement.querySelector(".right")?.appendChild(reindexAllBtn);
-  reindexAllBtn.onclick = reindexAll;
-
-  (async function boot(){
-    if(getToken() && getCid()){
-      loginCard.style.display="none"; app.style.display="block";
-      who.textContent = `Inloggad (${getCid()})`;
-      await refreshStatus();
-    }
-  })();
-</script>
-</body>
-</html>
+            <div class="row">
+              <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
