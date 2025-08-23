@@ -52,12 +52,13 @@
         <div><label for="cid">Kund-ID</label><input id="cid" placeholder="cxxxxxx" /></div>
         <div><label for="email">E-post</label><input id="email" type="email" placeholder="du@företag.se" /></div>
       </div>
-      <div class="grid grid-auto-2auto">
-        <br>
+
+      <!-- Flyttat ned med extra luft -->
+      <div class="grid grid-auto-2auto" style="margin-top: 18px;">
         <button id="loginBtn" class="btn primary">Logga in</button>
-        <br>
         <a class="btn secondary" href="index.html">Till startsidan</a>
       </div>
+
       <p id="loginMsg" class="warn"></p>
     </div>
 
@@ -159,8 +160,82 @@
               <div><strong>${it.objectName.split('/').pop()}</strong></div>
               <div class="muted" style="font-size:13px">
                 ${it.contentType} • ${(it.sizeBytes/1024/1024).toFixed(2)} MB • Uppdaterad ${when}
-                ${it.indexed ? \` • <span class="ok">indexerad</span> ${it.indexedAtUtc ? '('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}\` : ' • <span class="warn">ej indexerad</span>'}
+                ${it.indexed ? ` • <span class="ok">indexerad</span> ${it.indexedAtUtc ? '('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}` : ' • <span class="warn">ej indexerad</span>'}
               </div>
             </div>
             <div class="row">
               <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
+              <button class="btn ghost" data-act="delete" data-name="${it.objectName}">Ta bort</button>
+            </div>
+          </div>`;
+        filesUl.appendChild(li);
+      }
+      filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b=> b.onclick=()=>reindexOne(b.dataset.name));
+      filesUl.querySelectorAll('button[data-act="delete"]').forEach(b=> b.onclick=()=>deleteOne(b.dataset.name));
+    }
+
+    async function reindexAll(){
+      await fetch(API + "/api/uploads/reindex", { method:"POST", headers: authHeader(), body: JSON.stringify({ objectName: null }) });
+      await refreshStatus();
+    }
+    async function reindexOne(name){
+      await fetch(API + "/api/uploads/reindex", { method:"POST", headers: authHeader(), body: JSON.stringify({ objectName: name }) });
+      await refreshStatus();
+    }
+    async function deleteOne(name){
+      if(!confirm("Ta bort filen?")) return;
+      await fetch(API + "/api/uploads/file", { method:"DELETE", headers: authHeader(), body: JSON.stringify({ objectName: name }) });
+      await refreshStatus();
+    }
+
+    async function upload(){
+      const files = document.getElementById("file").files;
+      if(!files || files.length===0) return;
+      for(const f of files){
+        const li = document.createElement("li");
+        li.textContent = `Laddar upp ${f.name}…`;
+        logUl.appendChild(li);
+
+        const start = await fetch(API + "/api/uploads/start", {
+          method:"POST", headers: authHeader(),
+          body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
+        });
+        const sdata = await start.json();
+        if(!start.ok){ li.textContent = `Fel: ${sdata}`; continue; }
+
+        const put = await fetch(sdata.uploadUrl, {
+          method: "PUT",
+          headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": f.type || "application/octet-stream" },
+          body: f
+        });
+        if(!put.ok){ li.textContent = `Fel vid PUT`; continue; }
+
+        const complete = await fetch(API + "/api/uploads/complete", {
+          method:"POST", headers: authHeader(),
+          body: JSON.stringify({ objectName: sdata.objectName, sizeBytes: f.size, contentType: f.type || "application/octet-stream" })
+        });
+        if(!complete.ok){ li.textContent = `Fel vid complete`; continue; }
+
+        li.innerHTML = `<span class="ok">✔</span> Klar: ${f.name}`;
+      }
+      await refreshStatus();
+    }
+
+    document.getElementById("loginBtn").onclick = login;
+    document.getElementById("logoutBtn").onclick = logout;
+    document.getElementById("refreshBtn").onclick = refreshStatus;
+    document.getElementById("uploadBtn").onclick = upload;
+    document.getElementById("reindexAllBtn").onclick = reindexAll;
+
+    (async function boot(){
+      if(localStorage.getItem(tokenKey) && localStorage.getItem(customerKey)){
+        loginCard.classList.add("hidden");
+        app.classList.remove("hidden");
+        who.textContent = `Inloggad (${localStorage.getItem(customerKey)})`;
+        successLink.href = "success.html?cid=" + encodeURIComponent(localStorage.getItem(customerKey));
+        await refreshStatus();
+      }
+    })();
+  </script>
+</body>
+</html>

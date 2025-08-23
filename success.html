@@ -60,7 +60,7 @@
     <div class="card glass">
       <h2>Hantera betalning</h2>
       <div class="grid grid-auto-2auto">
-        <button id="portal" class="btn primary">Öppna kundportal</button>
+        <button id="portal" class="btn primary" type="button">Öppna kundportal</button>
         <a class="btn secondary" href="admin.html">Ladda upp dokument i Admin</a>
       </div>
       <p class="muted" id="status"></p>
@@ -69,47 +69,83 @@
 
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
-<script>
+  <script>
   (async function () {
     const qs = new URLSearchParams(location.search);
     const cid = qs.get("cid") || qs.get("customerId");
     const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
 
     const warn = document.getElementById("warn");
+
+    // Alltid: koppla portal-knappen
+    const portalBtn = document.getElementById("portal");
+    if (portalBtn) {
+      portalBtn.onclick = async () => {
+        try {
+          const res = await fetch(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid || "")}`);
+          const d = await res.json();
+          if (res.ok && d.url) location.href = d.url; else alert("Kunde inte öppna kundportalen.");
+        } catch {
+          alert("Nätverksfel mot portalen.");
+        }
+      };
+    }
+
     if (!cid) {
       warn.classList.remove("hidden");
-      warn.innerHTML = "<strong>Saknar kund-ID.</strong> Den här sidan öppnas normalt av Stripe med parametern <code>?cid=…</code>.";
+      warn.innerHTML = "<strong>Saknar kund-ID.</strong> Den här sidan öppnas normalt av Stripe med ?cid=…";
       return;
     }
 
-    try{
+    try {
       const r = await fetch(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
       const data = await r.json().catch(()=> ({}));
-      if(!r.ok || !data.snippet){
+
+      if (!r.ok || !data.snippet) {
         warn.classList.remove("hidden");
-        warn.innerHTML = "Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in betalmetod i portalen.";
+        warn.innerHTML = `
+          Din bot är ännu inte aktiverad. Slutför betalningssteget eller lägg in kort.<br/><br/>
+          <div class="grid grid-auto-2auto">
+            <button id="openCheckout" class="btn primary" type="button">Öppna Checkout</button>
+            <button id="openPortal" class="btn secondary" type="button">Öppna kundportal</button>
+          </div>
+        `;
+
+        // koppla knappar som renderades nyss
+        document.getElementById("openCheckout").onclick = async () => {
+          try {
+            const res = await fetch(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+            const d = await res.json();
+            if (res.ok && d.url) location.href = d.url; else alert("Kunde inte öppna Checkout.");
+          } catch { alert("Nätverksfel mot Checkout."); }
+        };
+        document.getElementById("openPortal").onclick = portalBtn?.onclick || null;
         return;
       }
-      // Visa snutten + live-iframe
+
+      // Visa snippet + förhandsvisning
       document.getElementById("snippet").textContent = data.snippet;
       const host = document.getElementById("iframe-host");
       host.innerHTML = "";
-      const iframe = document.createElement("iframe");
-      // (data.snippet innehåller redan src – vi gör en enkel parse)
       const m = data.snippet.match(/src="([^"]+)"/i);
+      const iframe = document.createElement("iframe");
       iframe.src = m ? m[1] : "";
       iframe.title = "BotJahl förhandsvisning";
       host.appendChild(iframe);
 
       document.getElementById("copy").onclick = async () => {
-        await navigator.clipboard.writeText(data.snippet);
-        const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
+        try {
+          await navigator.clipboard.writeText(data.snippet);
+          const s = document.getElementById("status");
+          s.textContent = "Kodsnutt kopierad!";
+          setTimeout(()=> s.textContent = "", 2500);
+        } catch { alert("Kunde inte kopiera till urklipp."); }
       };
-    }catch{
+    } catch {
       warn.classList.remove("hidden");
       warn.textContent = "Nätverksfel – försök igen.";
     }
   })();
-</script>
+  </script>
 </body>
 </html>
