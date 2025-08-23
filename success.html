@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BotJahl – Klart! Din bot är igång</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#f9fafb;--fg:#0f172a;--muted:#64748b;--card:#fff;--ok:#16a34a;--btn:#2563eb}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:960px;margin:32px auto;padding:0 16px}
+    h1{margin:0 0 8px} p{margin:6px 0;color:var(--muted)}
+    .card{background:var(--card);border-radius:16px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px;margin-top:16px}
+    pre{background:#f3f4f6;padding:12px;border-radius:10px;overflow:auto}
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+    iframe{width:100%;height:640px;border:0;border-radius:12px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+    .btn{appearance:none;border:0;border-radius:10px;padding:10px 14px;color:#fff;background:var(--btn);cursor:pointer}
+    .btn.secondary{background:#334155}
+    .note{font-size:13px;color:var(--muted)}
+    .ok{color:var(--ok);font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎉 Klart! Din provperiod har startat</h1>
+    <p>Här är din färdiga kodsnutt och en live-förhandsvisning. Klistra in snutten på din hemsida så är du igång.</p>
+
+    <div id="warn" class="card" style="display:none"></div>
+
+    <div class="card">
+      <h2>1) Kodsnutt att klistra in</h2>
+      <pre><code id="snippet">Laddar…</code></pre>
+      <p class="note">Tips: lägg snutten där du vill att chatten ska visas. Du kan alltid byta kund-ID eller API-adress senare.</p>
+    </div>
+
+    <div class="card">
+      <h2>2) Live-förhandsvisning</h2>
+      <div id="iframe-host"><p>Laddar widget…</p></div>
+    </div>
+
+    <div class="card">
+      <h2>Hantera betalning</h2>
+      <div class="row">
+        <button id="portal" class="btn">Öppna kundportal</button>
+        <button id="copy" class="btn secondary">Kopiera kodsnutt</button>
+      </div>
+      <p class="note">Kundportalen låter dig uppdatera betalmetod och fakturauppgifter.</p>
+      <p class="ok" id="status"></p>
+    </div>
+  </div>
+
+  <script>
+    (async function () {
+      const qs = new URLSearchParams(location.search);
+      const cid = qs.get("cid") || qs.get("customerId");
+      const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+      const WIDGET = "https://filipwestjahl.github.io/ai-chatbot-frontend/";
+
+      const warn = document.getElementById("warn");
+      if (!cid) {
+        warn.style.display = "block";
+        warn.innerHTML = "<strong>Saknar kund-ID.</strong> Den här sidan ska öppnas av Stripe med parametern <code>?cid=…</code>.";
+        return;
+      }
+
+      // Bygg snippet
+      const iframeSrc = `${WIDGET}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}`;
+      const snippet = `<iframe src="${iframeSrc}" style="width:100%;height:680px;border:0;border-radius:12px"></iframe>`;
+      document.getElementById("snippet").textContent = snippet;
+
+      // Visa live-iframe
+      const host = document.getElementById("iframe-host");
+      host.innerHTML = "";
+      const iframe = document.createElement("iframe");
+      iframe.src = iframeSrc + "&debug=1";
+      host.appendChild(iframe);
+
+      // Kopiera-knapp
+      document.getElementById("copy").onclick = async () => {
+        await navigator.clipboard.writeText(snippet);
+        document.getElementById("status").textContent = "Kodsnutt kopierad!";
+        setTimeout(()=>document.getElementById("status").textContent="", 2500);
+      };
+
+      // Kundportal-länk
+      document.getElementById("portal").onclick = async () => {
+        try {
+          const r = await fetch(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+          const data = await r.json();
+          if (r.ok && data.url) window.location.href = data.url;
+          else alert("Kunde inte hämta kundportal-länk.");
+        } catch (e) { alert("Nätverksfel vid hämtning av kundportal-länk."); }
+      };
+    })();
+  </script>
+</body>
+</html>
