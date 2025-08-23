@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BotJahl – Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#f9fafb;--fg:#0f172a;--muted:#64748b;--card:#fff;--btn:#2563eb}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:980px;margin:28px auto;padding:0 16px}
+    .card{background:var(--card);border-radius:16px;box-shadow:0 10px 30px rgba(2,6,23,.08);padding:18px;margin-top:16px}
+    h1{margin:0 0 8px} .muted{color:var(--muted)}
+    input,button{font:inherit} input{padding:10px;border:1px solid #cbd5e1;border-radius:10px;width:100%}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{appearance:none;border:0;border-radius:10px;padding:10px 14px;color:#fff;background:var(--btn);cursor:pointer}
+    .file{padding:10px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc}
+    ul{margin:8px 0 0;padding-left:18px}
+    li{margin:4px 0}
+    .right{display:flex;justify-content:flex-end;gap:8px}
+    .ok{color:#16a34a} .warn{color:#b45309}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>BotJahl – Admin</h1>
+    <p class="muted">Logga in med ditt kund-ID och e-post. Ladda sedan upp PDF/DOCX för att träna boten.</p>
+
+    <div id="login-card" class="card">
+      <h2>Logga in</h2>
+      <div class="row">
+        <div><label>Kund-ID</label><input id="cid" placeholder="cxxxxxx" /></div>
+        <div><label>E-post</label><input id="email" type="email" placeholder="du@företag.se" /></div>
+      </div>
+      <div class="right" style="margin-top:10px"><button id="loginBtn" class="btn">Logga in</button></div>
+      <p id="loginMsg" class="warn"></p>
+    </div>
+
+    <div id="app" style="display:none">
+      <div class="card">
+        <h2>Uppladdning</h2>
+        <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
+        <div class="right" style="margin-top:10px"><button id="uploadBtn" class="btn">Ladda upp</button></div>
+        <ul id="log"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Dina filer</h2>
+        <button id="refreshBtn" class="btn">Uppdatera lista</button>
+        <ul id="files"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Session</h2>
+        <button id="logoutBtn" class="btn">Logga ut</button>
+        <p class="muted" id="who"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+
+    const qs = new URLSearchParams(location.search);
+    if (qs.get("cid")) document.getElementById("cid").value = qs.get("cid");
+
+    const tokenKey = "botjahl.portal.token";
+    const customerKey = "botjahl.portal.customer";
+
+    const loginCard = document.getElementById("login-card");
+    const app = document.getElementById("app");
+    const who = document.getElementById("who");
+    const filesUl = document.getElementById("files");
+    const logUl = document.getElementById("log");
+
+    function setAuth(token, cid) {
+      if (token) localStorage.setItem(tokenKey, token);
+      if (cid) localStorage.setItem(customerKey, cid);
+    }
+    function getToken(){ return localStorage.getItem(tokenKey); }
+    function getCid(){ return localStorage.getItem(customerKey); }
+    function logout(){
+      localStorage.removeItem(tokenKey);
+      localStorage.removeItem(customerKey);
+      app.style.display="none"; loginCard.style.display="block";
+    }
+
+    async function login(){
+      const customerId = document.getElementById("cid").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const msg = document.getElementById("loginMsg");
+      msg.textContent = "";
+      try{
+        const r = await fetch(API + "/api/portal/login", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ customerId, email })
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data || "Felaktiga uppgifter.");
+        setAuth(data.token, customerId);
+        who.textContent = `Inloggad som ${data.customerName} (${customerId})`;
+        loginCard.style.display="none"; app.style.display="block";
+        await refreshFiles();
+      }catch(e){ msg.textContent = e.message || "Kunde inte logga in."; }
+    }
+
+    async function refreshFiles(){
+      filesUl.innerHTML = "<li>Laddar…</li>";
+      const r = await fetch(API + "/api/uploads/files", {
+        headers: { Authorization: "Bearer " + getToken() }
+      });
+      const data = await r.json();
+      filesUl.innerHTML = "";
+      if(!r.ok){ filesUl.innerHTML = "<li class='warn'>Kunde inte hämta filer.</li>"; return; }
+      if(data.length===0){ filesUl.innerHTML = "<li>Inga filer ännu.</li>"; return; }
+      for(const name of data){ const li=document.createElement("li"); li.textContent=name; filesUl.appendChild(li); }
+    }
+
+    async function upload(){
+      const files = document.getElementById("file").files;
+      if(!files || files.length===0) return;
+      for(const f of files){
+        const li = document.createElement("li");
+        li.textContent = `Laddar upp ${f.name}…`;
+        logUl.appendChild(li);
+
+        // start
+        const start = await fetch(API + "/api/uploads/start", {
+          method:"POST",
+          headers: {
+            "Content-Type":"application/json",
+            Authorization: "Bearer " + getToken()
+          },
+          body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
+        });
+        const sdata = await start.json();
+        if(!start.ok){ li.textContent = `Fel: ${sdata}`; continue; }
+
+        // PUT till SAS-url
+        const put = await fetch(sdata.uploadUrl, {
+          method: "PUT",
+          headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": f.type || "application/octet-stream" },
+          body: f
+        });
+        if(!put.ok){ li.textContent = `Fel vid PUT`; continue; }
+
+        // complete
+        const complete = await fetch(API + "/api/uploads/complete", {
+          method:"POST",
+          headers: {
+            "Content-Type":"application/json",
+            Authorization: "Bearer " + getToken()
+          },
+          body: JSON.stringify({ objectName: sdata.objectName, sizeBytes: f.size, contentType: f.type || "application/octet-stream" })
+        });
+        const cdata = await complete.json().catch(()=>({}));
+        if(!complete.ok){ li.textContent = `Fel vid complete`; continue; }
+
+        li.innerHTML = `<span class="ok">✔</span> Klar: ${f.name}`;
+      }
+      await refreshFiles();
+    }
+
+    document.getElementById("loginBtn").onclick = login;
+    document.getElementById("logoutBtn").onclick = logout;
+    document.getElementById("refreshBtn").onclick = refreshFiles;
+    document.getElementById("uploadBtn").onclick = upload;
+
+    // Autoåterställ session om token finns
+    (async function boot(){
+      if(getToken() && getCid()){
+        loginCard.style.display="none"; app.style.display="block";
+        who.textContent = `Inloggad (${getCid()})`;
+        await refreshFiles();
+      }
+    })();
+  </script>
+</body>
+</html>
