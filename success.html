@@ -40,8 +40,10 @@
   </header>
 
   <main class="container grid">
+    <!-- Varnings/åtgärdsruta -->
     <div id="warn" class="card hidden"></div>
 
+    <!-- Snippet -->
     <div class="card glass">
       <h2>1) Kodsnutt att klistra in</h2>
       <pre><code id="snippet">Laddar…</code></pre>
@@ -52,11 +54,13 @@
       </div>
     </div>
 
+    <!-- Live preview -->
     <div class="card glass">
       <h2>2) Live-förhandsvisning</h2>
       <div id="iframe-host" class="iframe-wrapper"><p class="muted">&nbsp;Laddar widget…</p></div>
     </div>
 
+    <!-- Portal/Administration -->
     <div class="card glass">
       <h2>Hantera betalning</h2>
       <div class="grid grid-auto-2auto">
@@ -70,97 +74,99 @@
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
 <script>
+/* ======= Konfig ======= */
+const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+
+/* ======= Hjälpare ======= */
+function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
+async function getJson(url){
+  const res = await fetch(url);
+  const text = await res.text();
+  return { ok: res.ok, status: res.status, data: safeJson(text) };
+}
+function showWarn(html){
+  const w = document.getElementById("warn");
+  w.classList.remove("hidden");
+  w.innerHTML = html;
+}
+
+/* ======= Huvudflöde ======= */
 (async function () {
-  const qs = new URLSearchParams(location.search);
-  const cid = qs.get("cid") || qs.get("customerId");
-  const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-
-  const title = document.getElementById("title");
-  const warn  = document.getElementById("warn");
-  const portalBtn = document.getElementById("portal");
-
-  function showWarn(html){
-    warn.classList.remove("hidden");
-    warn.innerHTML = html;
-  }
+  const qs   = new URLSearchParams(location.search);
+  const cid  = qs.get("cid") || qs.get("customerId");
+  const titleEl = document.getElementById("title");
 
   if (!cid) {
     showWarn("<strong>Saknar kund-ID.</strong> Den här sidan öppnas normalt med ?cid=…");
     return;
   }
 
-  // Status först (för rubrik + ev. knappar)
-  let status;
+  // 1) Försök hämta snippet
+  let snippetRes;
   try {
-    const s = await fetch(`${API}/api/public/status?customerId=${encodeURIComponent(cid)}`);
-    status = await s.json();
-  } catch {
-    // swallow – vi försöker ändå hämta snippet
-  }
-
-  try {
-    const r = await fetch(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
-    const data = await r.json().catch(()=> ({}));
-
-    if (!r.ok || !data.snippet) {
-      title.textContent = "Nästan klart – aktivera din bot";
-      showWarn(`
-        Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
-        <div class="grid grid-auto-2auto">
-          <a id="openCheckout" class="btn primary">Öppna Checkout</a>
-          <a id="openPortal" class="btn secondary">Öppna kundportal</a>
-        </div>
-      `);
-
-      const openCheckout = document.getElementById("openCheckout");
-      const openPortal   = document.getElementById("openPortal");
-
-      openCheckout.onclick = async () => {
-        try {
-          const res = await fetch(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
-          const d   = await res.json();
-          if (res.ok && d.url) location.href = d.url;
-          else alert("Kunde inte öppna Checkout.");
-        } catch { alert("Nätverksfel mot Checkout."); }
-      };
-      openPortal.onclick = async () => {
-        try {
-          const res = await fetch(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-          const d   = await res.json();
-          if (res.ok && d.url) location.href = d.url;
-          else alert("Kunde inte öppna kundportalen.");
-        } catch { alert("Nätverksfel mot portalen."); }
-      };
-      return;
-    }
-
-    // Aktiv: visa snippet + live-iframe
-    title.textContent = "Klart! Din bot är aktiverad";
-    document.getElementById("snippet").textContent = data.snippet;
-
-    const host = document.getElementById("iframe-host");
-    host.innerHTML = "";
-    const m = data.snippet.match(/src="([^"]+)"/i);
-    const iframe = document.createElement("iframe");
-    iframe.src = m ? m[1] : "";
-    host.appendChild(iframe);
-
-    document.getElementById("copy").onclick = async () => {
-      await navigator.clipboard.writeText(data.snippet);
-      const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
-    };
-
+    snippetRes = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
   } catch {
     showWarn("Nätverksfel – försök igen.");
+    return;
   }
 
-  // Portal-knappen nederst
-  portalBtn.onclick = async () => {
+  // 2) Om ingen snippet: visa åtgärder (Checkout/Portal) och ändra rubriken
+  if (!snippetRes.ok || !snippetRes.data.snippet) {
+    titleEl.textContent = "Nästan klart – aktivera din bot";
+    showWarn(`
+      Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
+      <div class="grid grid-auto-2auto">
+        <a id="openCheckout" class="btn primary">Öppna Checkout</a>
+        <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
+      </div>
+    `);
+
+    // Knapparna i varningsrutan
+    const openCheckout = document.getElementById("openCheckout");
+    const openPortal   = document.getElementById("openPortal");
+
+    openCheckout.onclick = async () => {
+      try {
+        const { ok, data } = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+        if (ok && data.url) location.href = data.url;
+        else alert(data.error || "Kunde inte öppna Checkout.");
+      } catch { alert("Nätverksfel mot Checkout."); }
+    };
+    openPortal.onclick = async () => {
+      try {
+        const { ok, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+        if (ok && data.url) location.href = data.url;
+        else alert(data.error || "Kunde inte öppna kundportalen.");
+      } catch { alert("Nätverksfel mot portalen."); }
+    };
+
+    // Avsluta här, resten (snippet/preview) ska inte visas förrän aktiverad
+    return;
+  }
+
+  // 3) Aktiv: rendera snippet + live-iframe och uppdatera rubrik
+  titleEl.textContent = "Klart! Din bot är aktiverad";
+  const snippet = snippetRes.data.snippet;
+  document.getElementById("snippet").textContent = snippet;
+
+  const host = document.getElementById("iframe-host");
+  host.innerHTML = "";
+  const srcMatch = snippet.match(/src="([^"]+)"/i);
+  const iframe = document.createElement("iframe");
+  iframe.src = srcMatch ? srcMatch[1] : "";
+  host.appendChild(iframe);
+
+  document.getElementById("copy").onclick = async () => {
+    await navigator.clipboard.writeText(snippet);
+    const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
+  };
+
+  // 4) Portal-knappen nederst (påverkar oavsett status)
+  document.getElementById("portal").onclick = async () => {
     try {
-      const res = await fetch(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-      const d   = await res.json();
-      if (res.ok && d.url) location.href = d.url;
-      else alert("Kunde inte öppna kundportalen.");
+      const { ok, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+      if (ok && data.url) location.href = data.url;
+      else alert(data.error || "Kunde inte öppna kundportalen.");
     } catch { alert("Nätverksfel mot portalen."); }
   };
 })();
