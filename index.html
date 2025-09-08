@@ -63,7 +63,7 @@
       <div class="iframe-wrapper glass">
         <iframe
           id="botjahl-demo"
-          src="https://filipwestjahl.github.io/ai-chatbot-frontend/?customerId=c26143b&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
+          src="https://westjahlconsulting.github.io/ai-chatbot-frontend/?customerId=c26143b&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
           loading="lazy"
           referrerpolicy="no-referrer"
           sandbox="allow-scripts allow-forms allow-same-origin"
@@ -81,7 +81,7 @@
       <div class="card glass">
         <form id="signup">
           <input name="name" placeholder="Företagsnamn" autocomplete="organization" required />
-          <input name="websiteUrl" placeholder="Webbplats (https://…)" inputmode="url" required />
+          <input name="websiteUrl" placeholder="Webbplats (https://… eller www.dittföretag.se)" inputmode="url" required />
           <input name="email" type="email" placeholder="E-post" autocomplete="email" required />
           <div class="grid grid-1-auto">
             <p class="muted">Du får ett kund-ID och en betalningslänk. Kodsnutten lämnas först när betalmetod är lagd.</p>
@@ -109,11 +109,17 @@
     document.getElementById('signup').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target;
+
+      // 👇 Normalisera websiteUrl så vi slipper "Failed to fetch" pga UriFormatException i backend
+      let url = f.websiteUrl.value.trim();
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
       const body = {
         name: f.name.value.trim(),
-        websiteUrl: f.websiteUrl.value.trim(),
+        websiteUrl: url,
         email: f.email.value.trim()
       };
+
       const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
       const out = document.getElementById('signup-result');
       out.innerHTML = `<span class="muted">Skapar bot…</span>`;
@@ -130,11 +136,11 @@
           // Företaget finns redan – visa ALDRIG snippet här.
           out.innerHTML = `
             <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
+            ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
             <div class="grid grid-auto-2auto">
-              <a class="btn primary" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
               <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
+              <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
             </div>
-            <p class="muted">Kodsnutten lämnas endast när betalmetod är lagd. Om du redan har slutfört checkout kan du hämta den via ”Hämta kodsnutt”.</p>
           `;
           return;
         }
@@ -144,15 +150,12 @@
           return;
         }
 
-        // 200 OK – ny kund. Visa ALDRIG snippet här. Endast checkout-länk + vägledning.
+        // 200 OK – ny kund. Visa bara checkout-länk + instruktion.
         const cid = data.customerId;
         out.innerHTML = `
           <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
-          ${data.checkoutUrl ? `
-            <p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>
-          ` : `
-            <p class="warn">Kunde inte skapa Checkout-länk just nu. Försök igen eller kontakta support.</p>
-          `}
+          ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>` :
+            `<p class="warn">Kunde inte skapa Checkout-länk just nu. Försök igen om en stund.</p>`}
           <p class="muted">
             När du har lagt in betalmetod kan du hämta din kodsnutt här:
             <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
@@ -160,7 +163,7 @@
           </p>
         `;
       }catch(err){
-        out.innerHTML = `<p class="warn">Nätverksfel: ${err.message||"okänt fel"}</p>`;
+        out.innerHTML = `<p class="warn">Nätverksfel: ${err.message || "okänt fel"}</p>`;
       }
     });
   </script>
