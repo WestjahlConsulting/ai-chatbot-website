@@ -144,18 +144,18 @@
     const presetCid = qs.get("cid");
     if (presetCid) document.getElementById("cid").value = presetCid;
 
-    const tokenKey   = "botjahl.portal.token";
-    const customerKey= "botjahl.portal.customer";
+    const tokenKey    = "botjahl.portal.token";
+    const customerKey = "botjahl.portal.customer";
 
-    const loginCard  = document.getElementById("login-card");
-    const app        = document.getElementById("app");
-    const who        = document.getElementById("who");
-    const filesUl    = document.getElementById("files");
-    const logUl      = document.getElementById("log");
-    const successLink= document.getElementById("successLink");
+    const loginCard   = document.getElementById("login-card");
+    const app         = document.getElementById("app");
+    const who         = document.getElementById("who");
+    const filesUl     = document.getElementById("files");
+    const logUl       = document.getElementById("log");
+    const successLink = document.getElementById("successLink");
 
-    const loading    = document.getElementById("loading");
-    const loadingText= document.getElementById("loadingText");
+    const loading     = document.getElementById("loading");
+    const loadingText = document.getElementById("loadingText");
     function showLoading(text){ if(text) loadingText.textContent = text; loading.classList.add("show"); }
     function hideLoading(){ loading.classList.remove("show"); }
 
@@ -188,13 +188,32 @@
       const headers = Object.assign({}, opts.headers || {});
       const tok = getToken();
       if (tok) headers.Authorization = "Bearer " + tok;
-      // Sätt Content-Type om body är string och inget satt
       if (!headers["Content-Type"] && typeof opts.body === "string") {
         headers["Content-Type"] = "application/json";
       }
       const res = await fetch(API + path, { ...opts, headers });
       const data = await readBody(res);
       return { res, data };
+    }
+
+    // === Status-hjälpare + auto-poll ===
+    async function getStatus(){
+      const { res, data } = await api("/api/uploads/status");
+      if (!res.ok) return [];
+      return Array.isArray(data) ? data : [];
+    }
+
+    async function pollUntilIndexed(objectNames, timeout=20000, interval=1200){
+      const deadline = Date.now() + timeout;
+      while(Date.now() < deadline){
+        const list = await getStatus();
+        const done = objectNames.every(n => list.find(x => x.objectName === n)?.indexed);
+        if (done) { await refreshStatus(); return true; }
+        await new Promise(r => setTimeout(r, interval));
+      }
+      // Timeout – visa ändå aktuell status
+      await refreshStatus();
+      return false;
     }
 
     // === Login ===
@@ -223,7 +242,7 @@
 
         setAuth(data.token, customerId);
 
-        // Ren omladdning (tar bort ev. gammal state)
+        // Ren omladdning
         const url = new URL(location.href);
         url.searchParams.set("cid", customerId);
         url.searchParams.set("logged", "1");
@@ -286,14 +305,21 @@
 
     // === Reindex ===
     async function reindexAll(){
+      // Ta en snapshot av vilka objekt som finns nu
+      const before = await getStatus();
+      const names = before.map(d => d.objectName);
+
       const { res, data } = await api("/api/uploads/reindex", {
         method: "POST",
         body: JSON.stringify({ objectName: null })
       });
       if (res.status === 401) return logout();
       if (!res.ok) alert(typeof data === "string" ? data : "Kunde inte starta reindex.");
-      await refreshStatus();
+
+      // Polla tills allt är indexerat
+      await pollUntilIndexed(names);
     }
+
     async function reindexOne(name){
       const { res, data } = await api("/api/uploads/reindex", {
         method: "POST",
@@ -301,7 +327,7 @@
       });
       if (res.status === 401) return logout();
       if (!res.ok) alert(typeof data === "string" ? data : "Kunde inte reindexera filen.");
-      await refreshStatus();
+      await pollUntilIndexed([name]);
     }
 
     // === Delete ===
@@ -321,16 +347,24 @@
       const files = document.getElementById("file").files;
       if(!files || files.length===0) return;
 
+      const uploadedObjectNames = [];
+
       for (const f of files){
         const li = document.createElement("li");
         li.textContent = `Laddar upp ${f.name}…`;
         logUl.appendChild(li);
 
         // 1) Start
-        let start = await api("/api/uploads/start", {
-          method:"POST",
-          body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
-        });
+        let start;
+        try{
+          start = await api("/api/uploads/start", {
+            method:"POST",
+            body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
+          });
+        }catch(err){
+          li.textContent = `Nätverksfel (start): ${err?.message || err}`;
+          continue;
+        }
         if (start.res.status === 401) { logout(); return; }
         if (!start.res.ok || !start.data || !start.data.uploadUrl){
           li.textContent = `Fel vid start: ${typeof start.data === "string" ? start.data : "okänt fel"}`;
@@ -338,34 +372,49 @@
         }
 
         // 2) PUT till SAS
-        const put = await fetch(start.data.uploadUrl, {
-          method: "PUT",
-          headers: { "x-ms-blob-type":"BlockBlob", "Content-Type": f.type || "application/octet-stream" },
-          body: f
-        });
-        if (!put.ok){
-          li.textContent = `Fel vid PUT: ${put.status}`;
+        try{
+          const put = await fetch(start.data.uploadUrl, {
+            method: "PUT",
+            headers: { "x-ms-blob-type":"BlockBlob", "Content-Type": f.type || "application/octet-stream" },
+            body: f
+          });
+          if (!put.ok){
+            li.textContent = `Fel vid PUT: ${put.status}`;
+            continue;
+          }
+        }catch(err){
+          li.textContent = `Nätverksfel (PUT): ${err?.message || err}`;
           continue;
         }
 
         // 3) Complete
-        const comp = await api("/api/uploads/complete", {
-          method:"POST",
-          body: JSON.stringify({
-            objectName: start.data.objectName,
-            sizeBytes: f.size,
-            contentType: f.type || "application/octet-stream"
-          })
-        });
-        if (!comp.res.ok){
-          li.textContent = `Fel vid complete: ${typeof comp.data === "string" ? comp.data : "okänt fel"}`;
+        try{
+          const comp = await api("/api/uploads/complete", {
+            method:"POST",
+            body: JSON.stringify({
+              objectName: start.data.objectName,
+              sizeBytes: f.size,
+              contentType: f.type || "application/octet-stream"
+            })
+          });
+          if (!comp.res.ok){
+            li.textContent = `Fel vid complete: ${typeof comp.data === "string" ? comp.data : "okänt fel"}`;
+            continue;
+          }
+        }catch(err){
+          li.textContent = `Nätverksfel (complete): ${err?.message || err}`;
           continue;
         }
 
+        uploadedObjectNames.push(start.data.objectName);
         li.innerHTML = `<span class="ok">✔</span> Klar: ${f.name}`;
       }
 
-      await refreshStatus();
+      if (uploadedObjectNames.length){
+        await pollUntilIndexed(uploadedObjectNames);
+      }else{
+        await refreshStatus();
+      }
     }
 
     // === Event hooks ===
