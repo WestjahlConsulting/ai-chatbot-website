@@ -9,26 +9,15 @@
   <link rel="stylesheet" href="site.css">
   <style>
     .hidden { display: none !important; }
+    .banner{border-radius:12px;padding:10px 14px;margin:10px 0}
+    .banner.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .banner.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .warn{color:#b45309}
     /* Loader overlay */
-    .loader-backdrop {
-      position: fixed; inset: 0; z-index: 60;
-      background: rgba(15,23,42,.55); backdrop-filter: blur(3px);
-      display: none; align-items: center; justify-content: center;
-    }
+    .loader-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(15,23,42,.55); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; }
     .loader-backdrop.show { display:flex; }
-    .loader-card{
-      background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(250,253,255,.92));
-      border: 1px solid rgba(2,6,23,.08);
-      border-radius: 16px;
-      padding: 22px 26px; min-width: 280px;
-      box-shadow: 0 10px 30px rgba(2,6,23,.18);
-      display: grid; gap: 10px; justify-items: center; text-align: center;
-    }
-    .spinner {
-      width: 38px; height: 38px; border-radius: 50%;
-      border: 4px solid #e5e7eb; border-top-color: #60a5fa;
-      animation: spin 0.9s linear infinite;
-    }
+    .loader-card{ background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(250,253,255,.92)); border: 1px solid rgba(2,6,23,.08); border-radius: 16px; padding: 22px 26px; min-width: 280px; box-shadow: 0 10px 30px rgba(2,6,23,.18); display: grid; gap: 10px; justify-items: center; text-align: center; }
+    .spinner { width: 38px; height: 38px; border-radius: 50%; border: 4px solid #e5e7eb; border-top-color: #60a5fa; animation: spin 0.9s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loader-text { font-weight: 600; color: #0b1220; }
     .loader-sub  { font-size: 13px; color: #6b7280; }
@@ -65,8 +54,7 @@
     <h1>Träna och hantera din bot</h1>
     <p class="muted">
       Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
-      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
-      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+      Ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
     </p>
   </header>
 
@@ -84,7 +72,7 @@
         <a class="btn secondary" href="index.html">Till startsidan</a>
       </div>
 
-      <p id="loginMsg" class="warn"></p>
+      <p id="loginMsg" class="banner err hidden" role="alert"></p>
     </div>
 
     <!-- APP -->
@@ -178,7 +166,7 @@
       if (!text) return null;
       const ct = (res.headers.get("content-type") || "").toLowerCase();
       if (ct.includes("application/json")) {
-        try { return JSON.parse(text); } catch { /* fall-through */ }
+        try { return JSON.parse(text); } catch {}
       }
       return text; // plain text
     }
@@ -196,6 +184,12 @@
       return { res, data };
     }
 
+    function showLoginError(msg){
+      const el = document.getElementById("loginMsg");
+      el.textContent = msg || "Kunde inte logga in.";
+      el.classList.remove("hidden");
+    }
+
     // === Status-hjälpare + auto-poll ===
     async function getStatus(){
       const { res, data } = await api("/api/uploads/status");
@@ -211,7 +205,6 @@
         if (done) { await refreshStatus(); return true; }
         await new Promise(r => setTimeout(r, interval));
       }
-      // Timeout – visa ändå aktuell status
       await refreshStatus();
       return false;
     }
@@ -220,8 +213,7 @@
     async function login(){
       const customerId = document.getElementById("cid").value.trim();
       const email = document.getElementById("email").value.trim();
-      const msg = document.getElementById("loginMsg");
-      msg.textContent = "";
+      document.getElementById("loginMsg").classList.add("hidden");
 
       try{
         showLoading("Loggar in…");
@@ -249,7 +241,7 @@
         location.replace(url.toString());
       }catch(e){
         hideLoading();
-        msg.textContent = e.message || "Kunde inte logga in.";
+        showLoginError(e.message);
       }
     }
 
@@ -284,11 +276,7 @@
               <div><strong>${(it.objectName || "").split('/').pop()}</strong></div>
               <div class="muted" style="font-size:13px">
                 ${it.contentType || "okänd"} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
-                ${
-                  it.indexed
-                    ? ` • <span class="ok">indexerad</span> ${it.indexedAtUtc ? '('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}`
-                    : ' • <span class="warn">ej indexerad</span>'
-                }
+                ${ it.indexed ? ` • <span class="ok">indexerad</span> ${it.indexedAtUtc ? '('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}` : ' • <span class="warn">ej indexerad</span>' }
               </div>
             </div>
             <div class="row">
@@ -305,7 +293,6 @@
 
     // === Reindex ===
     async function reindexAll(){
-      // Ta en snapshot av vilka objekt som finns nu
       const before = await getStatus();
       const names = before.map(d => d.objectName);
 
@@ -315,8 +302,6 @@
       });
       if (res.status === 401) return logout();
       if (!res.ok) alert(typeof data === "string" ? data : "Kunde inte starta reindex.");
-
-      // Polla tills allt är indexerat
       await pollUntilIndexed(names);
     }
 
@@ -423,11 +408,7 @@
     document.getElementById("refreshBtn").onclick = refreshStatus;
     document.getElementById("uploadBtn").onclick  = upload;
     document.getElementById("reindexAllBtn").onclick = reindexAll;
-
-    // Enter-tangent på e-postfältet loggar in
-    document.getElementById("email").addEventListener("keydown", (e)=>{
-      if (e.key === "Enter") login();
-    });
+    document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
 
     // === Boot ===
     (async function boot(){

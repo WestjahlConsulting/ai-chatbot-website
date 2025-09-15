@@ -80,7 +80,7 @@ const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsit
 /* ======= Hjälpare ======= */
 function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
 async function getJson(url){
-  const res = await fetch(url);
+  const res = await fetch(url, { method: 'GET' }); // ingen credentials behövs
   const text = await res.text();
   return { ok: res.ok, status: res.status, data: safeJson(text) };
 }
@@ -105,7 +105,8 @@ function showWarn(html){
   let snippetRes;
   try {
     snippetRes = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
-  } catch {
+  } catch (e) {
+    console.error(e);
     showWarn("Nätverksfel – försök igen.");
     return;
   }
@@ -127,16 +128,22 @@ function showWarn(html){
 
     openCheckout.onclick = async () => {
       try {
-        const { ok, data } = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+        const { ok, status, data } = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
         if (ok && data.url) location.href = data.url;
-        else alert(data.error || "Kunde inte öppna Checkout.");
+        else {
+          console.error('Checkout-link failed', status, data);
+          alert((data && (data.error || data.message)) || "Kunde inte öppna Checkout.");
+        }
       } catch { alert("Nätverksfel mot Checkout."); }
     };
     openPortal.onclick = async () => {
       try {
-        const { ok, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+        const { ok, status, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
         if (ok && data.url) location.href = data.url;
-        else alert(data.error || "Kunde inte öppna kundportalen.");
+        else {
+          console.error('Portal-link failed', status, data);
+          alert((data && (data.error || data.message)) || "Kunde inte öppna kundportalen.");
+        }
       } catch { alert("Nätverksfel mot portalen."); }
     };
 
@@ -164,9 +171,12 @@ function showWarn(html){
   // 4) Portal-knappen nederst (påverkar oavsett status)
   document.getElementById("portal").onclick = async () => {
     try {
-      const { ok, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+      const { ok, status, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
       if (ok && data.url) location.href = data.url;
-      else alert(data.error || "Kunde inte öppna kundportalen.");
+      else {
+        console.error('Portal-link failed', status, data);
+        alert((data && (data.error || data.message)) || "Kunde inte öppna kundportalen.");
+      }
     } catch { alert("Nätverksfel mot portalen."); }
   };
 })();

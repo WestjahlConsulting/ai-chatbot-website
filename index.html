@@ -4,9 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>BotJahl – AI-chattbot för din hemsida</title>
-  <meta name="description" content="BotJahl är en AI-chattbot som du enkelt bäddar in på din webbplats. Starta gratis i 14 dagar – plug-in & run.">
+  <meta name="description" content="BotJahl är en AI-chattbot som du bäddar in på din webbplats. Starta gratis i 14 dagar – laddas med dina dokument.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
+  <style>
+    .note{font-size:13px;color:#64748b}
+    .warn{color:#b45309}
+    .ok{color:#16a34a}
+    .banner{border-radius:12px;padding:10px 14px;margin:10px 0}
+    .banner.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .banner.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .small{font-size:12px}
+  </style>
 </head>
 <body>
 
@@ -41,7 +50,7 @@
       <div class="card glass">
         <span class="badge">Plug-in & run</span>
         <h1>AI-chattbot som svarar med ditt innehåll</h1>
-        <p class="muted">Bädda in på din webbplats på några minuter. Träna boten med dina PDF:er, DOCX eller webbsidor. Starta gratis i 14 dagar – ingen kod krävs.</p>
+        <p class="muted">Bädda in på din webbplats på minuter. Ladda upp PDF/DOCX/TXT/MD eller indexera webbsidor. 14 dagars provperiod.</p>
         <div class="grid grid-2">
           <a class="btn primary" href="#starta">Starta gratis</a>
           <a class="btn ghost" href="admin.html">Logga in i portalen</a>
@@ -49,8 +58,8 @@
       </div>
       <div class="card">
         <div class="feature"><span class="dot"></span><div><strong>Enkelt att installera</strong><div class="muted">Kopiera en färdig &lt;iframe&gt;-kod.</div></div></div>
-        <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Ladda upp dokument – vi indexerar automatiskt.</div></div></div>
-        <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Provperiod 14 dagar, trygg kortbetalning via Stripe.</div></div></div>
+        <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Uppladdning → indexering → klart.</div></div></div>
+        <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Kortbetalning via Stripe. Avbryt när som helst.</div></div></div>
       </div>
     </div>
   </header>
@@ -58,8 +67,8 @@
   <!-- DEMO -->
   <section id="demo">
     <div class="container">
-      <h2>Testa BotJahl direkt</h2>
-      <p class="muted">Demot är kopplat till vår testkund. Fråga vad boten kan hjälpa till med.</p>
+      <h2>Testa BotJahl</h2>
+      <p class="muted">Demot är kopplat till vår testkund.</p>
       <div class="iframe-wrapper glass">
         <iframe
           id="botjahl-demo"
@@ -79,17 +88,18 @@
     <div class="container">
       <h2>Starta gratis i 14 dagar</h2>
       <div class="card glass">
-        <form id="signup">
+        <form id="signup" autocomplete="on">
           <input name="name" placeholder="Företagsnamn" autocomplete="organization" required />
           <input name="websiteUrl" placeholder="Webbplats (https://… eller www.dittföretag.se)" inputmode="url" required />
           <input name="email" type="email" placeholder="E-post" autocomplete="email" required />
           <div class="grid grid-1-auto">
-            <p class="muted">Du får ett kund-ID och en betalningslänk. Kodsnutten lämnas först när betalmetod är lagd.</p>
+            <p class="muted">Du får ett kund-ID och en betalningslänk. Kodsnutten lämnas efter att betalmetod lagts in.</p>
             <button class="btn primary" type="submit">Skapa min bot</button>
           </div>
         </form>
         <div id="signup-result"></div>
       </div>
+      <p class="small note">Redan kund? <a href="admin.html">Logga in i Admin</a> eller hämta kodsnutt via <a href="success.html">success-sidan</a>.</p>
     </div>
   </section>
 
@@ -97,7 +107,7 @@
   <section>
     <div class="container">
       <h2>Frågor?</h2>
-      <p class="muted">Maila oss: <a href="mailto:faijahl75@gmail.com">faijahl75@gmail.com</a> eller <a href="admin.html">logga in i portalen</a> om du redan är kund.</p>
+      <p class="muted">Maila: <a href="mailto:faijahl75@gmail.com">faijahl75@gmail.com</a></p>
     </div>
   </section>
 
@@ -106,11 +116,17 @@
   </footer>
 
   <script>
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    const out = document.getElementById('signup-result');
+
+    function okBanner(html){ return `<div class="banner ok">${html}</div>`; }
+    function errBanner(html){ return `<div class="banner err">${html}</div>`; }
+
     document.getElementById('signup').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target;
 
-      // 👇 Normalisera websiteUrl så vi slipper "Failed to fetch" pga UriFormatException i backend
+      // Normalisera websiteUrl
       let url = f.websiteUrl.value.trim();
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
@@ -120,9 +136,7 @@
         email: f.email.value.trim()
       };
 
-      const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-      const out = document.getElementById('signup-result');
-      out.innerHTML = `<span class="muted">Skapar bot…</span>`;
+      out.innerHTML = `<span class="note">Skapar bot…</span>`;
 
       try{
         const res = await fetch(API + "/api/public/signup", {
@@ -132,38 +146,43 @@
         });
         const data = await res.json().catch(() => ({}));
 
+        // 409 = redan finns
         if (res.status === 409 && data.customerId) {
-          // Företaget finns redan – visa ALDRIG snippet här.
-          out.innerHTML = `
+          out.innerHTML = okBanner(`
             <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
             ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
             <div class="grid grid-auto-2auto">
               <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
               <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
             </div>
-          `;
+          `);
           return;
         }
 
         if (!res.ok) {
-          out.innerHTML = `<p class="warn">Något gick fel. Testa igen.</p>`;
+          out.innerHTML = errBanner(`Något gick fel. Försök igen om en stund.`);
           return;
         }
 
-        // 200 OK – ny kund. Visa bara checkout-länk + instruktion.
+        // 200 OK – ny kund
         const cid = data.customerId;
-        out.innerHTML = `
+        out.innerHTML = okBanner(`
           <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
-          ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>` :
-            `<p class="warn">Kunde inte skapa Checkout-länk just nu. Försök igen om en stund.</p>`}
-          <p class="muted">
-            När du har lagt in betalmetod kan du hämta din kodsnutt här:
+          ${
+            data.checkoutUrl
+              ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
+              : `<p class="warn">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
+          }
+          <p class="note">
+            Efter att betalmetod lagts in kan du hämta din kodsnutt här:
             <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
             eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
           </p>
-        `;
+        `);
+        // Scrolla till resultatet på mobil
+        out.scrollIntoView({ behavior: "smooth", block: "start" });
       }catch(err){
-        out.innerHTML = `<p class="warn">Nätverksfel: ${err.message || "okänt fel"}</p>`;
+        out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
       }
     });
   </script>
