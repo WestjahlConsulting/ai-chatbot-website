@@ -37,23 +37,23 @@
 
   <header class="page container">
     <h1 id="title">Klart! Din provperiod har startat</h1>
-    <p class="muted">Här är din kodsnutt och en live-förhandsvisning. Klistra in snutten på din webbplats.</p>
+    <p class="muted">Här är din kodsnutt och – om du inte är aktiverad än – en tillfällig förhandsvisning.</p>
   </header>
 
   <main class="container grid">
     <!-- Varnings/åtgärdsruta (visas när ej aktiverad) -->
     <div id="warn" class="card hidden"></div>
 
-    <!-- Förhandsvisning när EJ aktiverad (5 frågor) -->
+    <!-- Förhandsvisning när EJ aktiverad (10 frågor) -->
     <div id="previewFreeCard" class="card glass hidden">
       <h2>Testa boten – förhandsvisning</h2>
-      <p class="muted small">Förhandsvisningen hämtar innehåll från din angivna webbplats. Du kan ställa upp till <strong>5 frågor</strong> här. Aktivera genom att slutföra Checkout för obegränsad användning och uppladdning av dokument.</p>
+      <p class="muted small">Förhandsvisningen hämtar innehåll från din angivna webbplats. Du kan ställa upp till <strong>10 frågor</strong> här. När boten är aktiverad slutar förhandsvisningen fungera här.</p>
       <div id="preview-host" class="iframe-wrapper"><p class="muted">&nbsp;Laddar widget…</p></div>
     </div>
 
     <!-- Snippet (visas när aktiverad) -->
     <div id="snippetCard" class="card glass hidden">
-      <h2>1) Kodsnutt att klistra in</h2>
+      <h2>Kodsnutt att klistra in</h2>
       <pre><code id="snippet">Laddar…</code></pre>
       <div class="grid grid-1-2auto">
         <p class="muted">Placera där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
@@ -62,11 +62,7 @@
       </div>
     </div>
 
-    <!-- Live preview (visas när aktiverad, använder snutten) -->
-    <div id="previewCard" class="card glass hidden">
-      <h2>2) Live-förhandsvisning</h2>
-      <div id="iframe-host" class="iframe-wrapper"><p class="muted">&nbsp;Laddar widget…</p></div>
-    </div>
+    <!-- OBS: ingen "aktiv"-preview längre -->
 
     <!-- Portal/Administration -->
     <div class="card glass">
@@ -96,19 +92,7 @@ function renderActive(snippet){
   document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
   document.getElementById("snippet").textContent = snippet;
   document.getElementById("snippetCard").classList.remove("hidden");
-  document.getElementById("previewCard").classList.remove("hidden");
-
-  const host = document.getElementById("iframe-host");
-  host.innerHTML = "";
-  const srcMatch = snippet.match(/src="([^"]+)"/i);
-  const iframe = document.createElement("iframe");
-  iframe.src = srcMatch ? srcMatch[1] : "";
-  host.appendChild(iframe);
-
-  document.getElementById("copy").onclick = async () => {
-    await navigator.clipboard.writeText(snippet);
-    const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
-  };
+  // Ingen aktiv preview här – endast snippeten visas
 }
 
 function renderPreviewOnly(cid){
@@ -140,7 +124,7 @@ function renderPreviewOnly(cid){
   // 3) Försök igen
   if (await tryLoadSnippet()) return;
 
-  // 4) Visa åtgärder + statusdiagnos + FÖRHANDSVISNING (5 frågor)
+  // 4) Visa åtgärder + statusdiagnos + FÖRHANDSVISNING (10 frågor)
   renderPreviewOnly(cid);
 
   const st = await getJson(`${API}/api/public/status?customerId=${encodeURIComponent(cid)}`);
