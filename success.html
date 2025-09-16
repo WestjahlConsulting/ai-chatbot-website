@@ -7,6 +7,7 @@
   <meta name="description" content="Din bot – kodsnutt och förhandsvisning.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
+  <style>.small{font-size:12px}.hidden{display:none!important}</style>
 </head>
 <body>
   <!-- NAV -->
@@ -36,7 +37,7 @@
 
   <header class="page container">
     <h1 id="title">Klart! Din provperiod har startat</h1>
-    <p class="muted">Här är din kodsnutt och en live-förhandsvisning. Klistra in snutten på din webbplats för att aktivera boten där.</p>
+    <p class="muted">Här är din kodsnutt och en live-förhandsvisning. Klistra in snutten på din webbplats.</p>
   </header>
 
   <main class="container grid">
@@ -44,7 +45,7 @@
     <div id="warn" class="card hidden"></div>
 
     <!-- Snippet -->
-    <div class="card glass">
+    <div id="snippetCard" class="card glass hidden">
       <h2>1) Kodsnutt att klistra in</h2>
       <pre><code id="snippet">Laddar…</code></pre>
       <div class="grid grid-1-2auto">
@@ -55,7 +56,7 @@
     </div>
 
     <!-- Live preview -->
-    <div class="card glass">
+    <div id="previewCard" class="card glass hidden">
       <h2>2) Live-förhandsvisning</h2>
       <div id="iframe-host" class="iframe-wrapper"><p class="muted">&nbsp;Laddar widget…</p></div>
     </div>
@@ -67,94 +68,26 @@
         <button id="portal" class="btn primary">Öppna kundportal</button>
         <a class="btn secondary" href="admin.html">Ladda upp dokument i Admin</a>
       </div>
-      <p class="muted" id="status"></p>
+      <p class="muted small" id="status"></p>
     </div>
   </main>
 
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
 <script>
-/* ======= Konfig ======= */
 const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
 
-/* ======= Hjälpare ======= */
 function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
-async function getJson(url){
-  const res = await fetch(url, { method: 'GET' }); // ingen credentials behövs
-  const text = await res.text();
-  return { ok: res.ok, status: res.status, data: safeJson(text) };
-}
-function showWarn(html){
-  const w = document.getElementById("warn");
-  w.classList.remove("hidden");
-  w.innerHTML = html;
-}
+async function getJson(url){ const r = await fetch(url); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+async function postJson(url, body){ const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : null}); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+function showWarn(html){ const w = document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML = html; }
+function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
-/* ======= Huvudflöde ======= */
-(async function () {
-  const qs   = new URLSearchParams(location.search);
-  const cid  = qs.get("cid") || qs.get("customerId");
-  const titleEl = document.getElementById("title");
-
-  if (!cid) {
-    showWarn("<strong>Saknar kund-ID.</strong> Den här sidan öppnas normalt med ?cid=…");
-    return;
-  }
-
-  // 1) Försök hämta snippet
-  let snippetRes;
-  try {
-    snippetRes = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
-  } catch (e) {
-    console.error(e);
-    showWarn("Nätverksfel – försök igen.");
-    return;
-  }
-
-  // 2) Om ingen snippet: visa åtgärder (Checkout/Portal) och ändra rubriken
-  if (!snippetRes.ok || !snippetRes.data.snippet) {
-    titleEl.textContent = "Nästan klart – aktivera din bot";
-    showWarn(`
-      Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
-      <div class="grid grid-auto-2auto">
-        <a id="openCheckout" class="btn primary">Öppna Checkout</a>
-        <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
-      </div>
-    `);
-
-    // Knapparna i varningsrutan
-    const openCheckout = document.getElementById("openCheckout");
-    const openPortal   = document.getElementById("openPortal");
-
-    openCheckout.onclick = async () => {
-      try {
-        const { ok, status, data } = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
-        if (ok && data.url) location.href = data.url;
-        else {
-          console.error('Checkout-link failed', status, data);
-          alert((data && (data.error || data.message)) || "Kunde inte öppna Checkout.");
-        }
-      } catch { alert("Nätverksfel mot Checkout."); }
-    };
-    openPortal.onclick = async () => {
-      try {
-        const { ok, status, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-        if (ok && data.url) location.href = data.url;
-        else {
-          console.error('Portal-link failed', status, data);
-          alert((data && (data.error || data.message)) || "Kunde inte öppna kundportalen.");
-        }
-      } catch { alert("Nätverksfel mot portalen."); }
-    };
-
-    // Avsluta här, resten (snippet/preview) ska inte visas förrän aktiverad
-    return;
-  }
-
-  // 3) Aktiv: rendera snippet + live-iframe och uppdatera rubrik
-  titleEl.textContent = "Klart! Din bot är aktiverad";
-  const snippet = snippetRes.data.snippet;
+function renderActive(snippet){
+  document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
   document.getElementById("snippet").textContent = snippet;
+  document.getElementById("snippetCard").classList.remove("hidden");
+  document.getElementById("previewCard").classList.remove("hidden");
 
   const host = document.getElementById("iframe-host");
   host.innerHTML = "";
@@ -167,20 +100,65 @@ function showWarn(html){
     await navigator.clipboard.writeText(snippet);
     const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
   };
+}
 
-  // 4) Portal-knappen nederst (påverkar oavsett status)
-  document.getElementById("portal").onclick = async () => {
-    try {
-      const { ok, status, data } = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-      if (ok && data.url) location.href = data.url;
-      else {
-        console.error('Portal-link failed', status, data);
-        alert((data && (data.error || data.message)) || "Kunde inte öppna kundportalen.");
-      }
-    } catch { alert("Nätverksfel mot portalen."); }
+(async function () {
+  const qs  = new URLSearchParams(location.search);
+  const cid = qs.get("cid") || qs.get("customerId");
+  if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Sidan öppnas med <code>?cid=…</code>."); return; }
+
+  async function tryLoadSnippet(){
+    const sn = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
+    if (sn.ok && sn.data && sn.data.snippet){ hideWarn(); renderActive(sn.data.snippet); return true; }
+    return false;
+  }
+
+  // 1) Direktförsök
+  if (await tryLoadSnippet()) return;
+
+  // 2) Synka status (fallback om webhooken är sen)
+  await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
+
+  // 3) Försök igen
+  if (await tryLoadSnippet()) return;
+
+  // 4) Visa åtgärder + statusdiagnos
+  const st = await getJson(`${API}/api/public/status?customerId=${encodeURIComponent(cid)}`);
+  const statusText = (st.ok && st.data)
+    ? `status: <code>${st.data.subscriptionStatus || "-"}</code>, kort: <code>${st.data.hasPaymentMethod ? "ja" : "nej"}</code>`
+    : "okänt (kunde inte hämta status)";
+
+  showWarn(`
+    Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
+    <div class="grid grid-auto-2auto">
+      <a id="openCheckout" class="btn primary">Öppna Checkout</a>
+      <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
+    </div>
+    <p class="muted small" style="margin-top:8px">Serverns status: ${statusText}</p>
+    <div><button id="retry" class="btn ghost" style="margin-top:8px">Kontrollera igen</button></div>
+  `);
+
+  document.getElementById("openCheckout").onclick = async () => {
+    const r = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+    if (r.ok && r.data.url) location.href = r.data.url;
+    else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
   };
+  document.getElementById("openPortal").onclick = async () => {
+    const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+    if (r.ok && r.data.url) location.href = r.data.url;
+    else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+  };
+  document.getElementById("retry").onclick = async () => { location.reload(); };
 })();
-</script>
 
+// Portal-knappen i nederkortet (fungerar oavsett status)
+document.getElementById("portal").onclick = async () => {
+  const qs  = new URLSearchParams(location.search);
+  const cid = qs.get("cid") || qs.get("customerId");
+  const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+  if (r.ok && r.data.url) location.href = r.data.url;
+  else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+};
+</script>
 </body>
 </html>
