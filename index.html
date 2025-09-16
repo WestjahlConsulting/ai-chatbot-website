@@ -116,11 +116,29 @@
   </footer>
 
   <script>
-    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    const API    = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    const WIDGET = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
     const out = document.getElementById('signup-result');
 
     function okBanner(html){ return `<div class="banner ok">${html}</div>`; }
     function errBanner(html){ return `<div class="banner err">${html}</div>`; }
+
+    function previewBlock(cid){
+      return `
+        <div class="card glass" style="margin-top:12px">
+          <h3>Testa din bot – förhandsvisning</h3>
+          <p class="note">Du kan ställa upp till <strong>10 frågor</strong> här. Aktivera genom att slutföra Checkout för obegränsad användning.</p>
+          <div id="preview-host" class="iframe-wrapper"></div>
+        </div>`;
+    }
+
+    function mountPreview(cid){
+      const host = document.querySelector('#preview-host');
+      if (!host) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = `${WIDGET}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}`;
+      host.appendChild(iframe);
+    }
 
     document.getElementById('signup').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -155,7 +173,8 @@
               <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
               <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
             </div>
-          `);
+          `) + previewBlock(data.customerId);
+          mountPreview(data.customerId);
           return;
         }
 
@@ -174,13 +193,16 @@
               : `<p class="warn">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
           }
           <p class="note">
-            Efter att betalmetod lagts in kan du hämta din kodsnutt här:
+            När betalmetod är lagd kan du hämta din kodsnutt här:
             <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
             eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
           </p>
-        `);
-        // Scrolla till resultatet på mobil
+        `) + previewBlock(cid);
+
+        // Scroll + montera preview
         out.scrollIntoView({ behavior: "smooth", block: "start" });
+        mountPreview(cid);
+
       }catch(err){
         out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
       }
