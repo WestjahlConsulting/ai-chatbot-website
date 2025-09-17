@@ -13,6 +13,7 @@ html,body{height:100%}
 body{
   margin:0;
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  line-height:1.45;
   background:radial-gradient(1200px 600px at 50% -200px,#0b1735 0%,#0b1220 40%,#0a0f1f 100%);
   color:#e5e7eb;
 }
@@ -74,7 +75,18 @@ form input{
 }
 form input::placeholder{color:#8ea0b5}
 form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
-.form-row{display:grid;gap:12px;grid-template-columns:1fr 1fr 1fr}
+
+/* FIX: korrekt grid-egenskap + bättre fallback */
+.form-row{
+  display:grid;
+  gap:12px;
+  grid-template-columns:1fr;    /* <-- var: grid: template columns 1fr; (ogiltigt) */
+}
+.form-row > *{min-width:0}      /* undvik overflow i små vyer */
+
+form .btn[type="submit"]{
+  width:100%;
+}
 
 .banner{border-radius:12px;padding:10px 14px;margin-top:10px}
 .banner.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
