@@ -80,10 +80,8 @@
     <div class="container">© 2025 BotJahl</div>
   </footer>
 
-  <!-- Din befintliga JS fungerar – vi stylar bara om.
-       Nedan är "stubb" som sätter rätt knapplayout med befintliga ids. -->
+  <!-- Din befintliga JS kan ligga kvar – detta är bara UI-stubb för snabb test -->
   <script>
-  // Behåll din befintliga JS. Följande är bara defensivt UI-state.
   (function(){
     const cid = document.getElementById('cid');
     const email = document.getElementById('email');
@@ -92,7 +90,6 @@
     const panel = document.getElementById('panel');
     const docs = document.getElementById('docs');
 
-    // Om du redan har logik: ta bort detta block.
     login?.addEventListener('click', ()=>{
       if(!cid.value || !email.value){
         status.textContent = 'Fyll i kund-ID och e-post.';
