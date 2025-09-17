@@ -7,31 +7,20 @@
   <meta name="description" content="BotJahl är en AI-chattbot som du bäddar in på din webbplats. Starta gratis i 14 dagar – laddas med dina dokument.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
-  <style>
-    .note{font-size:13px;color:#64748b}
-    .warn{color:#b45309}
-    .ok{color:#16a34a}
-    .banner{border-radius:12px;padding:10px 14px;margin:10px 0}
-    .banner.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
-    .banner.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
-    .small{font-size:12px}
-  </style>
 </head>
 <body>
 
   <!-- NAV -->
   <nav>
-    <div class="container row">
+    <div class="container">
       <a href="index.html" class="brand" aria-label="BotJahl startsida">
-        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="28" height="28" fill="none" aria-hidden="true">
           <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
-          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(255,255,255,.6)" stroke-width="3" stroke-linecap="round"/>
           <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
           <circle cx="29" cy="20" r="2.4" fill="#0a0f1f"/>
-          <path d="M30 38l-6-4-6 4 2.5-6.5" fill="url(#g2)" opacity=".9"/>
           <defs>
             <linearGradient id="g1" x1="4" y1="6" x2="46" y2="36"><stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
-            <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
           </defs>
         </svg>
         BotJahl
@@ -47,19 +36,21 @@
   <!-- HERO -->
   <header class="hero container">
     <div class="wrap">
-      <div class="card glass">
+      <div class="card">
         <span class="badge">Plug-in & run</span>
         <h1>AI-chattbot som svarar med ditt innehåll</h1>
         <p class="muted">Bädda in på din webbplats på minuter. Ladda upp PDF/DOCX/TXT/MD eller indexera webbsidor. 14 dagars provperiod.</p>
-        <div class="grid grid-2">
+        <div class="grid">
           <a class="btn primary" href="#starta">Starta gratis</a>
           <a class="btn ghost" href="admin.html">Logga in i portalen</a>
         </div>
       </div>
       <div class="card">
-        <div class="feature"><span class="dot"></span><div><strong>Enkelt att installera</strong><div class="muted">Kopiera en färdig &lt;iframe&gt;-kod.</div></div></div>
-        <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Uppladdning → indexering → klart.</div></div></div>
-        <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Kortbetalning via Stripe. Avbryt när som helst.</div></div></div>
+        <div class="grid">
+          <div><strong>Enkelt att installera</strong><div class="muted">Kopiera en färdig &lt;iframe&gt;-kod.</div></div>
+          <div><strong>Tränas på ditt material</strong><div class="muted">Uppladdning → indexering → klart.</div></div>
+          <div><strong>Byggd för företag</strong><div class="muted">Kortbetalning via Stripe. Avbryt när som helst.</div></div>
+        </div>
       </div>
     </div>
   </header>
@@ -69,39 +60,41 @@
     <div class="container">
       <h2>Testa BotJahl</h2>
       <p class="muted">Demot är kopplat till vår testkund.</p>
-
-      <!-- wider/less whitespace & responsive height -->
-      <div id="iframe-demo" class="iframe-wrapper">
-        <iframe
-          src="https://westjahlconsulting.github.io/ai-chatbot-frontend/?customerId=ceb2df2&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
-          title="BotJahl demo-chatt"
-          aria-label="Inbäddad demo av BotJahl"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-          sandbox="allow-scripts allow-forms allow-same-origin">
-        </iframe>
+      <div id="iframe-demo" class="card" style="padding:0">
+        <div class="iframe-wrapper">
+          <iframe
+            id="botjahl-demo"
+            src="https://westjahlconsulting.github.io/ai-chatbot-frontend/?customerId=ceb2df2&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-forms allow-same-origin"
+            title="BotJahl demo-chatt"
+            aria-label="Inbäddad demo av BotJahl">
+          </iframe>
+        </div>
       </div>
     </div>
   </section>
-
 
   <!-- SIGNUP -->
   <section id="starta">
     <div class="container">
       <h2>Starta gratis i 14 dagar</h2>
-      <div class="card glass">
+      <div class="card">
         <form id="signup" autocomplete="on">
-          <input name="name" placeholder="Företagsnamn" autocomplete="organization" required />
-          <input name="websiteUrl" placeholder="Webbplats (https://… eller www.dittföretag.se)" inputmode="url" required />
-          <input name="email" type="email" placeholder="E-post" autocomplete="email" required />
-          <div class="grid grid-1-auto">
-            <p class="muted">Du får ett kund-ID och en betalningslänk. Kodsnutten lämnas efter att betalmetod lagts in.</p>
+          <div class="form-row">
+            <input name="name" placeholder="Företagsnamn" autocomplete="organization" required />
+            <input name="websiteUrl" placeholder="Webbplats (https://… eller www.dittföretag.se)" inputmode="url" required />
+            <input name="email" type="email" placeholder="E-post" autocomplete="email" required />
+          </div>
+          <div class="grid">
+            <p class="small">Du får ett kund-ID och en betalningslänk. Kodsnutten lämnas efter att betalmetod lagts in.</p>
             <button class="btn primary" type="submit">Skapa min bot</button>
           </div>
         </form>
         <div id="signup-result"></div>
       </div>
-      <p class="small note">Redan kund? <a href="admin.html">Logga in i Admin</a> eller hämta kodsnutt via <a href="success.html">success-sidan</a>.</p>
+      <p class="small">Redan kund? <a href="admin.html">Logga in i Admin</a> eller hämta kodsnutt via <a href="success.html">success-sidan</a>.</p>
     </div>
   </section>
 
@@ -118,45 +111,21 @@
   </footer>
 
   <script>
-    const API    = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-    const WIDGET = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
     const out = document.getElementById('signup-result');
 
     function okBanner(html){ return `<div class="banner ok">${html}</div>`; }
     function errBanner(html){ return `<div class="banner err">${html}</div>`; }
 
-    function previewBlock(cid){
-      return `
-        <div class="card glass" style="margin-top:12px">
-          <h3>Testa din bot – förhandsvisning</h3>
-          <p class="note">Du kan ställa upp till <strong>10 frågor</strong> här. Aktivera genom att slutföra Checkout för obegränsad användning.</p>
-          <div id="preview-host" class="iframe-wrapper"></div>
-        </div>`;
-    }
-
-    function mountPreview(cid){
-      const host = document.querySelector('#preview-host');
-      if (!host) return;
-      const iframe = document.createElement('iframe');
-      iframe.src = `${WIDGET}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}`;
-      host.appendChild(iframe);
-    }
-
     document.getElementById('signup').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target;
-
-      // Normalisera websiteUrl
+      // normalisera websiteUrl
       let url = f.websiteUrl.value.trim();
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-      const body = {
-        name: f.name.value.trim(),
-        websiteUrl: url,
-        email: f.email.value.trim()
-      };
-
-      out.innerHTML = `<span class="note">Skapar bot…</span>`;
+      const body = { name: f.name.value.trim(), websiteUrl: url, email: f.email.value.trim() };
+      out.innerHTML = `<span class="small">Skapar bot…</span>`;
 
       try{
         const res = await fetch(API + "/api/public/signup", {
@@ -166,47 +135,37 @@
         });
         const data = await res.json().catch(() => ({}));
 
-        // 409 = redan finns
+        // Redan kund
         if (res.status === 409 && data.customerId) {
           out.innerHTML = okBanner(`
             <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
             ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
-            <div class="grid grid-auto-2auto">
+            <div class="grid">
               <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
               <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
             </div>
-          `) + previewBlock(data.customerId);
-          mountPreview(data.customerId);
+          `);
           return;
         }
 
-        if (!res.ok) {
-          out.innerHTML = errBanner(`Något gick fel. Försök igen om en stund.`);
-          return;
-        }
+        if (!res.ok) { out.innerHTML = errBanner(`Något gick fel. Försök igen om en stund.`); return; }
 
-        // 200 OK – ny kund
+        // Ny kund
         const cid = data.customerId;
         out.innerHTML = okBanner(`
           <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
-          ${
-            data.checkoutUrl
-              ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
-              : `<p class="warn">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
-          }
-          <p class="note">
-            När betalmetod är lagd kan du hämta din kodsnutt här:
+          ${data.checkoutUrl
+            ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
+            : `<p class="muted">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`}
+          <p class="small">
+            Efter att betalmetod lagts in kan du hämta din kodsnutt här:
             <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
             eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
           </p>
-        `) + previewBlock(cid);
-
-        // Scroll + montera preview
+        `);
         out.scrollIntoView({ behavior: "smooth", block: "start" });
-        mountPreview(cid);
-
       }catch(err){
-        out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
+        out.innerHTML = errBanner(`Nätverksfel: ${err?.message || "okänt fel"}`);
       }
     });
   </script>

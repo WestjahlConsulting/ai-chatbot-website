@@ -2,7 +2,7 @@
   --bg:#0a0f1f;
   --card:#ffffff;
   --fg:#0b1220;
-  --muted:#64748b;
+  --muted:#a7b0c0;
   --ring:#e5e7eb;
   --accent:#22d3ee;
   --accent-2:#60a5fa;
@@ -17,17 +17,13 @@ body{
   color:#e5e7eb;
 }
 
-/* --- general layout --- */
-.container{
-  max-width:1200px;              /* wider than before */
-  margin:0 auto;
-  padding:0 20px;                 /* smaller side gutters */
-}
+/* --- layout --- */
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
 section{padding:32px 0}
 h1,h2,h3{color:#fff;margin:0 0 8px}
-.muted{color:#a7b0c0}
+.muted{color:var(--muted)}
 
-/* --- top nav (unchanged basics) --- */
+/* --- top nav --- */
 nav{
   position:sticky; top:0; z-index:30;
   backdrop-filter:saturate(140%) blur(8px);
@@ -39,66 +35,62 @@ nav .container{display:flex;align-items:center;justify-content:space-between;pad
 .nav-links a{color:#cfd6e3;text-decoration:none;margin-left:16px}
 .nav-links .btn{margin-left:16px}
 
-/* buttons */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:10px 14px;border:0;border-radius:12px;
-  font-weight:700;cursor:pointer;text-decoration:none
-}
-.btn.primary{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:#0a0f1f;
-}
+/* --- buttons --- */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:0;border-radius:12px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0f1f}
 .btn.secondary{background:#1e293b;color:#fff}
 .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#e5e7eb}
 
-/* hero */
-.hero .wrap{
-  display:grid;gap:16px;grid-template-columns:1.1fr .9fr;
-}
-.hero .card{
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;padding:18px
-}
+/* --- hero --- */
+.hero .wrap{display:grid;gap:16px;grid-template-columns:1.1fr .9fr}
+.hero .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px}
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:#e5e7eb;font-size:12px}
 
-/* --- DEMO panel (iframe) --- */
+/* --- demo (iframe) --- */
 #iframe-demo .iframe-wrapper{
   background:var(--card);
   border-radius:16px;
   border:1px solid var(--ring);
   box-shadow:0 16px 50px rgba(2,6,23,.25);
   overflow:hidden;
-  /* a normal chat window: tall, responsive     */
-  height:clamp(520px, 72vh, 840px);
+  height:clamp(520px,72vh,840px);       /* normal chattfönsterkänsla */
 }
-#iframe-demo .iframe-wrapper iframe{
-  display:block;width:100%;height:100%;border:0;
-}
+#iframe-demo .iframe-wrapper iframe{display:block;width:100%;height:100%;border:0}
 
-/* signup & cards (unchanged basics) */
-.card{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:16px;padding:18px
-}
+/* --- cards & grid --- */
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
 .grid{display:grid;gap:14px}
 .grid-2{grid-template-columns:1fr 1fr}
 
-/* small utilities */
+/* --- forms (signup) --- */
+form input{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid rgba(255,255,255,.15);
+  background:#0f172a;
+  color:#e5e7eb;
+  border-radius:12px;
+  font-size:16px;
+}
+form input::placeholder{color:#8ea0b5}
+form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+.form-row{display:grid;gap:12px;grid-template-columns:1fr 1fr 1fr}
+
+.banner{border-radius:12px;padding:10px 14px;margin-top:10px}
+.banner.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.banner.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
 .small{font-size:12px;color:var(--muted)}
-.note{color:#a7b0c0}
 
 /* --- footer --- */
 footer{border-top:1px solid rgba(255,255,255,.06);margin-top:40px}
 footer .container{padding:14px 20px;color:#a7b0c0}
 
-/* --- responsive tweaks --- */
+/* --- responsive --- */
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr}
 }
 @media (max-width:640px){
-  #iframe-demo .iframe-wrapper{height:82vh}   /* more height on mobile */
+  #iframe-demo .iframe-wrapper{height:82vh}     /* mer höjd på mobil */
   .grid-2{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
 }
