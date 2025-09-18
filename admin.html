@@ -46,23 +46,26 @@
         <button id="login-btn" class="btn primary sm">Logga in</button>
         <a href="index.html" class="btn ghost sm">Till startsidan</a>
       </div>
-      <p id="login-status" class="small" style="margin-top:8px"></p>
+      <p id="login-status" class="small status-text" data-base-class="small status-text" style="margin-top:8px" aria-live="polite"></p>
     </section>
 
     <!-- ADMIN PANEL -->
     <section id="panel" class="card" hidden>
       <h2>Uppladdning</h2>
+      <p id="customer-meta" class="small status-text" data-base-class="small status-text"></p>
       <p class="muted">Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.</p>
 
       <div class="actions" style="margin:10px 0">
         <button id="reindex-all" class="btn secondary sm">Reindexera alla</button>
         <button id="logout" class="btn ghost sm">Logga ut</button>
       </div>
+      <p id="panel-status" class="small status-text" data-base-class="small status-text" aria-live="polite"></p>
 
       <div class="actions" style="margin:8px 0">
         <input id="file" type="file" multiple/>
         <button id="upload" class="btn primary sm">Ladda upp</button>
       </div>
+      <p id="upload-status" class="small status-text" data-base-class="small status-text" aria-live="polite"></p>
 
       <div class="actions" style="margin:8px 0">
         <button id="refresh" class="btn secondary sm">Uppdatera status</button>
@@ -72,6 +75,7 @@
     <!-- DOCS -->
     <section id="docs" class="card" hidden>
       <h2>Dina dokument</h2>
+      <p id="docs-status" class="small status-text" data-base-class="small status-text" aria-live="polite"></p>
       <ul id="doc-list" class="stack" style="margin-top:8px"></ul>
     </section>
   </main>
@@ -80,26 +84,540 @@
     <div class="container">© 2025 BotJahl</div>
   </footer>
 
-  <!-- Din befintliga JS kan ligga kvar – detta är bara UI-stubb för snabb test -->
   <script>
   (function(){
-    const cid = document.getElementById('cid');
-    const email = document.getElementById('email');
-    const login = document.getElementById('login-btn');
-    const status = document.getElementById('login-status');
-    const panel = document.getElementById('panel');
-    const docs = document.getElementById('docs');
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    const STORAGE_KEY = "botjahl-admin-session";
 
-    login?.addEventListener('click', ()=>{
-      if(!cid.value || !email.value){
-        status.textContent = 'Fyll i kund-ID och e-post.';
+    const cidInput = document.getElementById('cid');
+    const emailInput = document.getElementById('email');
+    const loginBtn = document.getElementById('login-btn');
+    const loginStatus = document.getElementById('login-status');
+    const loginCard = document.getElementById('login-card');
+    const panel = document.getElementById('panel');
+    const docsSection = document.getElementById('docs');
+    const customerMeta = document.getElementById('customer-meta');
+    const panelStatus = document.getElementById('panel-status');
+    const uploadStatus = document.getElementById('upload-status');
+    const docsStatus = document.getElementById('docs-status');
+    const docsList = document.getElementById('doc-list');
+    const reindexAllBtn = document.getElementById('reindex-all');
+    const refreshBtn = document.getElementById('refresh');
+    const logoutBtn = document.getElementById('logout');
+    const uploadBtn = document.getElementById('upload');
+    const fileInput = document.getElementById('file');
+
+    let session = null;
+
+    function safeJson(text){ try { return text ? JSON.parse(text) : {}; } catch { return {}; } }
+
+    class ApiError extends Error {
+      constructor(message, status, data, path){
+        super(message);
+        this.status = status;
+        this.data = data;
+        this.path = path;
+      }
+    }
+
+    function buildQuery(params){
+      return Object.entries(params)
+        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+        .join('&');
+    }
+
+    function setStatus(el, text, tone){
+      if(!el) return;
+      if(el.dataset.baseClass){
+        el.className = el.dataset.baseClass;
+      } else {
+        el.classList.remove('err','info','ok');
+      }
+      if(tone) el.classList.add(tone);
+      el.textContent = text || '';
+    }
+
+    async function callApi(options){
+      const {
+        paths,
+        method = 'GET',
+        body,
+        json = true,
+        form = false,
+        includeAuth = true,
+        includeCustomerId = true,
+        parseJson = true,
+        query = {},
+        treat404asFallback = true
+      } = options;
+
+      if(!Array.isArray(paths) || paths.length === 0){
+        throw new Error('paths is required');
+      }
+
+      const errors = [];
+      for (const path of paths){
+        const headers = new Headers(options.headers || {});
+        if(includeAuth && session?.token && !headers.has('Authorization')){
+          headers.set('Authorization', `Bearer ${session.token}`);
+        }
+
+        let queryParams = { ...query };
+        if(includeCustomerId && session?.customerId){
+          queryParams.customerId = session.customerId;
+        }
+        const qs = buildQuery(queryParams);
+        const url = API + path + (qs ? (path.includes('?') ? '&' : '?') + qs : '');
+
+        const init = { method, headers };
+        if(form){
+          init.body = body;
+        } else if(json && body !== undefined){
+          if(!headers.has('Content-Type')){
+            headers.set('Content-Type', 'application/json');
+          }
+          init.body = JSON.stringify(body);
+        } else if(body !== undefined){
+          init.body = body;
+        }
+
+        try {
+          const res = await fetch(url, init);
+          const text = await res.text();
+          const data = parseJson ? safeJson(text) : text;
+          if(res.ok){
+            return { res, data, path };
+          }
+          if(treat404asFallback && (res.status === 404 || res.status === 405)){
+            errors.push(new ApiError('Not found', res.status, data, path));
+            continue;
+          }
+          throw new ApiError('Request failed', res.status, data, path);
+        } catch (err){
+          if(err instanceof ApiError){
+            if(!treat404asFallback || (err.status !== 404 && err.status !== 405)){
+              throw err;
+            }
+            errors.push(err);
+          } else {
+            errors.push(err);
+          }
+        }
+      }
+
+      const last = errors[errors.length - 1];
+      if(last instanceof ApiError){
+        throw last;
+      }
+      throw new Error('Request failed');
+    }
+
+    function extractToken(data){
+      if(!data) return null;
+      if(typeof data === 'string' && data) return data;
+      const candidates = [
+        data.token,
+        data.accessToken,
+        data.sessionToken,
+        data.jwt,
+        data.idToken,
+        data.bearerToken,
+        data.apiKey,
+        data?.data?.token,
+        data?.session?.token
+      ];
+      return candidates.find(v => typeof v === 'string' && v) || null;
+    }
+
+    function extractCustomerId(data, fallback){
+      if(!data) return fallback || '';
+      const candidates = [
+        data.customerId,
+        data.customerID,
+        data.customer_id,
+        data.cid,
+        data.customer?.id,
+        data.customer?.customerId
+      ];
+      const found = candidates.find(v => typeof v === 'string' && v);
+      return found || fallback || '';
+    }
+
+    function extractCustomerName(data){
+      if(!data) return '';
+      const candidates = [
+        data.customerName,
+        data.name,
+        data.customer?.name,
+        data.customer?.companyName,
+        data.customer?.displayName
+      ];
+      return candidates.find(v => typeof v === 'string' && v) || '';
+    }
+
+    function formatBytes(bytes){
+      if(typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) return '';
+      if(bytes < 1024) return `${bytes} B`;
+      const units = ['KB','MB','GB','TB'];
+      let value = bytes / 1024;
+      let unit = 0;
+      while(value >= 1024 && unit < units.length - 1){
+        value /= 1024;
+        unit += 1;
+      }
+      const decimals = value >= 10 ? 0 : 1;
+      return `${value.toFixed(decimals)} ${units[unit]}`;
+    }
+
+    function formatDate(iso){
+      if(!iso) return '';
+      const d = new Date(iso);
+      if(Number.isNaN(d.getTime())) return '';
+      try {
+        return d.toLocaleString('sv-SE', { dateStyle:'short', timeStyle:'short' });
+      } catch {
+        return '';
+      }
+    }
+
+    function statusFromDoc(doc){
+      return doc.indexStatus || doc.status || doc.state || doc.processingStatus || '';
+    }
+
+    function errorFromDoc(doc){
+      return doc.error || doc.errorMessage || doc.lastError || doc.failure || '';
+    }
+
+    function escapeHtml(value){
+      return (value ?? '').toString().replace(/[&<>"']/g, (ch) => ({
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#39;'
+      })[ch]);
+    }
+
+    function renderDocs(list){
+      docsList.innerHTML = '';
+      if(!Array.isArray(list) || list.length === 0){
+        setStatus(docsStatus, 'Inga dokument uppladdade ännu.', 'info');
         return;
       }
-      status.textContent = 'Inloggad.';
-      document.getElementById('login-card').hidden = true;
+
+      setStatus(docsStatus, `${list.length} dokument.`, 'info');
+
+      const fragment = document.createDocumentFragment();
+      list.forEach((doc) => {
+        const li = document.createElement('li');
+        li.className = 'doc-item';
+
+        const id = doc.id || doc.documentId || doc.documentID || doc.key || '';
+        const name = escapeHtml(doc.fileName || doc.filename || doc.name || doc.title || doc.path || 'Okänt dokument');
+        const size = formatBytes(doc.size || doc.fileSize || doc.bytes);
+        const status = statusFromDoc(doc);
+        const error = errorFromDoc(doc);
+        const updated = formatDate(doc.updatedAt || doc.lastIndexedAt || doc.indexedAt || doc.createdAt);
+        const source = doc.sourceUrl || doc.url;
+
+        const metaParts = [];
+        if(size) metaParts.push(size);
+        if(updated) metaParts.push(`Uppdaterad: ${escapeHtml(updated)}`);
+        if(source) metaParts.push(`<a href="${escapeHtml(source)}" target="_blank" rel="noopener" class="link-muted">Källa</a>`);
+
+        li.innerHTML = `
+          <div class="doc-main">
+            <div class="doc-name"><strong>${name}</strong></div>
+            <div class="doc-meta">${metaParts.join(' · ')}</div>
+            ${status ? `<span class="status-pill ${escapeHtml(status.toString().toLowerCase())}">${escapeHtml(status)}</span>` : ''}
+            ${error ? `<div class="doc-error">${escapeHtml(error)}</div>` : ''}
+          </div>
+          <div class="doc-actions">
+            <button class="btn secondary sm doc-reindex" data-doc="${escapeHtml(id)}">Reindexera</button>
+            <button class="btn danger sm doc-delete" data-doc="${escapeHtml(id)}">Ta bort</button>
+          </div>
+        `;
+
+        fragment.appendChild(li);
+      });
+      docsList.appendChild(fragment);
+
+      docsList.querySelectorAll('.doc-reindex').forEach((btn) => {
+        btn.addEventListener('click', async (event) => {
+          const docId = event.currentTarget.getAttribute('data-doc');
+          if(!docId){
+            alert('Kunde inte identifiera dokumentet.');
+            return;
+          }
+          setStatus(docsStatus, 'Reindexerar dokument…', 'info');
+          try {
+            await callApi({
+              paths: [
+                `/api/admin/documents/${encodeURIComponent(docId)}/reindex`,
+                `/api/admin/docs/${encodeURIComponent(docId)}/reindex`
+              ],
+              method: 'POST'
+            });
+            setStatus(docsStatus, 'Reindexerat. Uppdaterar listan…', 'info');
+            await loadDocs();
+          } catch (err) {
+            handleError(err, docsStatus, 'Kunde inte reindexera dokumentet.');
+          }
+        });
+      });
+
+      docsList.querySelectorAll('.doc-delete').forEach((btn) => {
+        btn.addEventListener('click', async (event) => {
+          const docId = event.currentTarget.getAttribute('data-doc');
+          if(!docId){
+            alert('Kunde inte identifiera dokumentet.');
+            return;
+          }
+          if(!confirm('Ta bort dokumentet? Detta kan inte ångras.')) return;
+          setStatus(docsStatus, 'Tar bort dokument…', 'info');
+          try {
+            await callApi({
+              paths: [
+                `/api/admin/documents/${encodeURIComponent(docId)}`,
+                `/api/admin/docs/${encodeURIComponent(docId)}`,
+                `/api/admin/files/${encodeURIComponent(docId)}`
+              ],
+              method: 'DELETE'
+            });
+            setStatus(docsStatus, 'Dokument borttaget. Uppdaterar listan…', 'info');
+            await loadDocs();
+          } catch (err) {
+            handleError(err, docsStatus, 'Kunde inte ta bort dokumentet.');
+          }
+        });
+      });
+    }
+
+    async function loadDocs(){
+      if(!session?.token) return;
+      setStatus(docsStatus, 'Hämtar dokument…', 'info');
+      try {
+        const { data } = await callApi({
+          paths: [
+            '/api/admin/documents',
+            '/api/admin/docs',
+            '/api/admin/files'
+          ]
+        });
+        const docs = Array.isArray(data?.documents) ? data.documents
+          : Array.isArray(data?.items) ? data.items
+          : Array.isArray(data?.files) ? data.files
+          : Array.isArray(data) ? data
+          : [];
+        renderDocs(docs);
+      } catch (err) {
+        handleError(err, docsStatus, 'Kunde inte hämta dokumentlistan.');
+      }
+    }
+
+    function handleError(err, target, fallback){
+      console.error(err);
+      if(!target) return;
+      let message = fallback || 'Ett fel inträffade.';
+      if(err instanceof ApiError && err.data){
+        const fromData = err.data.error || err.data.message || err.data.detail || err.data.title;
+        if(fromData) message = fromData;
+      } else if(err && err.message){
+        message = err.message;
+      }
+      setStatus(target, message, 'err');
+    }
+
+    function showPanel(){
+      loginCard.hidden = true;
       panel.hidden = false;
-      docs.hidden = false;
+      docsSection.hidden = false;
+    }
+
+    function showLogin(){
+      loginCard.hidden = false;
+      panel.hidden = true;
+      docsSection.hidden = true;
+    }
+
+    function setSession(newSession){
+      session = newSession;
+      if(session){
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+        if(cidInput) cidInput.value = session.customerId || '';
+        if(emailInput) emailInput.value = session.email || '';
+        const metaName = session.customerName ? ` (${session.customerName})` : '';
+        customerMeta.textContent = session.customerId ? `Kund-ID: ${session.customerId}${metaName}` : metaName.trim();
+        setStatus(loginStatus, `Inloggad som ${session.email || ''}.`, 'info');
+        showPanel();
+        loadDocs();
+      } else {
+        sessionStorage.removeItem(STORAGE_KEY);
+        customerMeta.textContent = '';
+        docsList.innerHTML = '';
+        setStatus(loginStatus, '', null);
+        setStatus(panelStatus, '', null);
+        setStatus(uploadStatus, '', null);
+        setStatus(docsStatus, '', null);
+        showLogin();
+      }
+    }
+
+    function restoreSession(){
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      try {
+        const stored = JSON.parse(raw);
+        if(stored?.token && stored?.customerId){
+          setSession(stored);
+        }
+      } catch {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    async function performLogin(){
+      const cidValue = cidInput?.value.trim();
+      const emailValue = emailInput?.value.trim();
+      if(!cidValue || !emailValue){
+        setStatus(loginStatus, 'Fyll i kund-ID och e-post.', 'err');
+        return;
+      }
+
+      setStatus(loginStatus, 'Loggar in…', 'info');
+      try {
+        const { data } = await callApi({
+          paths: [
+            '/api/admin/login',
+            '/api/admin/session',
+            '/api/admin/auth'
+          ],
+          method: 'POST',
+          body: { customerId: cidValue, email: emailValue },
+          includeAuth: false,
+          includeCustomerId: false
+        });
+
+        const token = extractToken(data);
+        if(!token){
+          throw new Error('Saknar inloggnings-token i svaret.');
+        }
+
+        const newSession = {
+          token,
+          customerId: extractCustomerId(data, cidValue),
+          email: data.email || emailValue,
+          customerName: extractCustomerName(data)
+        };
+        setSession(newSession);
+        setStatus(panelStatus, '', null);
+        setStatus(uploadStatus, '', null);
+      } catch (err) {
+        handleError(err, loginStatus, 'Fel kund-ID eller e-post.');
+      }
+    }
+
+    loginBtn?.addEventListener('click', performLogin);
+    cidInput?.addEventListener('keydown', (event) => {
+      if(event.key === 'Enter'){
+        event.preventDefault();
+        performLogin();
+      }
     });
+    emailInput?.addEventListener('keydown', (event) => {
+      if(event.key === 'Enter'){
+        event.preventDefault();
+        performLogin();
+      }
+    });
+
+    uploadBtn?.addEventListener('click', async () => {
+      if(!session?.token){
+        setStatus(uploadStatus, 'Logga in först.', 'err');
+        return;
+      }
+      const files = Array.from(fileInput?.files || []).filter(Boolean);
+      if(files.length === 0){
+        setStatus(uploadStatus, 'Välj minst en fil att ladda upp.', 'err');
+        return;
+      }
+
+      setStatus(uploadStatus, 'Laddar upp dokument…', 'info');
+      try {
+        for (const file of files){
+          const formData = new FormData();
+          formData.append('file', file, file.name);
+          if(session.customerId){
+            formData.append('customerId', session.customerId);
+          }
+          await callApi({
+            paths: [
+              '/api/admin/documents/upload',
+              '/api/admin/documents',
+              '/api/admin/upload',
+              '/api/admin/files'
+            ],
+            method: 'POST',
+            form: true,
+            body: formData
+          });
+        }
+        if(fileInput) fileInput.value = '';
+        setStatus(uploadStatus, 'Uppladdning klar. Indexeringen startar strax.', 'ok');
+        await loadDocs();
+      } catch (err) {
+        handleError(err, uploadStatus, 'Kunde inte ladda upp dokumentet.');
+      }
+    });
+
+    reindexAllBtn?.addEventListener('click', async () => {
+      if(!session?.token) return;
+      setStatus(panelStatus, 'Startar reindexering av alla dokument…', 'info');
+      try {
+        await callApi({
+          paths: [
+            '/api/admin/reindex-all',
+            '/api/admin/documents/reindex',
+            '/api/admin/docs/reindex'
+          ],
+          method: 'POST',
+          body: { customerId: session.customerId }
+        });
+        setStatus(panelStatus, 'Reindexering påbörjad.', 'info');
+        await loadDocs();
+      } catch (err) {
+        handleError(err, panelStatus, 'Kunde inte reindexera dokumenten.');
+      }
+    });
+
+    refreshBtn?.addEventListener('click', () => {
+      loadDocs();
+    });
+
+    logoutBtn?.addEventListener('click', async () => {
+      try {
+        await callApi({
+          paths: [
+            '/api/admin/logout',
+            '/api/admin/session',
+            '/api/admin/signout'
+          ],
+          method: 'DELETE',
+          includeCustomerId: false
+        });
+      } catch (err) {
+        // ignoreras – vi loggar ut lokalt oavsett
+      }
+      setSession(null);
+      if(fileInput) fileInput.value = '';
+    });
+
+    const qs = new URLSearchParams(location.search);
+    const qsCid = qs.get('cid') || qs.get('customerId');
+    if(qsCid && cidInput) cidInput.value = qsCid;
+
+    restoreSession();
   })();
   </script>
 </body>
