@@ -92,8 +92,24 @@
     const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
 
     function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
-    async function getJson(url){ const r = await fetch(url); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
-    async function postJson(url, body){ const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : null}); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+    async function getJson(url){
+      try {
+        const r = await fetch(url);
+        const t = await r.text();
+        return { ok:r.ok, status:r.status, data:safeJson(t) };
+      } catch (err) {
+        return { ok:false, status:0, data:{ error: err?.message || 'Nätverksfel' } };
+      }
+    }
+    async function postJson(url, body){
+      try {
+        const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : null});
+        const t = await r.text();
+        return { ok:r.ok, status:r.status, data:safeJson(t) };
+      } catch (err) {
+        return { ok:false, status:0, data:{ error: err?.message || 'Nätverksfel' } };
+      }
+    }
     function showWarn(html){ const w = document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML = html; }
     function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
@@ -111,10 +127,14 @@
       host.appendChild(iframe);
 
       document.getElementById("copy").onclick = async () => {
-        await navigator.clipboard.writeText(snippet);
-        const s = document.getElementById("status");
-        s.textContent = "Kodsnutt kopierad!";
-        setTimeout(()=>s.textContent="", 2500);
+        try {
+          await navigator.clipboard.writeText(snippet);
+          const s = document.getElementById("status");
+          s.textContent = "Kodsnutt kopierad!";
+          setTimeout(()=>s.textContent="", 2500);
+        } catch (err) {
+          alert("Kunde inte kopiera: " + (err?.message || "okänt fel"));
+        }
       };
     }
 
