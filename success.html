@@ -8,17 +8,41 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
   <style>
-    .small{font-size:12px}.hidden{display:none!important}
-    .snippet-pre{background:#0f172a;color:#e5e7eb;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;max-width:100%;overflow:auto}
-    .snippet-pre code{white-space:pre;display:block}
-    .iframe-wrapper{border-radius:16px;border:1px solid var(--ring);overflow:hidden;background:#fff;height:clamp(520px,72vh,840px)}
-    .iframe-wrapper iframe{display:block;width:100%;height:100%;border:0}
+    /* Mindre, centrerad förhandsvisning som inte tar över hela sidan */
+    .preview-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
+    .preview-box{
+      max-width: 960px;
+      margin: 10px auto 0;
+      height: clamp(460px, 68vh, 760px);
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 12px 40px rgba(2,6,23,.22);
+    }
+    .preview-box iframe{display:block;width:100%;height:100%;border:0}
+    .hidden{display:none!important}
+    .small{font-size:12px}
   </style>
 </head>
 <body>
+  <!-- NAV -->
   <nav>
-    <div class="container" style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px">
-      <a href="index.html" class="brand" aria-label="BotJahl startsida"><strong>BotJahl</strong></a>
+    <div class="container row">
+      <a href="index.html" class="brand" aria-label="BotJahl startsida">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
+          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
+          <circle cx="29" cy="20" r="2.4" fill="#0a0f1f"/>
+          <path d="M30 38l-6-4-6 4 2.5-6.5" fill="url(#g2)" opacity=".9"/>
+          <defs>
+            <linearGradient id="g1" x1="4" y1="6" x2="46" y2="36"><stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+            <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
+          </defs>
+        </svg>
+        BotJahl
+      </a>
       <div class="nav-links">
         <a href="index.html#demo">Demo</a>
         <a href="admin.html" class="btn secondary">Admin</a>
@@ -27,171 +51,136 @@
     </div>
   </nav>
 
-  <header class="container" style="margin:18px auto 8px">
+  <header class="page container">
     <h1 id="title">Klart! Din provperiod har startat</h1>
     <p class="muted">Här är din kodsnutt och en live-förhandsvisning. Klistra in snutten på din webbplats.</p>
   </header>
 
-  <main class="container stack">
-    <!-- Varning -->
+  <main class="container grid">
     <div id="warn" class="card hidden"></div>
 
     <!-- Snippet -->
-    <section id="snippetCard" class="card hidden">
+    <div id="snippetCard" class="card glass hidden">
       <h2>1) Kodsnutt att klistra in</h2>
-      <pre class="snippet-pre"><code id="snippet">Laddar…</code></pre>
-      <div class="actions" style="margin-top:10px;gap:10px;flex-wrap:wrap">
-        <p class="muted" style="margin:0">Placera där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
+      <pre><code id="snippet">Laddar…</code></pre>
+      <div class="grid grid-1-2auto">
+        <p class="muted">Placera där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
         <button id="copy" class="btn secondary">Kopiera snutten</button>
-        <a id="to-home" class="btn ghost">Testa på startsidan</a>
+        <a class="btn ghost" href="index.html">Till startsidan</a>
       </div>
-    </section>
+    </div>
 
     <!-- Live preview -->
-    <section id="previewCard" class="card">
+    <div id="previewCard" class="preview-card hidden">
       <h2>2) Live-förhandsvisning</h2>
-      <div id="iframe-host" class="iframe-wrapper">
-        <p class="muted" style="padding:12px">&nbsp;Laddar widget…</p>
-      </div>
-    </section>
+      <div id="previewBox" class="preview-box"><p class="muted" style="padding:10px">&nbsp;Laddar widget…</p></div>
+      <p class="small muted" style="text-align:center;margin-top:8px">
+        Förhandsvisningen är begränsad (10 frågor) och fungerar här på vår domän. När du bäddar in på din webbplats försvinner begränsningen.
+      </p>
+    </div>
 
-    <!-- Portal -->
-    <section class="card">
+    <!-- Portal/Administration -->
+    <div class="card glass">
       <h2>Hantera betalning</h2>
-      <div class="actions">
+      <div class="grid grid-auto-2auto">
         <button id="portal" class="btn primary">Öppna kundportal</button>
         <a class="btn secondary" href="admin.html">Ladda upp dokument i Admin</a>
       </div>
       <p class="muted small" id="status"></p>
-    </section>
+    </div>
   </main>
 
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
-  <script>
-    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-    const WIDGET = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+<script>
+const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
 
-    function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
-    async function getJson(url){
-      try { const r=await fetch(url); const t=await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
-      catch(err){ return { ok:false, status:0, data:{ error:err?.message||"Nätverksfel" } }; }
-    }
-    async function postJson(url, body){
-      try { const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body: body?JSON.stringify(body):null}); const t=await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
-      catch(err){ return { ok:false, status:0, data:{ error:err?.message||"Nätverksfel" } }; }
-    }
-    function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
-    function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
+function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
+async function getJson(url){ const r = await fetch(url); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+async function postJson(url, body){ const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : null}); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+function showWarn(html){ const w = document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML = html; }
+function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
-    function widgetSrc(customerId){
-      const u = new URL(WIDGET);
-      u.searchParams.set("customerId", customerId);
-      u.searchParams.set("api", API);
-      u.searchParams.set("preview", "1"); // hint till widget/BE om förhandsvisning
-      return u.toString();
-    }
+function renderActive(snippet, cid){
+  document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
+  document.getElementById("snippet").textContent = snippet;
+  document.getElementById("snippetCard").classList.remove("hidden");
+  document.getElementById("previewCard").classList.remove("hidden");
 
-    // Sätter/uppdaterar iframe-källan
-    function setIframe(src){
-      const host = document.getElementById("iframe-host");
-      host.innerHTML = "";
-      const iframe = document.createElement("iframe");
-      iframe.src = src;
-      host.appendChild(iframe);
-    }
+  // Sätt preview=1 i iframe-URL:en så att servern tillåter 10 frågor från vår domän
+  const host = document.getElementById("previewBox");
+  host.innerHTML = "";
+  const srcMatch = snippet.match(/src="([^"]+)"/i);
+  const iframe = document.createElement("iframe");
+  let src = srcMatch ? srcMatch[1] : "";
+  const u = new URL(src);
+  u.searchParams.set("preview", "1");
+  iframe.src = u.toString();
+  host.appendChild(iframe);
 
-    // När vi har en "riktig" snippet kan vi extrahera dess src
-    function srcFromSnippet(snippet){
-      const m = snippet && snippet.match(/src="([^"]+)"/i);
-      return m ? m[1] : null;
-    }
+  document.getElementById("copy").onclick = async () => {
+    await navigator.clipboard.writeText(snippet);
+    const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
+  };
+}
 
-    (async function(){
-      const qs = new URLSearchParams(location.search);
-      const cid = qs.get("cid") || qs.get("customerId");
-      if(!cid){
-        showWarn("<strong>Saknar kund-ID.</strong> Sidan öppnas med <code>?cid=…</code>.");
-        return;
-      }
+(async function () {
+  const qs  = new URLSearchParams(location.search);
+  const cid = qs.get("cid") || qs.get("customerId");
+  if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Sidan öppnas med <code>?cid=…</code>."); return; }
 
-      // Visa förhandsvisning OMEDELBART (fallback till widget)
-      setIframe(widgetSrc(cid));
+  async function tryLoadSnippet(){
+    const sn = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
+    if (sn.ok && sn.data && sn.data.snippet){ hideWarn(); renderActive(sn.data.snippet, cid); return true; }
+    return false;
+  }
 
-      // Knapp: Testa på startsidan (#demo) med rätt kund
-      const toHome = document.getElementById("to-home");
-      if (toHome) toHome.href = `index.html?cid=${encodeURIComponent(cid)}#demo`;
+  // 1) Försök direkt
+  if (await tryLoadSnippet()) return;
 
-      // Försök hämta snippet → om OK uppdatera iframe till “riktiga” src
-      async function tryLoadSnippet(){
-        const sn = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
-        if (sn.ok && sn.data && sn.data.snippet){
-          hideWarn();
-          const src = srcFromSnippet(sn.data.snippet);
-          if (src) setIframe(src);
-          document.getElementById("snippet").textContent = sn.data.snippet;
-          document.getElementById("snippetCard").classList.remove("hidden");
-          document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
-          return true;
-        }
-        return false;
-      }
+  // 2) Synka status om webhooken är sen
+  await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
 
-      // 1) Direktförsök
-      if (await tryLoadSnippet()) return;
+  // 3) Försök igen
+  if (await tryLoadSnippet()) return;
 
-      // 2) Be servern synka (ifall webhook ligger efter)
-      await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
+  // 4) Visa åtgärder + status
+  const st = await getJson(`${API}/api/public/status?customerId=${encodeURIComponent(cid)}`);
+  const statusText = (st.ok && st.data)
+    ? `status: <code>${st.data.subscriptionStatus || "-"}</code>, kort: <code>${st.data.hasPaymentMethod ? "ja" : "nej"}</code>`
+    : "okänt (kunde inte hämta status)";
 
-      // 3) Försök igen
-      if (await tryLoadSnippet()) return;
+  showWarn(`
+    Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
+    <div class="grid grid-auto-2auto">
+      <a id="openCheckout" class="btn primary">Öppna Checkout</a>
+      <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
+    </div>
+    <p class="muted small" style="margin-top:8px">Serverns status: ${statusText}</p>
+    <div><button id="retry" class="btn ghost" style="margin-top:8px">Kontrollera igen</button></div>
+  `);
 
-      // 4) Visa åtgärder + status
-      const st = await getJson(`${API}/api/public/status?customerId=${encodeURIComponent(cid)}`);
-      const statusText = (st.ok && st.data)
-        ? `status: <code>${st.data.subscriptionStatus || "-"}</code>, kort: <code>${st.data.hasPaymentMethod ? "ja" : "nej"}</code>`
-        : "okänt (kunde inte hämta status)";
+  document.getElementById("openCheckout").onclick = async () => {
+    const r = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+    if (r.ok && r.data.url) location.href = r.data.url;
+    else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
+  };
+  document.getElementById("openPortal").onclick = async () => {
+    const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+    if (r.ok && r.data.url) location.href = r.data.url;
+    else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+  };
+  document.getElementById("retry").onclick = async () => { location.reload(); };
+})();
 
-      showWarn(`
-        Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
-        <div class="actions"><a id="openCheckout" class="btn primary">Öppna Checkout</a><a id="openPortal" class="btn secondary">Öppna kundportal</a></div>
-        <p class="muted small" style="margin-top:8px">Serverns status: ${statusText}</p>
-        <div><button id="retry" class="btn ghost" style="margin-top:8px">Kontrollera igen</button></div>
-      `);
-
-      document.getElementById("openCheckout").onclick = async () => {
-        const r = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
-        if (r.ok && r.data.url) location.href = r.data.url;
-        else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
-      };
-      document.getElementById("openPortal").onclick = async () => {
-        const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-        if (r.ok && r.data.url) location.href = r.data.url;
-        else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-      };
-      document.getElementById("retry").onclick = () => location.reload();
-
-      // Kopiera-snippet
-      document.getElementById("copy").onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(document.getElementById("snippet").textContent);
-          const s = document.getElementById("status");
-          s.textContent = "Kodsnutt kopierad!";
-          setTimeout(()=>s.textContent="", 2500);
-        } catch (err) {
-          alert("Kunde inte kopiera: " + (err?.message || "okänt fel"));
-        }
-      };
-    })();
-
-    // Kundportal (alltid klickbar)
-    document.getElementById("portal").onclick = async () => {
-      const qs  = new URLSearchParams(location.search);
-      const cid = qs.get("cid") || qs.get("customerId");
-      const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-      if (r.ok && r.data.url) location.href = r.data.url;
-      else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-    };
-  </script>
+// Portal-knappen i nederkortet
+document.getElementById("portal").onclick = async () => {
+  const qs  = new URLSearchParams(location.search);
+  const cid = qs.get("cid") || qs.get("customerId");
+  const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+  if (r.ok && r.data.url) location.href = r.data.url;
+  else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+};
+</script>
 </body>
 </html>
