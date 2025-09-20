@@ -169,5 +169,30 @@
       }
     });
   </script>
+
+  <script>
+  (function(){
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    const demo = document.getElementById("botjahl-demo");
+    if (!demo) return;
+
+    const qs = new URLSearchParams(location.search);
+    const cid = qs.get("cid") || qs.get("customerId");
+    if (!cid) return;
+
+    const u = new URL(demo.src || "https://westjahlconsulting.github.io/ai-chatbot-frontend/");
+    u.searchParams.set("customerId", cid);
+    u.searchParams.set("api", API);
+    u.searchParams.set("preview", "1");
+    demo.src = u.toString();
+
+    // hoppa direkt till demon
+    const hash = location.hash || "#demo";
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el && el.scrollIntoView) setTimeout(()=>el.scrollIntoView({behavior:"smooth"}), 150);
+    }
+  })();
+</script>
 </body>
 </html>
