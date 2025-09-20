@@ -1,18 +1,59 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>BotJahl – Adminportal</title>
-  <link rel="stylesheet" href="site.css"/>
+  <meta name="description" content="Ladda upp dokument (PDF/DOCX/TXT/MD), se status och indexera – träna din bot.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* Sid-specifik finputsning */
+    body{ overflow-x:hidden; }
+    .hidden{ display:none!important; }
+
+    /* Loader overlay */
+    .loader-backdrop{ position:fixed; inset:0; z-index:60; background:rgba(15,23,42,.55); backdrop-filter: blur(3px); display:none; align-items:center; justify-content:center; }
+    .loader-backdrop.show{ display:flex; }
+    .loader-card{ background:linear-gradient(135deg, rgba(255,255,255,.92), rgba(250,253,255,.92)); border:1px solid rgba(2,6,23,.08); border-radius:16px; padding:22px 26px; min-width:280px; box-shadow:0 10px 30px rgba(2,6,23,.18); display:grid; gap:10px; justify-items:center; text-align:center; }
+    .spinner{ width:38px; height:38px; border-radius:50%; border:4px solid #e5e7eb; border-top-color:#60a5fa; animation:spin .9s linear infinite; }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+    .loader-text{ font-weight:600; color:#0b1220; }
+    .loader-sub{ font-size:13px; color:#6b7280; }
+
+    /* Smidigare knapp-rader */
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .file{ width:100%; }
+
+    /* Logg & filer */
+    #log{ list-style:none; padding:0; margin:10px 0 0; display:grid; gap:6px; }
+    #files{ list-style:none; padding:0; margin:0; display:grid; gap:12px; }
+    #files li{ background:rgba(15,23,42,.65); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; }
+    #files .row{ display:flex; gap:16px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; }
+    #files .muted{ color:#a7b0c0; }
+
+    /* Kort-stil */
+    .glass{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
+    .stack{ display:grid; gap:16px; }
+
+    header.page .muted{ max-width:860px; }
+  </style>
 </head>
 <body>
+  <!-- NAV -->
   <nav>
-    <div class="container">
-      <a href="index.html" class="brand" aria-label="BotJahl">
-        <svg viewBox="0 0 48 48" fill="none" width="28" height="28" aria-hidden="true">
+    <div class="container row">
+      <a href="index.html" class="brand" aria-label="BotJahl startsida">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
           <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
-          <defs><linearGradient id="g1" x1="4" y1="6" x2="46" y2="36"><stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
+          <circle cx="29" cy="20" r="2.4" fill="#0a0f1f"/>
+          <path d="M30 38l-6-4-6 4 2.5-6.5" fill="url(#g2)" opacity=".9"/>
+          <defs>
+            <linearGradient id="g1" x1="4" y1="6" x2="46" y2="36"><stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+            <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
+          </defs>
         </svg>
         BotJahl
       </a>
@@ -23,578 +64,394 @@
     </div>
   </nav>
 
-  <header class="container">
+  <!-- HEADER -->
+  <header class="page container">
+    <span class="badge">Adminportal</span>
     <h1>Träna och hantera din bot</h1>
-    <p class="muted">Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering. Ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.</p>
+    <p class="muted">
+      Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
+      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+    </p>
   </header>
 
-  <main class="container narrow stack">
+  <main class="container stack">
     <!-- LOGIN -->
-    <section id="login-card" class="card">
+    <div id="login-card" class="glass">
       <h2>Logga in</h2>
-      <div class="form-row-2" style="margin-top:8px">
-        <div>
-          <label for="cid" class="small">Kund-ID</label>
-          <input id="cid" placeholder="cxxxxxx" autocomplete="off"/>
+      <div class="form-row-2" style="margin-top:10px">
+        <div><label for="cid">Kund-ID</label><input id="cid" placeholder="cxxxxxx" /></div>
+        <div><label for="email">E-post</label><input id="email" type="email" placeholder="du@företag.se" /></div>
+      </div>
+
+      <div class="actions" style="margin-top:12px">
+        <button id="loginBtn" class="btn primary">Logga in</button>
+        <a class="btn secondary" href="index.html">Till startsidan</a>
+      </div>
+
+      <p id="loginMsg" class="banner err hidden"></p>
+    </div>
+
+    <!-- APP -->
+    <div id="app" class="hidden">
+      <div class="glass">
+        <div class="actions" style="justify-content:space-between">
+          <div>
+            <h2>Uppladdning</h2>
+            <p class="muted" style="margin:6px 0 0">Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.</p>
+          </div>
+          <div class="actions">
+            <button id="reindexAllBtn" class="btn secondary">Reindexera alla</button>
+            <button id="logoutBtn" class="btn ghost">Logga ut</button>
+          </div>
         </div>
-        <div>
-          <label for="email" class="small">E-post</label>
-          <input id="email" type="email" placeholder="du@företag.se" autocomplete="email"/>
+
+        <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
+
+        <div class="actions">
+          <button id="uploadBtn" class="btn primary">Ladda upp</button>
+          <button id="refreshBtn" class="btn secondary">Uppdatera status</button>
+        </div>
+        <ul id="log"></ul>
+      </div>
+
+      <div class="glass">
+        <h2>Dina dokument</h2>
+        <ul id="files"></ul>
+      </div>
+
+      <div class="glass">
+        <h2>Session</h2>
+        <p class="muted" id="who"></p>
+        <div class="actions">
+          <a class="btn secondary" href="index.html">Till startsidan</a>
+          <a class="btn secondary" href="success.html?cid=" id="successLink">Visa min kodsnutt</a>
         </div>
       </div>
-      <div class="actions" style="margin-top:10px">
-        <button id="login-btn" class="btn primary sm">Logga in</button>
-        <a href="index.html" class="btn ghost sm">Till startsidan</a>
-      </div>
-      <p id="login-status" class="small" style="margin-top:8px"></p>
-    </section>
-
-    <!-- ADMIN PANEL -->
-    <section id="panel" class="card" hidden>
-      <h2>Uppladdning</h2>
-      <p id="welcome" class="small muted"></p>
-      <p class="muted">Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.</p>
-
-      <div class="actions" style="margin:10px 0">
-        <button id="reindex-all" class="btn secondary sm">Reindexera alla</button>
-        <button id="logout" class="btn ghost sm">Logga ut</button>
-      </div>
-
-      <div class="actions" style="margin:8px 0">
-        <input id="file" type="file" multiple/>
-        <button id="upload" class="btn primary sm">Ladda upp</button>
-      </div>
-
-      <div class="actions" style="margin:8px 0">
-        <button id="refresh" class="btn secondary sm">Uppdatera status</button>
-      </div>
-      <p id="panel-status" class="small"></p>
-    </section>
-
-    <!-- DOCS -->
-    <section id="docs" class="card" hidden>
-      <h2>Dina dokument</h2>
-      <ul id="doc-list" class="stack" style="margin-top:8px"></ul>
-    </section>
+    </div>
   </main>
 
-  <footer>
-    <div class="container">© 2025 BotJahl</div>
-  </footer>
+  <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
+  <!-- Loader overlay -->
+  <div id="loading" class="loader-backdrop" aria-live="polite" aria-busy="true">
+    <div class="loader-card" role="dialog" aria-modal="true" aria-label="Laddar">
+      <div class="spinner" aria-hidden="true"></div>
+      <div id="loadingText" class="loader-text">Loggar in…</div>
+      <div class="loader-sub">Ett ögonblick</div>
+    </div>
+  </div>
+
+  <!-- JS (oförändrat i logik) -->
   <script>
-  (function(){
+    // === Konfiguration ===
     const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-    const STORAGE_KEY = "botjahl.admin.session";
-    const ALLOWED_EXTENSIONS = ['.pdf','.docx','.txt','.md'];
-    const MIME_FALLBACKS = {
-      '.pdf': 'application/pdf',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      '.txt': 'text/plain',
-      '.md': 'text/markdown'
-    };
 
-    const loginCard = document.getElementById('login-card');
-    const panel = document.getElementById('panel');
-    const docs = document.getElementById('docs');
-    const cidInput = document.getElementById('cid');
-    const emailInput = document.getElementById('email');
-    const loginBtn = document.getElementById('login-btn');
-    const loginStatus = document.getElementById('login-status');
-    const panelStatus = document.getElementById('panel-status');
-    const welcome = document.getElementById('welcome');
-    const fileInput = document.getElementById('file');
-    const uploadBtn = document.getElementById('upload');
-    const refreshBtn = document.getElementById('refresh');
-    const reindexAllBtn = document.getElementById('reindex-all');
-    const logoutBtn = document.getElementById('logout');
-    const docList = document.getElementById('doc-list');
+    // === Element & state ===
+    const qs = new URLSearchParams(location.search);
+    const presetCid = qs.get("cid");
+    if (presetCid) document.getElementById("cid").value = presetCid;
 
-    let auth = null;
+    const tokenKey    = "botjahl.portal.token";
+    const customerKey = "botjahl.portal.customer";
 
-    function applyStatus(el, message, kind = 'info') {
-      if (!el) return;
-      el.textContent = message || '';
-      el.classList.remove('status-info','status-ok','status-error');
-      if (message) {
-        el.classList.add(`status-${kind}`);
+    const loginCard   = document.getElementById("login-card");
+    const app         = document.getElementById("app");
+    const who         = document.getElementById("who");
+    const filesUl     = document.getElementById("files");
+    const logUl       = document.getElementById("log");
+    const successLink = document.getElementById("successLink");
+
+    const loading     = document.getElementById("loading");
+    const loadingText = document.getElementById("loadingText");
+    function showLoading(text){ if(text) loadingText.textContent = text; loading.classList.add("show"); }
+    function hideLoading(){ loading.classList.remove("show"); }
+
+    function setAuth(token, cid){ if (token) localStorage.setItem(tokenKey, token); if (cid) localStorage.setItem(customerKey, cid); }
+    function getToken(){ return localStorage.getItem(tokenKey); }
+    function getCid(){ return localStorage.getItem(customerKey); }
+    function clearAuth(){ localStorage.removeItem(tokenKey); localStorage.removeItem(customerKey); }
+
+    function logout(){
+      clearAuth();
+      app.classList.add("hidden");
+      loginCard.classList.remove("hidden");
+      who.textContent = "";
+      filesUl.innerHTML = "";
+    }
+
+    // === Hjälpare: läs JSON om möjligt, annars text ===
+    async function readBody(res){
+      const text = await res.text();
+      if (!text) return null;
+      const ct = (res.headers.get("content-type") || "").toLowerCase();
+      if (ct.includes("application/json")) {
+        try { return JSON.parse(text); } catch { /* fall-through */ }
       }
+      return text; // plain text
     }
 
-    function setLoginMessage(message, kind = 'info') {
-      applyStatus(loginStatus, message, kind);
-    }
-
-    function setPanelMessage(message, kind = 'info') {
-      applyStatus(panelStatus, message, kind);
-    }
-
-    function showLogin() {
-      loginCard.hidden = false;
-      panel.hidden = true;
-      docs.hidden = true;
-      docList.innerHTML = '';
-      welcome.textContent = '';
-    }
-
-    function showPanel() {
-      loginCard.hidden = true;
-      panel.hidden = false;
-      docs.hidden = false;
-    }
-
-    function saveAuth() {
-      if (auth && auth.token) {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
-      } else {
-        sessionStorage.removeItem(STORAGE_KEY);
+    // === API-wrapper som alltid skickar Bearer vid behov ===
+    async function api(path, opts = {}){
+      const headers = Object.assign({}, opts.headers || {});
+      const tok = getToken();
+      if (tok) headers.Authorization = "Bearer " + tok;
+      if (!headers["Content-Type"] && typeof opts.body === "string") {
+        headers["Content-Type"] = "application/json";
       }
+      const res = await fetch(API + path, { ...opts, headers });
+      const data = await readBody(res);
+      return { res, data };
     }
 
-    function updateWelcome() {
-      if (!welcome) return;
-      if (auth && auth.customerId) {
-        const name = auth.customerName ? auth.customerName : 'kund';
-        welcome.textContent = `Inloggad som ${name} (${auth.customerId})`;
-      } else {
-        welcome.textContent = '';
-      }
+    // === Status-hjälpare + auto-poll ===
+    async function getStatus(){
+      const { res, data } = await api("/api/uploads/status");
+      if (!res.ok) return [];
+      return Array.isArray(data) ? data : [];
     }
 
-    function unauthorizedError() {
-      const err = new Error('Sessionen har gått ut.');
-      err.code = 'unauthorized';
-      return err;
+    async function pollUntilIndexed(objectNames, timeout=20000, interval=1200){
+      const deadline = Date.now() + timeout;
+      while(Date.now() < deadline){
+        const list = await getStatus();
+        const done = objectNames.every(n => list.find(x => x.objectName === n)?.indexed);
+        if (done) { await refreshStatus(); return true; }
+        await new Promise(r => setTimeout(r, interval));
+      }
+      // Timeout – visa ändå aktuell status
+      await refreshStatus();
+      return false;
     }
 
-    function handleLoggedOut(message, kind = 'info') {
-      auth = null;
-      saveAuth();
-      showLogin();
-      setPanelMessage('');
-      if (message) setLoginMessage(message, kind);
-    }
+    // === Login ===
+    async function login(){
+      const customerId = document.getElementById("cid").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const msg = document.getElementById("loginMsg");
+      msg.textContent = "";
+      msg.classList.add("hidden");
 
-    async function authedFetch(path, options = {}) {
-      if (!auth || !auth.token) throw unauthorizedError();
-      const opts = { ...options };
-      const headers = new Headers(opts.headers || {});
-      headers.set('Authorization', `Bearer ${auth.token}`);
-      if (opts.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-      opts.headers = headers;
-      const res = await fetch(`${API}${path}`, opts);
-      if (res.status === 401) {
-        handleLoggedOut('Sessionen har gått ut. Logga in igen.', 'error');
-        throw unauthorizedError();
-      }
-      return res;
-    }
-
-    async function parseError(res) {
-      let text;
-      try { text = await res.text(); }
-      catch { text = ''; }
-      if (!text) return `Status ${res.status}`;
-      try {
-        const data = JSON.parse(text);
-        return data.error || data.message || JSON.stringify(data);
-      } catch {
-        return text;
-      }
-    }
-
-    function formatBytes(bytes) {
-      const value = Number(bytes);
-      if (!Number.isFinite(value) || value < 0) return '-';
-      if (value < 1024) return `${value} B`;
-      const units = ['KB','MB','GB','TB'];
-      let size = value;
-      let idx = -1;
-      do {
-        size /= 1024;
-        idx++;
-      } while (size >= 1024 && idx < units.length - 1);
-      const decimals = size >= 100 ? 0 : 1;
-      return `${size.toFixed(decimals)} ${units[idx]}`;
-    }
-
-    function formatDate(value) {
-      if (!value) return '-';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return value;
-      return date.toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' });
-    }
-
-    function guessMime(name) {
-      const match = /\.([^.]+)$/.exec(name || '');
-      const ext = match ? `.${match[1].toLowerCase()}` : '';
-      return MIME_FALLBACKS[ext] || 'application/octet-stream';
-    }
-
-    function getExtension(name) {
-      const match = /\.([^.]+)$/.exec(name || '');
-      return match ? `.${match[1].toLowerCase()}` : '';
-    }
-
-    function renderDocs(docsList) {
-      docList.innerHTML = '';
-      if (!Array.isArray(docsList) || docsList.length === 0) {
-        const li = document.createElement('li');
-        li.className = 'small muted';
-        li.textContent = 'Inga dokument uppladdade ännu.';
-        docList.appendChild(li);
-        return;
-      }
-
-      docsList.forEach(doc => {
-        const objectName = doc.objectName ?? doc.ObjectName ?? '';
-        const fileName = objectName.split('/').pop() || objectName || 'Okänt dokument';
-        const sizeBytes = doc.sizeBytes ?? doc.SizeBytes;
-        const contentType = doc.contentType ?? doc.ContentType ?? 'okänd filtyp';
-        const lastModified = doc.lastModified ?? doc.LastModified;
-        const indexed = (doc.indexed ?? doc.Indexed) === true;
-        const indexedAt = doc.indexedAtUtc ?? doc.IndexedAtUtc;
-
-        const li = document.createElement('li');
-        li.className = 'doc-item';
-
-        const meta = document.createElement('div');
-        meta.className = 'doc-meta';
-
-        const title = document.createElement('strong');
-        title.textContent = fileName;
-        meta.appendChild(title);
-
-        const infoLine = document.createElement('div');
-        infoLine.className = 'meta-line';
-        infoLine.textContent = `${formatBytes(sizeBytes)} · ${contentType}`;
-        meta.appendChild(infoLine);
-
-        const modifiedLine = document.createElement('div');
-        modifiedLine.className = 'meta-line';
-        modifiedLine.textContent = `Senast uppdaterad: ${formatDate(lastModified)}`;
-        meta.appendChild(modifiedLine);
-
-        const statusPill = document.createElement('span');
-        statusPill.className = `status-pill ${indexed ? 'ok' : 'pending'}`;
-        statusPill.textContent = indexed
-          ? `Indexerad${indexedAt ? ` ${formatDate(indexedAt)}` : ''}`
-          : 'Ej indexerad ännu';
-        meta.appendChild(statusPill);
-
-        const actions = document.createElement('div');
-        actions.className = 'doc-actions';
-
-        const reBtn = document.createElement('button');
-        reBtn.className = 'btn secondary sm';
-        reBtn.textContent = 'Reindexera';
-        reBtn.addEventListener('click', () => reindexOne(objectName, reBtn));
-
-        const delBtn = document.createElement('button');
-        delBtn.className = 'btn ghost sm';
-        delBtn.textContent = 'Ta bort';
-        delBtn.addEventListener('click', () => deleteOne(objectName, delBtn));
-
-        actions.appendChild(reBtn);
-        actions.appendChild(delBtn);
-
-        li.appendChild(meta);
-        li.appendChild(actions);
-        docList.appendChild(li);
-      });
-    }
-
-    async function loadDocs(showMessage = true) {
-      if (!auth || !auth.token) return false;
-      try {
-        if (showMessage) setPanelMessage('Hämtar dokument…', 'info');
-        const res = await authedFetch('/api/uploads/status');
-        if (!res.ok) {
-          const err = await parseError(res);
-          setPanelMessage(`Kunde inte hämta dokument: ${err}`, 'error');
-          return false;
-        }
-        const data = await res.json();
-        renderDocs(data);
-        if (Array.isArray(data) && data.length > 0) {
-          setPanelMessage(`Hämtade ${data.length} dokument.`, 'ok');
-        } else {
-          setPanelMessage('Inga dokument uppladdade ännu.', 'info');
-        }
-        return true;
-      } catch (err) {
-        if (err.code === 'unauthorized') return false;
-        console.error(err);
-        setPanelMessage(err.message || 'Ett oväntat fel uppstod.', 'error');
-        return false;
-      }
-    }
-
-    async function uploadFile(file) {
-      const ext = getExtension(file.name);
-      if (ext && !ALLOWED_EXTENSIONS.includes(ext)) {
-        throw new Error(`Filtypen ${ext} stöds inte. Tillåtna format: ${ALLOWED_EXTENSIONS.join(', ')}`);
-      }
-
-      const contentType = file.type || guessMime(file.name);
-      const startRes = await authedFetch('/api/uploads/start', {
-        method: 'POST',
-        body: JSON.stringify({ FileName: file.name, ContentType: contentType })
-      });
-      if (!startRes.ok) {
-        throw new Error(await parseError(startRes));
-      }
-      const startData = await startRes.json();
-      const uploadUrl = startData.uploadUrl ?? startData.UploadUrl;
-      const objectName = startData.objectName ?? startData.ObjectName;
-      const maxBytes = Number(startData.maxBytes ?? startData.MaxBytes ?? 0);
-
-      if (maxBytes && file.size > maxBytes) {
-        throw new Error(`Filen är för stor. Max ${formatBytes(maxBytes)}.`);
-      }
-
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'x-ms-blob-type': 'BlockBlob',
-          'Content-Type': contentType
-        },
-        body: file
-      });
-      if (!uploadRes.ok) {
-        const err = await parseError(uploadRes);
-        throw new Error(`Uppladdning misslyckades: ${err}`);
-      }
-
-      const completeRes = await authedFetch('/api/uploads/complete', {
-        method: 'POST',
-        body: JSON.stringify({ ObjectName: objectName, SizeBytes: file.size, ContentType: contentType })
-      });
-      if (!completeRes.ok) {
-        throw new Error(await parseError(completeRes));
-      }
-    }
-
-    async function handleUpload() {
-      if (!auth || !auth.token) {
-        setLoginMessage('Logga in innan du laddar upp filer.', 'error');
-        return;
-      }
-
-      const files = Array.from(fileInput.files || []);
-      if (files.length === 0) {
-        setPanelMessage('Välj minst en fil att ladda upp.', 'error');
-        return;
-      }
-
-      uploadBtn.disabled = true;
-      fileInput.disabled = true;
-
-      let successCount = 0;
-      const errors = [];
-      let unauthorized = false;
-
-      for (const file of files) {
-        try {
-          setPanelMessage(`Laddar upp ${file.name}…`, 'info');
-          await uploadFile(file);
-          successCount++;
-        } catch (err) {
-          if (err.code === 'unauthorized') {
-            unauthorized = true;
-            break;
-          }
-          console.error(err);
-          errors.push(`${file.name}: ${err.message}`);
-        }
-      }
-
-      fileInput.value = '';
-      uploadBtn.disabled = false;
-      fileInput.disabled = false;
-
-      if (unauthorized) return;
-
-      await loadDocs(false);
-
-      if (errors.length > 0) {
-        const summary = `${successCount} av ${files.length} filer uppladdade. ${errors.join(' • ')}`;
-        setPanelMessage(summary, successCount ? 'info' : 'error');
-      } else {
-        setPanelMessage(`Alla ${successCount} filer uppladdade och indexerade.`, 'ok');
-      }
-    }
-
-    async function reindexAll() {
-      if (!auth || !auth.token) return;
-      if (!confirm('Reindexera alla dokument? Detta kan ta några minuter.')) return;
-      reindexAllBtn.disabled = true;
-      try {
-        setPanelMessage('Reindexerar alla dokument…', 'info');
-        const res = await authedFetch('/api/uploads/reindex', {
-          method: 'POST',
-          body: JSON.stringify({})
-        });
-        if (!res.ok) throw new Error(await parseError(res));
-        let count = 0;
-        try {
-          const data = await res.json();
-          count = data.reindexed ?? data.Reindexed ?? 0;
-        } catch { /* ignore json parse */ }
-        await loadDocs(false);
-        setPanelMessage(count ? `Reindexerade ${count} dokument.` : 'Reindexering klar.', 'ok');
-      } catch (err) {
-        if (err.code === 'unauthorized') return;
-        console.error(err);
-        setPanelMessage(err.message || 'Reindexering misslyckades.', 'error');
-      } finally {
-        reindexAllBtn.disabled = false;
-      }
-    }
-
-    async function reindexOne(objectName, btn) {
-      if (!objectName) return;
-      if (!confirm('Reindexera dokumentet på nytt?')) return;
-      btn?.setAttribute('disabled', 'disabled');
-      try {
-        setPanelMessage('Reindexerar dokument…', 'info');
-        const res = await authedFetch('/api/uploads/reindex', {
-          method: 'POST',
-          body: JSON.stringify({ ObjectName: objectName })
-        });
-        if (!res.ok) throw new Error(await parseError(res));
-        await loadDocs(false);
-        setPanelMessage('Dokumentet reindexerades.', 'ok');
-      } catch (err) {
-        if (err.code === 'unauthorized') return;
-        console.error(err);
-        setPanelMessage(err.message || 'Kunde inte reindexera dokumentet.', 'error');
-      } finally {
-        btn?.removeAttribute('disabled');
-      }
-    }
-
-    async function deleteOne(objectName, btn) {
-      if (!objectName) return;
-      if (!confirm('Är du säker på att du vill ta bort dokumentet permanent?')) return;
-      btn?.setAttribute('disabled', 'disabled');
-      try {
-        setPanelMessage('Tar bort dokument…', 'info');
-        const res = await authedFetch('/api/uploads/file', {
-          method: 'DELETE',
-          body: JSON.stringify({ ObjectName: objectName })
-        });
-        if (!res.ok) throw new Error(await parseError(res));
-        await loadDocs(false);
-        setPanelMessage('Dokumentet togs bort.', 'ok');
-      } catch (err) {
-        if (err.code === 'unauthorized') return;
-        console.error(err);
-        setPanelMessage(err.message || 'Kunde inte ta bort dokumentet.', 'error');
-      } finally {
-        btn?.removeAttribute('disabled');
-      }
-    }
-
-    async function login() {
-      const customerId = (cidInput.value || '').trim();
-      const email = (emailInput.value || '').trim();
-      if (!customerId || !email) {
-        setLoginMessage('Fyll i kund-ID och e-post.', 'error');
-        return;
-      }
-
-      loginBtn.disabled = true;
-      setLoginMessage('Loggar in…', 'info');
-
-      try {
-        const res = await fetch(`${API}/api/portal/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+      try{
+        showLoading("Loggar in…");
+        const res = await fetch(API + "/api/portal/login", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
           body: JSON.stringify({ customerId, email })
         });
-        if (!res.ok) {
-          throw new Error(await parseError(res));
-        }
-        const data = await res.json();
-        const token = data.token ?? data.Token;
-        if (!token) throw new Error('Kunde inte läsa inloggningstoken.');
+        const data = await readBody(res);
 
-        auth = {
-          token,
-          customerId,
-          email,
-          customerName: data.customerName ?? data.CustomerName ?? ''
-        };
-        saveAuth();
-        showPanel();
-        updateWelcome();
-        setLoginMessage('');
-        setPanelMessage('Inloggad. Hämtar dokument…', 'info');
-        await loadDocs();
-      } catch (err) {
-        console.error(err);
-        auth = null;
-        saveAuth();
-        setPanelMessage('');
-        setLoginMessage(err.message || 'Kunde inte logga in.', 'error');
-      } finally {
-        loginBtn.disabled = false;
+        if (!res.ok) {
+          const errText =
+            (data && typeof data === "object" && (data.error || data.message)) ||
+            (typeof data === "string" ? data : "Felaktiga uppgifter.");
+          throw new Error(errText);
+        }
+        if (!data || !data.token) throw new Error("Servern returnerade ingen token.");
+
+        setAuth(data.token, customerId);
+
+        // Ren omladdning
+        const url = new URL(location.href);
+        url.searchParams.set("cid", customerId);
+        url.searchParams.set("logged", "1");
+        location.replace(url.toString());
+      }catch(e){
+        hideLoading();
+        msg.textContent = e.message || "Kunde inte logga in.";
+        msg.classList.remove("hidden");
       }
     }
 
-    function restoreSession() {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        showLogin();
+    // === Lista status ===
+    async function refreshStatus(){
+      filesUl.innerHTML = "<li class='muted'>Laddar…</li>";
+      const { res, data } = await api("/api/uploads/status");
+      filesUl.innerHTML = "";
+
+      if (res.status === 401) {
+        filesUl.innerHTML = "<li class='banner err'>Sessionen har gått ut. Logga in igen.</li>";
+        logout();
         return;
       }
-      try {
-        const stored = JSON.parse(raw);
-        if (!stored || !stored.token || !stored.customerId) {
-          sessionStorage.removeItem(STORAGE_KEY);
-          showLogin();
-          return;
+      if (!res.ok) {
+        const errText = (typeof data === "string" ? data : "Kunde inte hämta status.");
+        filesUl.innerHTML = `<li class='banner err'>${errText}</li>`;
+        return;
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        filesUl.innerHTML = "<li class='muted'>Inga filer ännu.</li>";
+        return;
+      }
+
+      for (const it of data){
+        const li = document.createElement("li");
+        const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
+        li.innerHTML = `
+          <div class="row">
+            <div class="doc-meta">
+              <strong>${(it.objectName || "").split('/').pop()}</strong>
+              <div class="meta-line">
+                ${it.contentType || "okänd"} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
+                ${
+                  it.indexed
+                    ? ` • <span class="status-pill ok">indexerad${it.indexedAtUtc ? ' ('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}</span>`
+                    : ' • <span class="status-pill pending">ej indexerad</span>'
+                }
+              </div>
+            </div>
+            <div class="doc-actions">
+              <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
+              <button class="btn ghost" data-act="delete" data-name="${it.objectName}">Ta bort</button>
+            </div>
+          </div>`;
+        filesUl.appendChild(li);
+      }
+
+      filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => b.onclick = () => reindexOne(b.dataset.name));
+      filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => b.onclick = () => deleteOne(b.dataset.name));
+    }
+
+    // === Reindex ===
+    async function reindexAll(){
+      const before = await getStatus();
+      const names = before.map(d => d.objectName);
+
+      const { res, data } = await api("/api/uploads/reindex", {
+        method: "POST",
+        body: JSON.stringify({ objectName: null })
+      });
+      if (res.status === 401) return logout();
+      if (!res.ok) alert(typeof data === "string" ? data : "Kunde inte starta reindex.");
+
+      await pollUntilIndexed(names);
+    }
+
+    async function reindexOne(name){
+      const { res, data } = await api("/api/uploads/reindex", {
+        method: "POST",
+        body: JSON.stringify({ objectName: name })
+      });
+      if (res.status === 401) return logout();
+      if (!res.ok) alert(typeof data === "string" ? data : "Kunde inte reindexera filen.");
+      await pollUntilIndexed([name]);
+    }
+
+    // === Delete ===
+    async function deleteOne(name){
+      if(!confirm("Ta bort filen?")) return;
+      const { res, data } = await api("/api/uploads/file", {
+        method: "DELETE",
+        body: JSON.stringify({ objectName: name })
+      });
+      if (res.status === 401) return logout();
+      if (!res.ok) alert(typeof data === "string" ? data : "Kunde inte ta bort filen.");
+      await refreshStatus();
+    }
+
+    // === Upload ===
+    async function upload(){
+      const files = document.getElementById("file").files;
+      if(!files || files.length===0) return;
+
+      const uploadedObjectNames = [];
+
+      for (const f of files){
+        const li = document.createElement("li");
+        li.textContent = `Laddar upp ${f.name}…`;
+        logUl.appendChild(li);
+
+        // 1) Start
+        let start;
+        try{
+          start = await api("/api/uploads/start", {
+            method:"POST",
+            body: JSON.stringify({ fileName: f.name, contentType: f.type || "application/octet-stream" })
+          });
+        }catch(err){
+          li.textContent = `Nätverksfel (start): ${err?.message || err}`;
+          continue;
         }
-        auth = stored;
-        cidInput.value = stored.customerId || '';
-        emailInput.value = stored.email || '';
-        showPanel();
-        updateWelcome();
-        setLoginMessage('');
-        setPanelMessage('Återställer session…', 'info');
-        loadDocs().then(ok => {
-          if (ok) setPanelMessage('Sessionen återställd.', 'ok');
-        });
-      } catch {
-        sessionStorage.removeItem(STORAGE_KEY);
-        showLogin();
+        if (start.res.status === 401) { logout(); return; }
+        if (!start.res.ok || !start.data || !start.data.uploadUrl){
+          li.textContent = `Fel vid start: ${typeof start.data === "string" ? start.data : "okänt fel"}`;
+          continue;
+        }
+
+        // 2) PUT till SAS
+        try{
+          const put = await fetch(start.data.uploadUrl, {
+            method: "PUT",
+            headers: { "x-ms-blob-type":"BlockBlob", "Content-Type": f.type || "application/octet-stream" },
+            body: f
+          });
+          if (!put.ok){
+            li.textContent = `Fel vid PUT: ${put.status}`;
+            continue;
+          }
+        }catch(err){
+          li.textContent = `Nätverksfel (PUT): ${err?.message || err}`;
+          continue;
+        }
+
+        // 3) Complete
+        try{
+          const comp = await api("/api/uploads/complete", {
+            method:"POST",
+            body: JSON.stringify({
+              objectName: start.data.objectName,
+              sizeBytes: f.size,
+              contentType: f.type || "application/octet-stream"
+            })
+          });
+          if (!comp.res.ok){
+            li.textContent = `Fel vid complete: ${typeof comp.data === "string" ? comp.data : "okänt fel"}`;
+            continue;
+          }
+        }catch(err){
+          li.textContent = `Nätverksfel (complete): ${err?.message || err}`;
+          continue;
+        }
+
+        uploadedObjectNames.push(start.data.objectName);
+        li.innerHTML = `<span class="status-ok">✔</span> Klar: ${f.name}`;
+      }
+
+      if (uploadedObjectNames.length){
+        await pollUntilIndexed(uploadedObjectNames);
+      }else{
+        await refreshStatus();
       }
     }
 
-    loginBtn?.addEventListener('click', login);
-    logoutBtn?.addEventListener('click', () => handleLoggedOut('Du har loggats ut.'));
-    refreshBtn?.addEventListener('click', () => loadDocs());
-    reindexAllBtn?.addEventListener('click', reindexAll);
-    uploadBtn?.addEventListener('click', handleUpload);
+    // === Event hooks ===
+    document.getElementById("loginBtn").onclick   = login;
+    document.getElementById("logoutBtn").onclick  = logout;
+    document.getElementById("refreshBtn").onclick = refreshStatus;
+    document.getElementById("uploadBtn").onclick  = upload;
+    document.getElementById("reindexAllBtn").onclick = reindexAll;
 
-    [cidInput, emailInput].forEach(input => {
-      input?.addEventListener('keydown', ev => {
-        if (ev.key === 'Enter') {
-          ev.preventDefault();
-          login();
+    document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
+
+    // === Boot ===
+    (async function boot(){
+      const token = getToken();
+      const cid   = getCid();
+      if (token && cid){
+        loginCard.classList.add("hidden");
+        app.classList.remove("hidden");
+        who.textContent = `Inloggad (${cid})`;
+        successLink.href = "success.html?cid=" + encodeURIComponent(cid);
+        await refreshStatus();
+
+        const url = new URL(location.href);
+        if (url.searchParams.has("logged")) {
+          url.searchParams.delete("logged");
+          history.replaceState({}, "", url.toString());
         }
-      });
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && auth && auth.token) {
-        loadDocs(false);
       }
-    });
-
-    restoreSession();
-  })();
+    })();
   </script>
 </body>
 </html>

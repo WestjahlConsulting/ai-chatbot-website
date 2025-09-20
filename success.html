@@ -8,27 +8,42 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
   <style>
-    /* Mindre, centrerad förhandsvisning som inte tar över hela sidan */
-    .preview-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
-    .preview-box{
-      width:min(100%, 820px);
-      margin:10px auto 0;
-      /* lite lägre höjd + bättre mobilbeteende */
-      height:clamp(420px, 62vh, 700px);
-      border:1px solid #e5e7eb;border-radius:14px;
-      overflow:hidden;background:#fff;
-      box-shadow:0 12px 40px rgba(2,6,23,.22);
+    /* Sid-specifik finputsning utan att röra global CSS */
+    body { overflow-x:hidden; }
+
+    .page header, header.page { margin-top: 12px; }
+
+    /* Kort + layout */
+    .glass { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+    .stack { display:grid; gap:16px; }
+
+    /* Snippet-rutan */
+    #snippetCard pre {
+      background:#0f172a; color:#cfe3ff; border-radius:12px; padding:12px;
+      overflow:auto; border:1px solid rgba(255,255,255,.12);
     }
-    .preview-box iframe{display:block;width:100%;height:100%;border:0}
+
+    /* Förhandsvisningsram – mindre, centrerad och utan overflow */
+    .preview-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
+    .preview-wrap  { display:flex; justify-content:center; }
+    .preview-box{
+      width:100%;
+      max-width: 900px;
+      height: clamp(460px, 68vh, 720px);
+      border: 1px solid var(--ring);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 12px 40px rgba(2,6,23,.22);
+    }
+    .preview-box iframe{ display:block; width:100%; height:100%; border:0 }
+
+    /* Små knappar i rad, inte fullbredd */
+    .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .actions .btn { min-width: auto; }
+
     .hidden{display:none!important}
     .small{font-size:12px}
-    /* Viktigt: radbryt kodsnutten så sidan inte får horisontell scroll */
-    #snippetCard pre{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
-    /* För säkerhets skull – ingen horisontell scroll på sidan */
-    html,body{max-width:100%;overflow-x:hidden}
-    @media (max-width:640px){
-      .preview-box{height:70vh;border-radius:12px}
-    }
   </style>
 </head>
 <body>
@@ -62,33 +77,36 @@
     <p class="muted">Här är din kodsnutt och en live-förhandsvisning. Klistra in snutten på din webbplats.</p>
   </header>
 
-  <main class="container grid">
+  <main class="container stack">
+    <!-- Notis/åtgärder -->
     <div id="warn" class="card hidden"></div>
 
     <!-- Snippet -->
     <div id="snippetCard" class="card glass hidden">
       <h2>1) Kodsnutt att klistra in</h2>
       <pre><code id="snippet">Laddar…</code></pre>
-      <div class="grid grid-1-2auto">
-        <p class="muted">Placera där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
+      <div class="actions">
         <button id="copy" class="btn secondary">Kopiera snutten</button>
         <a class="btn ghost" href="index.html">Till startsidan</a>
       </div>
+      <p class="muted small" style="margin-top:6px">Placera snutten där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
     </div>
 
     <!-- Live preview -->
-    <div id="previewCard" class="preview-card hidden">
+    <section id="previewCard" class="preview-card hidden">
       <h2>2) Live-förhandsvisning</h2>
-      <div id="previewBox" class="preview-box"><p class="muted" style="padding:10px">&nbsp;Laddar widget…</p></div>
-      <p class="small muted" style="text-align:center;margin-top:8px">
-        Förhandsvisningen är begränsad (10 frågor) och fungerar här på vår domän. När du bäddar in på din webbplats försvinner begränsningen.
+      <div class="preview-wrap">
+        <div id="previewBox" class="preview-box"><p class="muted" style="padding:10px">&nbsp;Laddar widget…</p></div>
+      </div>
+      <p class="small muted" style="text-align:center;margin-top:10px">
+        Förhandsvisningen är begränsad (10 frågor) här på vår domän. När du bäddar in på din webbplats försvinner begränsningen.
       </p>
-    </div>
+    </section>
 
     <!-- Portal/Administration -->
     <div class="card glass">
       <h2>Hantera betalning</h2>
-      <div class="grid grid-auto-2auto">
+      <div class="actions">
         <button id="portal" class="btn primary">Öppna kundportal</button>
         <a class="btn secondary" href="admin.html">Ladda upp dokument i Admin</a>
       </div>
@@ -98,95 +116,95 @@
 
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
-<script>
-const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+  <script>
+    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
 
-function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
-async function getJson(url){ const r = await fetch(url); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
-async function postJson(url, body){ const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : null}); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
-function showWarn(html){ const w = document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML = html; }
-function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
+    function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
+    async function getJson(url){ const r = await fetch(url); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+    async function postJson(url, body){ const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : null}); const t = await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+    function showWarn(html){ const w = document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML = html; }
+    function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
-function renderActive(snippet, cid){
-  document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
-  document.getElementById("snippet").textContent = snippet;
-  document.getElementById("snippetCard").classList.remove("hidden");
-  document.getElementById("previewCard").classList.remove("hidden");
+    function renderActive(snippet, cid){
+      document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
+      document.getElementById("snippet").textContent = snippet;
+      document.getElementById("snippetCard").classList.remove("hidden");
+      document.getElementById("previewCard").classList.remove("hidden");
 
-  // Sätt preview=1 i iframe-URL:en så att servern tillåter 10 frågor från vår domän
-  const host = document.getElementById("previewBox");
-  host.innerHTML = "";
-  const srcMatch = snippet.match(/src="([^"]+)"/i);
-  const iframe = document.createElement("iframe");
-  let src = srcMatch ? srcMatch[1] : "";
-  const u = new URL(src);
-  u.searchParams.set("preview", "1");
-  iframe.src = u.toString();
-  host.appendChild(iframe);
+      // Sätt preview=1 i iframe-URL:en så att servern tillåter 10 frågor från vår domän
+      const host = document.getElementById("previewBox");
+      host.innerHTML = "";
+      const srcMatch = snippet.match(/src="([^"]+)"/i);
+      const iframe = document.createElement("iframe");
+      let src = srcMatch ? srcMatch[1] : "";
+      const u = new URL(src);
+      u.searchParams.set("preview", "1");
+      iframe.src = u.toString();
+      host.appendChild(iframe);
 
-  document.getElementById("copy").onclick = async () => {
-    await navigator.clipboard.writeText(snippet);
-    const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
-  };
-}
+      document.getElementById("copy").onclick = async () => {
+        await navigator.clipboard.writeText(snippet);
+        const s = document.getElementById("status"); s.textContent = "Kodsnutt kopierad!"; setTimeout(()=>s.textContent="", 2500);
+      };
+    }
 
-(async function () {
-  const qs  = new URLSearchParams(location.search);
-  const cid = qs.get("cid") || qs.get("customerId");
-  if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Sidan öppnas med <code>?cid=…</code>."); return; }
+    (async function () {
+      const qs  = new URLSearchParams(location.search);
+      const cid = qs.get("cid") || qs.get("customerId");
+      if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Sidan öppnas med <code>?cid=…</code>."); return; }
 
-  async function tryLoadSnippet(){
-    const sn = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
-    if (sn.ok && sn.data && sn.data.snippet){ hideWarn(); renderActive(sn.data.snippet, cid); return true; }
-    return false;
-  }
+      async function tryLoadSnippet(){
+        const sn = await getJson(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`);
+        if (sn.ok && sn.data && sn.data.snippet){ hideWarn(); renderActive(sn.data.snippet, cid); return true; }
+        return false;
+      }
 
-  // 1) Försök direkt
-  if (await tryLoadSnippet()) return;
+      // 1) Försök direkt
+      if (await tryLoadSnippet()) return;
 
-  // 2) Synka status om webhooken är sen
-  await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
+      // 2) Synka status om webhooken är sen
+      await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
 
-  // 3) Försök igen
-  if (await tryLoadSnippet()) return;
+      // 3) Försök igen
+      if (await tryLoadSnippet()) return;
 
-  // 4) Visa åtgärder + status
-  const st = await getJson(`${API}/api/public/status?customerId=${encodeURIComponent(cid)}`);
-  const statusText = (st.ok && st.data)
-    ? `status: <code>${st.data.subscriptionStatus || "-"}</code>, kort: <code>${st.data.hasPaymentMethod ? "ja" : "nej"}</code>`
-    : "okänt (kunde inte hämta status)";
+      // 4) Visa åtgärder + status
+      const st = await getJson(`${API}/api/public/status?customerId=${encodeURIComponent(cid)}`);
+      const statusText = (st.ok && st.data)
+        ? `status: <code>${st.data.subscriptionStatus || "-"}</code>, kort: <code>${st.data.hasPaymentMethod ? "ja" : "nej"}</code>`
+        : "okänt (kunde inte hämta status)";
 
-  showWarn(`
-    Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
-    <div class="grid grid-auto-2auto">
-      <a id="openCheckout" class="btn primary">Öppna Checkout</a>
-      <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
-    </div>
-    <p class="muted small" style="margin-top:8px">Serverns status: ${statusText}</p>
-    <div><button id="retry" class="btn ghost" style="margin-top:8px">Kontrollera igen</button></div>
-  `);
+      showWarn(`
+        Din bot är ännu inte aktiverad. Slutför betalningssteget i Checkout eller lägg in kort i portalen.<br/><br/>
+        <div class="actions">
+          <a id="openCheckout" class="btn primary">Öppna Checkout</a>
+          <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
+          <button id="retry" class="btn ghost">Kontrollera igen</button>
+        </div>
+        <p class="muted small" style="margin-top:8px">Serverns status: ${statusText}</p>
+      `);
 
-  document.getElementById("openCheckout").onclick = async () => {
-    const r = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
-    if (r.ok && r.data.url) location.href = r.data.url;
-    else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
-  };
-  document.getElementById("openPortal").onclick = async () => {
-    const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-    if (r.ok && r.data.url) location.href = r.data.url;
-    else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-  };
-  document.getElementById("retry").onclick = async () => { location.reload(); };
-})();
+      document.getElementById("openCheckout").onclick = async () => {
+        const r = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+        if (r.ok && r.data.url) location.href = r.data.url;
+        else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
+      };
+      document.getElementById("openPortal").onclick = async () => {
+        const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+        if (r.ok && r.data.url) location.href = r.data.url;
+        else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+      };
+      document.getElementById("retry").onclick = async () => { location.reload(); };
+    })();
 
-// Portal-knappen i nederkortet
-document.getElementById("portal").onclick = async () => {
-  const qs  = new URLSearchParams(location.search);
-  const cid = qs.get("cid") || qs.get("customerId");
-  const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-  if (r.ok && r.data.url) location.href = r.data.url;
-  else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-};
-</script>
+    // Portal-knappen i nederkortet
+    document.getElementById("portal").onclick = async () => {
+      const qs  = new URLSearchParams(location.search);
+      const cid = qs.get("cid") || qs.get("customerId");
+      const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+      if (r.ok && r.data.url) location.href = r.data.url;
+      else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+    };
+  </script>
 </body>
 </html>
