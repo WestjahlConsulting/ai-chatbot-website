@@ -9,7 +9,7 @@
 }
 
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{min-height:100%}
 html,body{overflow-x:hidden} /* förhindra sidoförskjutning horisontellt */
 body{
   margin:0;
@@ -66,14 +66,15 @@ nav .container{display:flex;align-items:center;justify-content:space-between;pad
 /* --- demo (iframe) --- */
 /* större & centrerad demo – utan att orsaka overflow */
 #iframe-demo .iframe-wrapper{
-  width:min(960px, 100%);
-  margin:16px auto;
+  width:min(100%, 960px);
+  margin:20px auto;
   background:var(--card);
   border-radius:16px;
   border:1px solid var(--ring);
   box-shadow:0 16px 50px rgba(2,6,23,.25);
   overflow:hidden;
-  height:clamp(560px, 74vh, 880px);
+  height:clamp(620px, 82vh, 960px);
+  overscroll-behavior:contain;
 }
 #iframe-demo .iframe-wrapper iframe{display:block;width:100%;height:100%;border:0}
 
@@ -105,9 +106,17 @@ form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130
 
 /* --- success.html preview (samma stil) */
 .preview-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
-.preview-box,#iframe-demo .iframe-wrapper {
-  overscroll-behavior: contain; /* hindra scroll-kedja */
-max-width:960px;margin:10px auto 0;height:clamp(460px,68vh,760px);border:1px solid var(--ring);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 12px 40px rgba(2,6,23,.22)}
+.preview-box{
+  overscroll-behavior:contain; /* hindra scroll-kedja */
+  max-width:960px;
+  margin:10px auto 0;
+  height:clamp(460px,68vh,760px);
+  border:1px solid var(--ring);
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 12px 40px rgba(2,6,23,.22);
+}
 
 /* banners */
 .banner{border-radius:12px;padding:10px 14px;margin-top:10px}
