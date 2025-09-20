@@ -4,8 +4,8 @@
   --fg:#0b1220;
   --muted:#a7b0c0;
   --ring:#e5e7eb;
-  --accent:#22d3ee;
-  --accent-2:#60a5fa;
+  --accent:#22d3ee;   /* cyan */
+  --accent-2:#60a5fa; /* blå */
 }
 
 *{box-sizing:border-box}
@@ -13,22 +13,24 @@ html,body{height:100%}
 body{
   margin:0;
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
-  background:radial-gradient(1200px 600px at 50% -200px,#0b1735 0%,#0b1220 40%,#0a0f1f 100%);
   color:#e5e7eb;
+  background:
+    radial-gradient(1200px 600px at 50% -240px,#0b1735 0%,#0b1220 40%,#0a0f1f 100%);
 }
 
-/* --- layout --- */
+/* ====== Layout ====== */
 .container{max-width:1200px;margin:0 auto;padding:0 20px}
-section{padding:32px 0}
-h1,h2,h3{color:#fff;margin:0 0 8px}
+section{padding:36px 0}
+h1,h2,h3{color:#fff;margin:0 0 10px}
 .muted{color:var(--muted)}
-
-/* helpers */
+.small{font-size:12px;color:var(--muted)}
+.center{text-align:center}
 .stack{display:grid;gap:16px}
-.narrow{max-width:980px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:16px}
+.grid-2{grid-template-columns:1fr 1fr}
+.narrow{max-width:980px;margin:0 auto}
 
-/* --- top nav --- */
+/* ====== Nav ====== */
 nav{
   position:sticky; top:0; z-index:30;
   backdrop-filter:saturate(140%) blur(8px);
@@ -36,106 +38,115 @@ nav{
   border-bottom:1px solid rgba(255,255,255,.06);
 }
 nav .container{display:flex;align-items:center;justify-content:space-between;padding:10px 20px}
-.brand{display:flex;gap:10px;align-items:center;text-decoration:none;color:#fff;font-weight:700}
+.brand{display:flex;gap:10px;align-items:center;text-decoration:none;color:#fff;font-weight:800;letter-spacing:.2px}
 .nav-links a{color:#cfd6e3;text-decoration:none;margin-left:16px}
 .nav-links .btn{margin-left:16px}
 
-/* --- buttons --- */
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:0;border-radius:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .15s ease}
+/* ====== Cards ====== */
+.card{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  padding:18px;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 60px rgba(2,6,23,.28);
+  border-color:rgba(255,255,255,.18);
+}
+.glass{backdrop-filter:saturate(140%) blur(6px)}
+.badge{
+  display:inline-block;padding:4px 10px;border-radius:999px;
+  background:rgba(255,255,255,.12);color:#e5e7eb;font-size:12px
+}
+
+/* ====== Buttons ====== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:12px 16px;border:0;border-radius:12px;
+  font-weight:800;cursor:pointer;text-decoration:none;letter-spacing:.2px;
+  transition:transform .12s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.btn:active{transform:translateY(1px)}
 .btn[disabled]{opacity:.55;cursor:not-allowed}
-.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0f1f}
+
+.btn.primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#081220;
+  box-shadow:0 8px 28px rgba(96,165,250,.28);
+}
+.btn.primary:hover{box-shadow:0 12px 34px rgba(96,165,250,.42)}
 .btn.secondary{background:#1e293b;color:#fff}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#e5e7eb}
-.btn.sm{padding:8px 12px;border-radius:10px;font-weight:600}
+.btn.secondary:hover{box-shadow:0 10px 28px rgba(2,6,23,.35)}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.14);color:#e5e7eb}
+.btn.ghost:hover{border-color:rgba(255,255,255,.24)}
 
-/* --- hero --- */
-.hero .wrap{display:grid;gap:16px;grid-template-columns:1.1fr .9fr}
-.hero .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:#e5e7eb;font-size:12px}
+/* Liten knapp */
+.btn.sm{padding:8px 12px;border-radius:10px;font-weight:700}
 
-/* --- demo (iframe) --- */
+/* ====== Hero ====== */
+.hero .wrap{display:grid;gap:18px;grid-template-columns:1.1fr .9fr}
+.hero .card{min-height:100%}
+.hero h1{font-size:36px;line-height:1.15}
+.hero .feature{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+.hero .dot{width:10px;height:10px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  margin-top:6px;flex:0 0 auto}
+
+/* Små “steg”-brickor */
+.step{
+  display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);padding:12px;border-radius:12px
+}
+.step .num{
+  width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#081220
+}
+
+/* ====== Demo (iframe) ====== */
 #iframe-demo .iframe-wrapper{
   background:var(--card);
   border-radius:16px;
   border:1px solid var(--ring);
   box-shadow:0 16px 50px rgba(2,6,23,.25);
   overflow:hidden;
-  height:clamp(520px,72vh,840px);
+  height:clamp(520px,72vh,820px);  /* bra standardhöjd utan att “ta över” sidan */
 }
-#iframe-demo .iframe-wrapper iframe{display:block;width:100%;height:100%;border:0}
+#iframe-demo iframe{display:block;width:100%;height:100%;border:0}
 
-/* --- cards & grid --- */
-.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
-.grid{display:grid;gap:14px}
-.grid-2{grid-template-columns:1fr 1fr}
-
-/* --- forms --- */
-form input,
-#login-card input,
-#panel input[type="file"]{
-  width:100%;
-  padding:12px 14px;
-  border:1px solid rgba(255,255,255,.15);
-  background:#0f172a;
-  color:#e5e7eb;
-  border-radius:12px;
-  font-size:16px;
+/* ====== Form ====== */
+form label{display:block;font-size:14px;color:#cbd5e1;margin:2px 0 6px}
+form input{
+  width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.15);
+  background:#0f172a;color:#e5e7eb;border-radius:12px;font-size:16px;
+  transition:border-color .15s ease, box-shadow .2s ease
 }
 form input::placeholder{color:#8ea0b5}
 form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
-
-/* Rättning: denna regel gällde globalt. Nu gäller den bara signup-formuläret. */
-#signup button[type="submit"]{ width:100%; }
-
-/* Standard stackad form-rad (vertikal) */
 .form-row{display:grid;gap:12px;grid-template-columns:1fr}
+#signup .actions{margin-top:2px}
+#signup button[type="submit"]{width:100%}
 
-/* 2-kolumners rad – används på admin-login */
-.form-row-2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-
-/* (success.html) kompakt preview-layout */
-.preview-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
-.preview-box{max-width:960px;margin:10px auto 0;height:clamp(460px,68vh,760px);border:1px solid var(--ring);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 12px 40px rgba(2,6,23,.22)}
-
-/* banners */
+/* Banners */
 .banner{border-radius:12px;padding:10px 14px;margin-top:10px}
 .banner.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .banner.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
-.small{font-size:12px;color:var(--muted)}
 
-/* status helpers */
-.status-info{color:var(--muted)}
-.status-ok{color:#34d399}
-.status-error{color:#fca5a5}
-
-/* --- footer --- */
+/* ====== Footer ====== */
 footer{border-top:1px solid rgba(255,255,255,.06);margin-top:40px}
 footer .container{padding:14px 20px;color:#a7b0c0}
 
-/* --- admin doc list --- */
-#doc-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
-.doc-item{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(15,23,42,.65);flex-wrap:wrap}
-.doc-meta{flex:1;min-width:200px}
-.doc-meta strong{display:block;font-size:16px;color:#fff}
-.doc-meta .meta-line{margin-top:4px;font-size:12px;color:var(--muted)}
-.status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;margin-top:10px}
-.status-pill.ok{background:rgba(34,197,94,.15);color:#34d399}
-.status-pill.pending{background:rgba(249,115,22,.15);color:#fb923c}
-.doc-actions{display:flex;gap:8px;flex-wrap:wrap}
-
-/* --- responsive --- */
+/* ====== Responsive ====== */
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr}
 }
 @media (max-width:640px){
-  #iframe-demo .iframe-wrapper{height:82vh}
+  #iframe-demo .iframe-wrapper{height:80vh}
   .grid-2{grid-template-columns:1fr}
-  .form-row-2{grid-template-columns:1fr}
 }
 
-/* success.html – gör snippet radbruten + säkra bort horisontell scroll */
-#snippetCard pre{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
-html,body{max-width:100%;overflow-x:hidden}
-
-/* success.html – förhandsruta (om du hellre vill styra här än inline) */
-.preview-box{width:min(100%,820px);height:clamp(420px,62vh,700px)}
+/* ====== Motion prefers ====== */
+@media (prefers-reduced-motion: reduce){
+  .btn,.card{transition:none}
+}
