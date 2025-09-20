@@ -146,3 +146,20 @@ footer .container{padding:14px 20px;color:#a7b0c0;text-align:center} /* <— cen
 @media (prefers-reduced-motion: reduce){
   .btn,.card{transition:none}
 }
+
+/* --- Fix: undvik "dubbelscroll" när chat-iframe:n är i fokus --- */
+
+/* Visa alltid en (1) vertikal scrollbar och ta bort ev. horisontell spillbredd. */
+html { overflow-y: scroll; }
+body { overflow-x: hidden; }
+
+/* Hindra att scrollbeteende bubblar mellan förhandsvisningen och sidan. */
+#iframe-demo .iframe-wrapper { overscroll-behavior: contain; }
+
+/* Säkerställ att iframen inte skapar en egen extra scrollbredd. */
+#iframe-demo .iframe-wrapper iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
