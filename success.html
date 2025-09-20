@@ -11,18 +11,24 @@
     /* Mindre, centrerad förhandsvisning som inte tar över hela sidan */
     .preview-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
     .preview-box{
-      max-width: 960px;
-      margin: 10px auto 0;
-      height: clamp(460px, 68vh, 760px);
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #fff;
-      box-shadow: 0 12px 40px rgba(2,6,23,.22);
+      width:min(100%, 820px);
+      margin:10px auto 0;
+      /* lite lägre höjd + bättre mobilbeteende */
+      height:clamp(420px, 62vh, 700px);
+      border:1px solid #e5e7eb;border-radius:14px;
+      overflow:hidden;background:#fff;
+      box-shadow:0 12px 40px rgba(2,6,23,.22);
     }
     .preview-box iframe{display:block;width:100%;height:100%;border:0}
     .hidden{display:none!important}
     .small{font-size:12px}
+    /* Viktigt: radbryt kodsnutten så sidan inte får horisontell scroll */
+    #snippetCard pre{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+    /* För säkerhets skull – ingen horisontell scroll på sidan */
+    html,body{max-width:100%;overflow-x:hidden}
+    @media (max-width:640px){
+      .preview-box{height:70vh;border-radius:12px}
+    }
   </style>
 </head>
 <body>

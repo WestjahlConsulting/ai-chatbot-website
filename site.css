@@ -132,3 +132,10 @@ footer .container{padding:14px 20px;color:#a7b0c0}
   .grid-2{grid-template-columns:1fr}
   .form-row-2{grid-template-columns:1fr}
 }
+
+/* success.html – gör snippet radbruten + säkra bort horisontell scroll */
+#snippetCard pre{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+html,body{max-width:100%;overflow-x:hidden}
+
+/* success.html – förhandsruta (om du hellre vill styra här än inline) */
+.preview-box{width:min(100%,820px);height:clamp(420px,62vh,700px)}
