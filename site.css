@@ -10,6 +10,7 @@
 
 *{box-sizing:border-box}
 html,body{height:100%}
+html,body{overflow-x:hidden} /* förhindra sidoförskjutning horisontellt */
 body{
   margin:0;
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
@@ -22,10 +23,11 @@ body{
 section{padding:32px 0}
 h1,h2,h3{color:#fff;margin:0 0 8px}
 .muted{color:var(--muted)}
+.center{text-align:center}                /* <— saknades tidigare */
 
 /* helpers */
 .stack{display:grid;gap:16px}
-.narrow{max-width:980px}
+.narrow{max-width:980px;margin:0 auto}    /* säker centrering även på narrow */
 .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 
 /* --- top nav --- */
@@ -53,7 +55,7 @@ nav .container{display:flex;align-items:center;justify-content:space-between;pad
 .btn.secondary{background:#1e293b;color:#fff}
 .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#e5e7eb}
 .btn.sm{padding:8px 12px;border-radius:10px;font-weight:600}
-/* när två knappar står efter varandra utan .actions */
+/* om två knappar står bredvid varandra */
 .btn + .btn{margin-left:10px}
 
 /* --- hero --- */
@@ -62,8 +64,7 @@ nav .container{display:flex;align-items:center;justify-content:space-between;pad
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:#e5e7eb;font-size:12px}
 
 /* --- demo (iframe) --- */
-/* Gör demofönstret större och centrerat samt förhindrar att
-   “telefon”-layouten känns för smal */
+/* större & centrerad demo – utan att orsaka overflow */
 #iframe-demo .iframe-wrapper{
   width:min(960px, 100%);
   margin:16px auto;
@@ -96,14 +97,13 @@ form input,
 form input::placeholder{color:#8ea0b5}
 form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
 
-/* Submit-knappen fullbredd i signup (som du ville från början) */
+/* submit i signup fullbredd (men inte andra knappar) */
 #signup button[type="submit"]{width:100%}
 
-/* Luft runt knappar i formulär så de inte “äter upp” varandra */
-.form-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
-#signup .login-link{display:inline-flex;margin-top:12px}
+/* Luft mellan submit och “Redan kund?” */
+#signup .btn.ghost{display:block;margin-top:12px;text-align:center}
 
-/* --- success.html preview (lämnas här för konsekvent styling) */
+/* --- success.html preview (samma stil) */
 .preview-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
 .preview-box{max-width:960px;margin:10px auto 0;height:clamp(460px,68vh,760px);border:1px solid var(--ring);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 12px 40px rgba(2,6,23,.22)}
 
@@ -129,6 +129,10 @@ form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130
 .status-pill.pending{background:rgba(249,115,22,.15);color:#fb923c}
 .doc-actions{display:flex;gap:8px;flex-wrap:wrap}
 
+/* --- footer --- */
+footer{border-top:1px solid rgba(255,255,255,.06);margin-top:40px}
+footer .container{padding:14px 20px;color:#a7b0c0;text-align:center} /* <— centrera copyright */
+
 /* --- responsive --- */
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr}
@@ -138,7 +142,7 @@ form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130
   .grid-2{grid-template-columns:1fr}
 }
 
-/* ====== Motion prefers ====== */
+/* motion reduce */
 @media (prefers-reduced-motion: reduce){
   .btn,.card{transition:none}
 }
