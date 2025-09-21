@@ -189,7 +189,50 @@ footer .container{padding:14px 20px;color:#a7b0c0;text-align:center} /* <— cen
 html { overflow-y: scroll; }
 body { overflow-x: hidden; }
 
-pre { max-width:100%; overflow:auto; }
+/* Låt långa kodrader inte spränga layouten */
+pre, code { 
+  white-space: pre-wrap;      /* bryt rader */
+  word-break: break-word;     /* bryt mycket långa ord/URL:er */
+}
+
+/* Om din kodsnutt visas i ett input/textarea – hindra flex overflow */
+input[type="text"], textarea {
+  min-width: 0;               /* viktigt i flex-kontekster */
+}
+
+/* Stil för kodsnuttsfält med egen scroll (rekommenderat) */
+.snippet-field {
+  width: 100%;
+  max-width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  background: #0b1220;
+  color: #e2e8f0;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 12px 14px;
+  white-space: nowrap;        /* håll en rad */
+  overflow-x: auto;           /* men scrolla vågrätt inom rutan */
+}
+
+/* Behållare runt snutten (valfritt men snyggt) */
+.codebox {
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* Gör live-iframe helt responsiv utan att påverka sidbredd */
+.widget-frame {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  border: 0;
+  margin-inline: auto;
+  height: min(70vh, 700px);   /* kan justeras */
+}
 
 /* Hindra att scrollbeteende bubblar mellan förhandsvisningen och sidan. */
 #iframe-demo .iframe-wrapper { overscroll-behavior: contain; }
