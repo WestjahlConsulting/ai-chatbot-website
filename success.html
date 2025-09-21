@@ -7,44 +7,50 @@
   <meta name="description" content="Din bot – kodsnutt och förhandsvisning.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
-  <style>
-    /* Sid-specifik finputsning utan att röra global CSS */
-    body { overflow-x:hidden; }
+<style>
+  /* Sid-specifik finputsning utan att röra global CSS */
+  body { overflow-x:hidden; }
 
-    .page header, header.page { margin-top: 12px; }
+  .page header, header.page { margin-top: 12px; }
 
-    /* Kort + layout */
-    .glass { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
-    .stack { display:grid; gap:16px; }
+  .glass { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+  .stack { display:grid; gap:16px; }
 
-    /* Snippet-rutan */
-    #snippetCard pre {
-      background:#0f172a; color:#cfe3ff; border-radius:12px; padding:12px;
-      overflow:auto; border:1px solid rgba(255,255,255,.12);
-    }
+  /* 1) HÅRDA KANTER FÖR KODSNUTTEN – den får scroll i sig själv, inte på sidan */
+  #snippetCard pre {
+    background:#0f172a; color:#cfe3ff; border-radius:12px; padding:12px;
+    border:1px solid rgba(255,255,255,.12);
+    max-width:100%;           /* 👈 viktig */
+    overflow:auto;            /* 👈 viktig: horisontell scroll i pre, inte i body */
+    margin:10px 0;
+  }
+  #snippetCard code{
+    display:block;
+    white-space:pre;          /* behåll snutten exakt som text */
+    word-break:normal;        /* bryt inte URL:en i ordet */
+  }
 
-    /* Förhandsvisningsram – mindre, centrerad och utan overflow */
-    .preview-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
-    .preview-wrap  { display:flex; justify-content:center; }
-    .preview-box{
-      width:100%;
-      max-width: 900px;
-      height: clamp(460px, 68vh, 720px);
-      border: 1px solid var(--ring);
-      border-radius: 14px;
-      overflow: hidden;
-      background: #fff;
-      box-shadow: 0 12px 40px rgba(2,6,23,.22);
-    }
-    .preview-box iframe{ display:block; width:100%; height:100%; border:0 }
+  /* 2) FÖRHANDSVISNINGEN – alltid centrerad och utan spillbredder */
+  .preview-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
+  .preview-wrap  { display:flex; justify-content:center; }
+  .preview-box{
+    width:100%;
+    max-width:960px;          /* lite bredare än tidigare, men låst */
+    height:clamp(460px, 68vh, 760px);
+    border: 1px solid var(--ring);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 12px 40px rgba(2,6,23,.22);
+  }
+  .preview-box iframe{ display:block; width:100%; height:100%; border:0 }
 
-    /* Små knappar i rad, inte fullbredd */
-    .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .actions .btn { min-width: auto; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .actions .btn { min-width: auto; }
 
-    .hidden{display:none!important}
-    .small{font-size:12px}
-  </style>
+  .hidden{display:none!important}
+  .small{font-size:12px}
+</style>
 </head>
 <body>
   <!-- NAV -->

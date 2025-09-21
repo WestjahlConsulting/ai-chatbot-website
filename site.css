@@ -189,6 +189,8 @@ footer .container{padding:14px 20px;color:#a7b0c0;text-align:center} /* <— cen
 html { overflow-y: scroll; }
 body { overflow-x: hidden; }
 
+pre { max-width:100%; overflow:auto; }
+
 /* Hindra att scrollbeteende bubblar mellan förhandsvisningen och sidan. */
 #iframe-demo .iframe-wrapper { overscroll-behavior: contain; }
 
