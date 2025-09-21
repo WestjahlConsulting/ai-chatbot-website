@@ -7,40 +7,33 @@
   <meta name="description" content="Din bot – kodsnutt och förhandsvisning.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
-
   <style>
     html, body { overflow-x: hidden; }
     .glass { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
     .stack { display:grid; gap:16px; }
     .hidden { display:none !important; }
     .small  { font-size:12px; }
-
-    .codebox {
-      background: #0b1220; border: 1px solid #1e293b; border-radius: 12px; padding: 12px;
-    }
-    .snippet-field {
+    .codebox { background:#0b1220; border:1px solid #1e293b; border-radius:12px; padding:12px; }
+    .snippet-field{
       width:100%; max-width:100%;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       font-size:14px; line-height:1.4;
       background:#0b1220; color:#e2e8f0; border:0; border-radius:8px; padding:10px 12px;
       white-space:nowrap; overflow-x:auto; resize:vertical; min-height:56px;
     }
-
-    .preview-card { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
-    .preview-wrap  { display:flex; justify-content:center; }
+    .preview-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
+    .preview-wrap { display:flex; justify-content:center; }
     .preview-box{
-      width:100%; max-width:960px; height:clamp(460px, 68vh, 760px);
+      width:100%; max-width:960px; height:clamp(460px,68vh,760px);
       border:1px solid var(--ring); border-radius:14px; overflow:hidden; background:#fff;
       box-shadow:0 12px 40px rgba(2,6,23,.22);
     }
     .preview-box iframe{ display:block; width:100%; height:100%; border:0; }
-
-    .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .actions .btn { min-width:auto; }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .actions .btn{ min-width:auto; }
   </style>
 </head>
 <body>
-  <!-- NAV -->
   <nav>
     <div class="container row">
       <a href="index.html" class="brand" aria-label="BotJahl startsida">
@@ -73,7 +66,6 @@
   <main class="container stack">
     <div id="warn" class="card hidden"></div>
 
-    <!-- 1) Kodsnutt -->
     <section id="snippetCard" class="card glass hidden">
       <h2>1) Kodsnutt att klistra in</h2>
       <div class="codebox">
@@ -86,7 +78,6 @@
       <p class="muted small" style="margin-top:6px">Placera snutten där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
     </section>
 
-    <!-- 2) Live preview -->
     <section id="previewCard" class="preview-card hidden">
       <h2>2) Live-förhandsvisning</h2>
       <div class="preview-wrap">
@@ -96,11 +87,10 @@
         </div>
       </div>
       <p class="small muted" style="text-align:center;margin-top:10px">
-        Förhandsvisningen är begränsad (10 frågor) här på vår domän. När du bäddar in på din webbplats försvinner begränsningen.
+        Förhandsvisningen är begränsad (5 frågor) här på vår domän. När du bäddar in på din webbplats försvinner begränsningen.
       </p>
     </section>
 
-    <!-- 3) Portal/Administration -->
     <section class="card glass">
       <h2>Hantera betalning</h2>
       <div class="actions">
@@ -111,17 +101,15 @@
     </section>
   </main>
 
-  <footer>
-    <div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div>
-  </footer>
+  <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
   <script>
-    // --- KONSTANTER ---
-    const API         = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-    const WIDGET_URL  = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+    // ---- KONSTANTER ----
+    const API        = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    const WIDGET_URL = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
 
-    // --- HELPERS ---
-    function safeJson(txt){ try { return txt ? JSON.parse(txt) : {}; } catch { return {}; } }
+    // ---- HELPERS ----
+    function safeJson(t){ try{return t?JSON.parse(t):{};}catch{return{};} }
     async function getJson(url){ const r=await fetch(url,{cache:"no-store"}); const t=await r.text(); return {ok:r.ok,status:r.status,data:safeJson(t)}; }
     async function postJson(url,body){ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):null}); const t=await r.text(); return {ok:r.ok,status:r.status,data:safeJson(t)}; }
     function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
@@ -140,7 +128,9 @@
         if (m && m[1]) {
           const u = new URL(m[1]);
           u.searchParams.set("preview","1");
-          document.getElementById("live-preview").src = u.toString();
+          const iframe = document.getElementById("live-preview");
+          iframe.removeAttribute("srcdoc");
+          iframe.src = u.toString();
         }
       }catch(e){ console.warn("Kunde inte läsa iframe-src ur snutten:", e); }
 
@@ -149,27 +139,41 @@
         copyBtn.onclick = async () => {
           try { await navigator.clipboard.writeText(ta.value); copyBtn.textContent="Kopierad!"; }
           catch { ta.select(); document.execCommand("copy"); copyBtn.textContent="Kopierad!"; }
-          setTimeout(()=> copyBtn.textContent="Kopiera snutten", 1600);
+          setTimeout(()=> copyBtn.textContent="Kopiera snutten",1600);
         };
       }
     }
 
-    // --- HUVUDFLÖDE ---
-    (async function (){
+    (async function(){
       const qs  = new URLSearchParams(location.search);
       const cid = qs.get("cid") || qs.get("customerId");
       if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Öppna sidan med <code>?cid=…</code>."); return; }
 
-      // Sätt alltid live-preview direkt (även om snippet svarar 402)
-      const live = document.getElementById("live-preview");
-      if (live) {
-        const liveSrc = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
-        live.src = liveSrc;
-      }
+      // Visa förhandskortet direkt
+      document.getElementById("previewCard").classList.remove("hidden");
 
+      // Sätt live-preview omedelbart, rensa srcdoc så “Laddar…” inte ligger kvar
+      const iframe = document.getElementById("live-preview");
+      const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
+      iframe.removeAttribute("srcdoc");
+      iframe.loading = "lazy";
+      iframe.referrerPolicy = "no-referrer-when-downgrade";
+      // Tydlig onload/onerror + timeout-fallback
+      let loaded = false;
+      const failTimer = setTimeout(()=>{
+        if (!loaded) {
+          iframe.src = "about:blank";
+          iframe.srcdoc = "<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#ef4444'>Kunde inte ladda widget-förhandsvisning. Prova att uppdatera sidan.</p>";
+        }
+      }, 12000);
+      iframe.addEventListener("load",()=>{ loaded=true; clearTimeout(failTimer); }, { once:true });
+      iframe.addEventListener("error",()=>{ loaded=false; clearTimeout(failTimer); iframe.srcdoc="<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#ef4444'>Fel vid laddning av widget.</p>"; }, { once:true });
+      iframe.src = previewUrl;
+
+      // Försök hämta bäddningssnutten (kan ge 402 strax efter checkout)
       async function tryLoadSnippet(){
         const url = `${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`;
-        const r = await fetch(url, { cache: "no-store" });
+        const r = await fetch(url, { cache:"no-store" });
 
         if (r.status === 402) {
           showWarn(`
@@ -183,16 +187,12 @@
             <p class="muted small" style="margin-top:8px">Servern svarade 402 Payment Required på snippet.</p>
           `);
           wireActions();
-          // Visa ändå preview-kortet så användaren ser UI:t
-          document.getElementById("previewCard").classList.remove("hidden");
           return false;
         }
 
-        const txt = await r.text();
+        const txt  = await r.text();
         const data = safeJson(txt);
-        if (r.ok && data && data.snippet) {
-          hideWarn(); renderActive(data.snippet, cid); return true;
-        }
+        if (r.ok && data && data.snippet){ hideWarn(); renderActive(data.snippet, cid); return true; }
         return false;
       }
 
@@ -210,14 +210,11 @@
         document.getElementById("retry").onclick = () => location.reload();
       }
 
-      // 1) Försök direkt
       if (await tryLoadSnippet()) return;
-      // 2) Synka status om webhooken är sen
       await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
-      // 3) Försök igen
       await tryLoadSnippet();
 
-      // Portal-knappen i nederkortet
+      // Portal-knapp i nederkortet
       document.getElementById("portal").onclick = async () => {
         const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
         if (r.ok && r.data.url) location.href = r.data.url;
