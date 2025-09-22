@@ -13,6 +13,7 @@
     .stack { display:grid; gap:16px; }
     .hidden { display:none !important; }
     .small  { font-size:12px; }
+
     .codebox { background:#0b1220; border:1px solid #1e293b; border-radius:12px; padding:12px; }
     .snippet-field{
       width:100%; max-width:100%;
@@ -21,6 +22,7 @@
       background:#0b1220; color:#e2e8f0; border:0; border-radius:8px; padding:10px 12px;
       white-space:nowrap; overflow-x:auto; resize:vertical; min-height:56px;
     }
+
     .preview-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
     .preview-wrap { display:flex; justify-content:center; }
     .preview-box{
@@ -29,11 +31,13 @@
       box-shadow:0 12px 40px rgba(2,6,23,.22);
     }
     .preview-box iframe{ display:block; width:100%; height:100%; border:0; }
+
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .actions .btn{ min-width:auto; }
   </style>
 </head>
 <body>
+  <!-- NAV -->
   <nav>
     <div class="container row">
       <a href="index.html" class="brand" aria-label="BotJahl startsida">
@@ -66,6 +70,7 @@
   <main class="container stack">
     <div id="warn" class="card hidden"></div>
 
+    <!-- Snippet -->
     <section id="snippetCard" class="card glass hidden">
       <h2>1) Kodsnutt att klistra in</h2>
       <div class="codebox">
@@ -75,9 +80,12 @@
         <button id="copy-snippet" class="btn">Kopiera snutten</button>
         <a class="btn ghost" href="index.html">Till startsidan</a>
       </div>
-      <p class="muted small" style="margin-top:6px">Placera snutten där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
+      <p class="muted small" style="margin-top:6px">
+        Placera snutten där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.
+      </p>
     </section>
 
+    <!-- Preview -->
     <section id="previewCard" class="preview-card hidden">
       <h2>2) Live-förhandsvisning</h2>
       <div class="preview-wrap">
@@ -109,79 +117,85 @@
     const WIDGET_URL = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
 
     // ---- HELPERS ----
-    function safeJson(t){ try{return t?JSON.parse(t):{};}catch{return{};} }
+    function safeJson(t){ try{ return t ? JSON.parse(t) : {}; }catch{ return {}; } }
     async function getJson(url){ const r=await fetch(url,{cache:"no-store"}); const t=await r.text(); return {ok:r.ok,status:r.status,data:safeJson(t)}; }
-    async function postJson(url,body){ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):null}); const t=await r.text(); return {ok:r.ok,status:r.status,data:safeJson(t)}; }
+    async function postJson(url,body){ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):null}); const t=await r.text(); return {ok:r.ok,status:r.status,data:safeJson(t)}; }
     function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
     function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
-function renderActive(snippet, cid){
-  document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
-  document.getElementById("snippetCard").classList.remove("hidden");
-  document.getElementById("previewCard").classList.remove("hidden");
+    // ---- RENDER PREVIEW/SNIPPET ----
+    function renderActive(snippet, cid){
+      document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
+      document.getElementById("snippetCard").classList.remove("hidden");
+      document.getElementById("previewCard").classList.remove("hidden");
 
-  // Visa snutten i textarea
-  const ta = document.getElementById("embed-snippet");
-  if (ta) ta.value = snippet;
+      const ta = document.getElementById("embed-snippet");
+      if (ta) ta.value = snippet;
 
-  const iframe = document.getElementById("live-preview");
+      const iframe = document.getElementById("live-preview");
 
-  // Är det en script-embed?
-  const isScriptSnippet = /^\s*<script\b/i.test(snippet);
-  if (isScriptSnippet) {
-    // injicera data-preview="1" så embed.js vet att det är förhandsläge
-    const previewSnippet = snippet.replace(/<script\b/i, '<script data-preview="1"');
+      // Nya formatet = <script ...> (embed.js). Annars gammal <iframe>.
+      const isScriptSnippet = /^\s*<script\b/i.test(snippet);
 
-    const html = `
-      <!doctype html>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <div id="botjahl-chat"></div>
-      ${previewSnippet}
-    `;
+      if (isScriptSnippet) {
+        // Lägg till data-preview="1" så embed.js kör i förhandsläge (kvot m.m.)
+        const previewSnippet = snippet.replace(/<script\b/i, '<script data-preview="1"');
 
-    iframe.setAttribute("sandbox", "allow-scripts allow-forms");
-    iframe.removeAttribute("src");
-    iframe.srcdoc = html;
-  } else {
-    // Backward compat – gammal iframe-snutt
-    const m = snippet.match(/src="([^"]+)"/i);
-    if (m && m[1]) {
-      const u = new URL(m[1]);
-      u.searchParams.set("preview", "1");
-      iframe.removeAttribute("srcdoc");
-      iframe.removeAttribute("sandbox");
-      iframe.src = u.toString();
-    } else {
-      iframe.srcdoc = `<p style="font-family:system-ui; color:#64748b; padding:12px">
-        Kunde inte förstå snutten. Kontakta support.
-      </p>`;
+        const html = `
+          <!doctype html>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <div id="botjahl-chat"></div>
+          ${previewSnippet}
+        `;
+
+        // Tillåt skript i förhandsramen
+        iframe.setAttribute("sandbox", "allow-scripts allow-forms");
+        iframe.removeAttribute("src");
+        iframe.srcdoc = html;
+      } else {
+        // Backward compat: gammal iframe → lägg på preview=1
+        const m = snippet.match(/src="([^"]+)"/i);
+        if (m && m[1]) {
+          const u = new URL(m[1]);
+          u.searchParams.set("preview", "1");
+          iframe.removeAttribute("srcdoc");
+          iframe.removeAttribute("sandbox");
+          iframe.src = u.toString();
+        } else {
+          iframe.srcdoc = `<p style="font-family:system-ui; color:#64748b; padding:12px">
+            Kunde inte förstå snutten. Kontakta support.
+          </p>`;
+        }
+      }
+
+      // Kopieraknapp
+      const copyBtn = document.getElementById("copy-snippet");
+      if (copyBtn && ta) {
+        copyBtn.onclick = async () => {
+          try { await navigator.clipboard.writeText(ta.value); }
+          catch { ta.select(); document.execCommand("copy"); }
+          copyBtn.textContent = "Kopierad!";
+          setTimeout(()=> copyBtn.textContent = "Kopiera snutten", 1500);
+        };
+      }
     }
-  }
 
-  // Kopiera-knappen
-  const copyBtn = document.getElementById("copy-snippet");
-  if (copyBtn && ta) {
-    copyBtn.onclick = async () => {
-      try { await navigator.clipboard.writeText(ta.value); }
-      catch { ta.select(); document.execCommand("copy"); }
-      copyBtn.textContent = "Kopierad!";
-      setTimeout(()=> copyBtn.textContent = "Kopiera snutten", 1500);
-    };
-  }
-}
-
+    // ---- INIT ----
     (async function(){
       const qs  = new URLSearchParams(location.search);
       const cid = qs.get("cid") || qs.get("customerId");
       if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Öppna sidan med <code>?cid=…</code>."); return; }
 
-      // Visa förhandskortet direkt
+      // Visa förhands-kortet direkt och ladda en “rå” preview (även om snippet inte är redo)
       document.getElementById("previewCard").classList.remove("hidden");
+      const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
+      const iframe = document.getElementById("live-preview");
+      iframe.removeAttribute("srcdoc");
+      iframe.loading = "lazy";
+      iframe.src = previewUrl;
 
-
-
-      // Försök hämta bäddningssnutten (kan ge 402 strax efter checkout)
+      // Försök hämta bäddningssnutten (kan svara 402 precis efter checkout)
       async function tryLoadSnippet(){
         const url = `${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`;
         const r = await fetch(url, { cache:"no-store" });
@@ -201,7 +215,7 @@ function renderActive(snippet, cid){
           return false;
         }
 
-        const txt  = await r.text();
+        const txt = await r.text();
         const data = safeJson(txt);
         if (r.ok && data && data.snippet){ hideWarn(); renderActive(data.snippet, cid); return true; }
         return false;
@@ -225,7 +239,7 @@ function renderActive(snippet, cid){
       await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
       await tryLoadSnippet();
 
-      // Portal-knapp i nederkortet
+      // Portal-knappen i nederkortet
       document.getElementById("portal").onclick = async () => {
         const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
         if (r.ok && r.data.url) location.href = r.data.url;
