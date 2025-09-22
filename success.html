@@ -115,34 +115,69 @@
     function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
     function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
-    function renderActive(snippet, cid){
-      document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
-      document.getElementById("snippetCard").classList.remove("hidden");
-      document.getElementById("previewCard").classList.remove("hidden");
+function renderActive(snippet, cid){
+  document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
+  document.getElementById("snippetCard").classList.remove("hidden");
+  document.getElementById("previewCard").classList.remove("hidden");
 
-      const ta = document.getElementById("embed-snippet");
-      if (ta) ta.value = snippet;
+  // Visa snutten i textarea
+  const ta = document.getElementById("embed-snippet");
+  if (ta) ta.value = snippet;
 
-      try{
-        const m = snippet.match(/src="([^"]+)"/i);
-        if (m && m[1]) {
-          const u = new URL(m[1]);
-          u.searchParams.set("preview","1");
-          const iframe = document.getElementById("live-preview");
-          iframe.removeAttribute("srcdoc");
-          iframe.src = u.toString();
-        }
-      }catch(e){ console.warn("Kunde inte läsa iframe-src ur snutten:", e); }
+  // --- Bygg preview ---
+  const iframe = document.getElementById("live-preview");
 
-      const copyBtn = document.getElementById("copy-snippet");
-      if (copyBtn && ta) {
-        copyBtn.onclick = async () => {
-          try { await navigator.clipboard.writeText(ta.value); copyBtn.textContent="Kopierad!"; }
-          catch { ta.select(); document.execCommand("copy"); copyBtn.textContent="Kopierad!"; }
-          setTimeout(()=> copyBtn.textContent="Kopiera snutten",1600);
-        };
-      }
+  // 1) Är snutten en script-embed?
+  const isScriptSnippet = /^\s*<script\b/i.test(snippet);
+
+  if (isScriptSnippet) {
+    // Lägg till data-preview="1" på script-taggen så embed.js vet att det är en förhandsvisning
+    const previewSnippet = snippet.replace(
+      /<script\b/i,
+      '<script data-preview="1"'
+    );
+
+    const html = `
+      <!doctype html>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <div id="botjahl-chat"></div>
+      ${previewSnippet}
+    `;
+
+    // Kör script i srcdoc – sandboxa men tillåt scripts
+    iframe.setAttribute("sandbox", "allow-scripts allow-forms");
+    iframe.removeAttribute("src");
+    iframe.srcdoc = html;
+  } else {
+    // Backward compat: om det skulle råka vara en gammal iframe-snut
+    // – plocka src, sätt preview=1, och sätt som iframe.src
+    const m = snippet.match(/src="([^"]+)"/i);
+    if (m && m[1]) {
+      const u = new URL(m[1]);
+      u.searchParams.set("preview", "1");
+      iframe.removeAttribute("srcdoc");
+      iframe.removeAttribute("sandbox");
+      iframe.src = u.toString();
+    } else {
+      // Sista fallback: visa text
+      iframe.srcdoc = `<p style="font-family:system-ui; color:#64748b; padding:12px">
+        Kunde inte förstå snutten. Kontakta support.
+      </p>`;
     }
+  }
+
+  // Kopiera-knappen
+  const copyBtn = document.getElementById("copy-snippet");
+  if (copyBtn && ta) {
+    copyBtn.onclick = async () => {
+      try { await navigator.clipboard.writeText(ta.value); }
+      catch { ta.select(); document.execCommand("copy"); }
+      copyBtn.textContent = "Kopierad!";
+      setTimeout(()=> copyBtn.textContent = "Kopiera snutten", 1500);
+    };
+  }
+}
 
     (async function(){
       const qs  = new URLSearchParams(location.search);
