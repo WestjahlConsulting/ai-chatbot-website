@@ -124,34 +124,27 @@ function renderActive(snippet, cid){
   const ta = document.getElementById("embed-snippet");
   if (ta) ta.value = snippet;
 
-  // --- Bygg preview ---
   const iframe = document.getElementById("live-preview");
 
-  // 1) Är snutten en script-embed?
+  // Är det en script-embed?
   const isScriptSnippet = /^\s*<script\b/i.test(snippet);
-
   if (isScriptSnippet) {
-    // Lägg till data-preview="1" på script-taggen så embed.js vet att det är en förhandsvisning
-    const previewSnippet = snippet.replace(
-      /<script\b/i,
-      '<script data-preview="1"'
-    );
+    // injicera data-preview="1" så embed.js vet att det är förhandsläge
+    const previewSnippet = snippet.replace(/<script\b/i, '<script data-preview="1"');
 
     const html = `
       <!doctype html>
       <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
       <div id="botjahl-chat"></div>
       ${previewSnippet}
     `;
 
-    // Kör script i srcdoc – sandboxa men tillåt scripts
     iframe.setAttribute("sandbox", "allow-scripts allow-forms");
     iframe.removeAttribute("src");
     iframe.srcdoc = html;
   } else {
-    // Backward compat: om det skulle råka vara en gammal iframe-snut
-    // – plocka src, sätt preview=1, och sätt som iframe.src
+    // Backward compat – gammal iframe-snutt
     const m = snippet.match(/src="([^"]+)"/i);
     if (m && m[1]) {
       const u = new URL(m[1]);
@@ -160,7 +153,6 @@ function renderActive(snippet, cid){
       iframe.removeAttribute("sandbox");
       iframe.src = u.toString();
     } else {
-      // Sista fallback: visa text
       iframe.srcdoc = `<p style="font-family:system-ui; color:#64748b; padding:12px">
         Kunde inte förstå snutten. Kontakta support.
       </p>`;
@@ -187,23 +179,7 @@ function renderActive(snippet, cid){
       // Visa förhandskortet direkt
       document.getElementById("previewCard").classList.remove("hidden");
 
-      // Sätt live-preview omedelbart, rensa srcdoc så “Laddar…” inte ligger kvar
-      const iframe = document.getElementById("live-preview");
-      const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
-      iframe.removeAttribute("srcdoc");
-      iframe.loading = "lazy";
-      iframe.referrerPolicy = "no-referrer-when-downgrade";
-      // Tydlig onload/onerror + timeout-fallback
-      let loaded = false;
-      const failTimer = setTimeout(()=>{
-        if (!loaded) {
-          iframe.src = "about:blank";
-          iframe.srcdoc = "<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#ef4444'>Kunde inte ladda widget-förhandsvisning. Prova att uppdatera sidan.</p>";
-        }
-      }, 12000);
-      iframe.addEventListener("load",()=>{ loaded=true; clearTimeout(failTimer); }, { once:true });
-      iframe.addEventListener("error",()=>{ loaded=false; clearTimeout(failTimer); iframe.srcdoc="<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#ef4444'>Fel vid laddning av widget.</p>"; }, { once:true });
-      iframe.src = previewUrl;
+
 
       // Försök hämta bäddningssnutten (kan ge 402 strax efter checkout)
       async function tryLoadSnippet(){
