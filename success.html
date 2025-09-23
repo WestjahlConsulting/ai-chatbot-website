@@ -120,46 +120,16 @@
     function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
     function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
-    // ----- Rendera aktiv (tar både script- och iframe-snitt) -----
+    // ----- Rendera aktiv (VI VISAR BARA SNIPPETEN, kör inte den som HTML) -----
     function renderActive(snippet, cid){
       document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
       document.getElementById("snippetCard").classList.remove("hidden");
       document.getElementById("previewCard").classList.remove("hidden");
 
+      // Visa snutten (som text) och kopieringsknapp
       const ta = document.getElementById("embed-snippet");
       if (ta) ta.value = snippet;
 
-      const iframe = document.getElementById("live-preview");
-      const isScriptSnippet = /^\s*<script\b/i.test(snippet);
-
-      if (isScriptSnippet){
-        // Lägg på data-preview="1" så embed.js fattar att kvot ska gälla
-        const previewSnippet = snippet.replace(/<script\b/i, '<script data-preview="1"');
-        const html = `
-          <!doctype html>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width,initial-scale=1">
-          <div id="botjahl-chat"></div>
-          ${previewSnippet}
-        `;
-        iframe.setAttribute("sandbox","allow-scripts allow-forms allow-same-origin");
-        iframe.removeAttribute("src");
-        iframe.srcdoc = html;
-      } else {
-        // Gamla iframe-snutten – addera preview=1
-        const m = snippet.match(/src="([^"]+)"/i);
-        if (m && m[1]){
-          const u = new URL(m[1]);
-          u.searchParams.set("preview","1");
-          iframe.removeAttribute("srcdoc");
-          iframe.removeAttribute("sandbox");
-          iframe.src = u.toString();
-        } else {
-          iframe.srcdoc = `<p style="font-family:system-ui; color:#64748b; padding:12px">Kunde inte tolka snutten.</p>`;
-        }
-      }
-
-      // Kopiera-knappen
       const copyBtn = document.getElementById("copy-snippet");
       if (copyBtn && ta){
         copyBtn.onclick = async () => {
@@ -176,7 +146,7 @@
       const cid = qs.get("cid") || qs.get("customerId");
       if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Öppna sidan med <code>?cid=…</code>."); return; }
 
-      // Visa förhandskortet direkt (ladda widget via WIDGET_URL oavsett snippet)
+      // 1) Visa förhandskortet direkt – förhandsvisning via widget-sidan (inte via snippet)
       document.getElementById("previewCard").classList.remove("hidden");
       const iframe = document.getElementById("live-preview");
       const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
@@ -185,7 +155,7 @@
       iframe.referrerPolicy = "no-referrer-when-downgrade";
       iframe.src = previewUrl;
 
-      // Hämta bäddningssnutten (kan vara låst med 402 strax efter checkout)
+      // 2) Hämta bäddningssnutten (kan vara låst med 402 strax efter checkout)
       async function tryLoadSnippet(){
         const r = await fetch(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`, { cache:"no-store" });
 
@@ -232,11 +202,14 @@
       await tryLoadSnippet();
 
       // Portal-knappen i nederkortet
-      document.getElementById("portal").onclick = async () => {
-        const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-        if (r.ok && r.data.url) location.href = r.data.url;
-        else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-      };
+      const portalBtn = document.getElementById("portal");
+      if (portalBtn){
+        portalBtn.onclick = async () => {
+          const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+          if (r.ok && r.data.url) location.href = r.data.url;
+          else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+        };
+      }
     })();
   </script>
 </body>
