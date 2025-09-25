@@ -453,5 +453,87 @@
       }
     })();
   </script>
+
+<!-- === Quota card (drop-in) === -->
+<section id="quota-card" class="card" style="margin-top:16px; display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <div>
+      <h3 style="margin:0 0 6px">Lagringsanvändning</h3>
+      <p id="quota-sub" class="muted" style="margin:0">Laddar…</p>
+    </div>
+    <span id="quota-pill" class="status-pill ok">0%</span>
+  </div>
+
+  <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
+    <div id="quota-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#60a5fa)"></div>
+  </div>
+
+  <p class="small muted" id="quota-foot" style="margin-top:8px"></p>
+</section>
+
+<script>
+(function(){
+  const API_BASE = (window.API_BASE || window.API || "").replace(/\/+$/,"") ||
+                   (typeof location !== "undefined" ? `${location.origin}` : "");
+
+  // Hitta JWT (anpassad till din portal)
+  function getToken(){
+    return localStorage.getItem("bj_jwt")
+        || sessionStorage.getItem("bj_jwt")
+        || localStorage.getItem("jwt")
+        || sessionStorage.getItem("jwt")
+        || (window.JWT || "");
+  }
+
+  async function fetchUsage(){
+    const token = getToken();
+    if (!token){ throw new Error("Ingen JWT hittades – logga in i admin först."); }
+
+    const res = await fetch(`${API_BASE}/api/uploads/usage`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!res.ok){
+      const t = await res.text().catch(()=> "");
+      throw new Error(`HTTP ${res.status} ${t || ""}`);
+    }
+    return res.json();
+  }
+
+  const card = document.getElementById("quota-card");
+  const sub  = document.getElementById("quota-sub");
+  const pill = document.getElementById("quota-pill");
+  const bar  = document.getElementById("quota-bar");
+  const foot = document.getElementById("quota-foot");
+
+  function render(u){
+    card.style.display = "";
+    sub.textContent = `Plan: ${u.plan} • ${u.files} fil(er)`;
+    bar.style.width = `${u.percent}%`;
+    pill.textContent = `${u.percent}%`;
+    pill.className = "status-pill " + (u.percent >= 100 ? "pending" : "ok");
+    foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt`;
+  }
+
+  async function tick(){
+    try{
+      const u = await fetchUsage();
+      render(u);
+    }catch(err){
+      card.style.display = "";
+      sub.textContent = "Kunde inte läsa användning.";
+      pill.textContent = "—";
+      console.error(err);
+    }
+  }
+
+  // Kör direkt + poll var 15:e sekund
+  tick();
+  setInterval(tick, 15000);
+})();
+</script>
+<!-- === /Quota card === -->
+
+
 </body>
 </html>
