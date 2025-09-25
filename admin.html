@@ -128,6 +128,24 @@
           <a class="btn secondary" href="success.html?cid=" id="successLink">Visa min kodsnutt</a>
         </div>
       </div>
+
+      <!-- === Quota card (drop-in v2) === -->
+      <section id="quota-card" class="card" style="margin-top:16px; display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0 0 6px">Lagringsanvändning</h3>
+            <p id="quota-sub" class="muted" style="margin:0">Laddar…</p>
+          </div>
+          <span id="quota-pill" class="status-pill ok">0%</span>
+        </div>
+
+        <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
+          <div id="quota-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#60a5fa)"></div>
+        </div>
+
+        <p class="small muted" id="quota-foot" style="margin-top:8px"></p>
+      </section>
+      <!-- === /Quota card === -->
     </div>
   </main>
 
@@ -142,7 +160,7 @@
     </div>
   </div>
 
-  <!-- JS (oförändrat i logik) -->
+  <!-- JS (oförändrad logik + små tillägg för JWT-event) -->
   <script>
     // === Konfiguration ===
     const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
@@ -152,7 +170,7 @@
     const presetCid = qs.get("cid");
     if (presetCid) document.getElementById("cid").value = presetCid;
 
-    const tokenKey    = "botjahl.portal.token";
+    const tokenKey    = "botjahl.portal.token";       // befintlig nyckel
     const customerKey = "botjahl.portal.customer";
 
     const loginCard   = document.getElementById("login-card");
@@ -167,10 +185,22 @@
     function showLoading(text){ if(text) loadingText.textContent = text; loading.classList.add("show"); }
     function hideLoading(){ loading.classList.remove("show"); }
 
-    function setAuth(token, cid){ if (token) localStorage.setItem(tokenKey, token); if (cid) localStorage.setItem(customerKey, cid); }
+    function setAuth(token, cid){
+      if (token) {
+        localStorage.setItem(tokenKey, token); // din befintliga
+        localStorage.setItem('bj_jwt', token); // NY: kvot-kort letar även här
+        // signalera till andra komponenter att auth finns
+        window.dispatchEvent(new CustomEvent('bj:auth', { detail: { token } }));
+      }
+      if (cid) localStorage.setItem(customerKey, cid);
+    }
     function getToken(){ return localStorage.getItem(tokenKey); }
     function getCid(){ return localStorage.getItem(customerKey); }
-    function clearAuth(){ localStorage.removeItem(tokenKey); localStorage.removeItem(customerKey); }
+    function clearAuth(){
+      localStorage.removeItem(tokenKey);
+      localStorage.removeItem(customerKey);
+      localStorage.removeItem('bj_jwt'); // rensa även denna
+    }
 
     function logout(){
       clearAuth();
@@ -219,7 +249,6 @@
         if (done) { await refreshStatus(); return true; }
         await new Promise(r => setTimeout(r, interval));
       }
-      // Timeout – visa ändå aktuell status
       await refreshStatus();
       return false;
     }
@@ -296,7 +325,7 @@
                 ${it.contentType || "okänd"} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
                 ${
                   it.indexed
-                    ? ` • <span class="status-pill ok">indexerad${it.indexedAtUtc ? ' ('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}</span>`
+                    ? \` • <span class="status-pill ok">indexerad\${it.indexedAtUtc ? ' ('+new Date(it.indexedAtUtc).toLocaleString()+')' : ''}</span>\`
                     : ' • <span class="status-pill pending">ej indexerad</span>'
                 }
               </div>
@@ -454,86 +483,98 @@
     })();
   </script>
 
-<!-- === Quota card (drop-in) === -->
-<section id="quota-card" class="card" style="margin-top:16px; display:none">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-    <div>
-      <h3 style="margin:0 0 6px">Lagringsanvändning</h3>
-      <p id="quota-sub" class="muted" style="margin:0">Laddar…</p>
-    </div>
-    <span id="quota-pill" class="status-pill ok">0%</span>
-  </div>
+  <!-- === Quota card driver (robust token-hämtning + auto-refresh) === -->
+  <script>
+  (function(){
+    const API_BASE = (window.API_BASE || window.API || "").replace(/\/+$/,"") || "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
 
-  <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
-    <div id="quota-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#60a5fa)"></div>
-  </div>
-
-  <p class="small muted" id="quota-foot" style="margin-top:8px"></p>
-</section>
-
-<script>
-(function(){
-  const API_BASE = (window.API_BASE || window.API || "").replace(/\/+$/,"") ||
-                   (typeof location !== "undefined" ? `${location.origin}` : "");
-
-  // Hitta JWT (anpassad till din portal)
-  function getToken(){
-    return localStorage.getItem("bj_jwt")
-        || sessionStorage.getItem("bj_jwt")
-        || localStorage.getItem("jwt")
-        || sessionStorage.getItem("jwt")
-        || (window.JWT || "");
-  }
-
-  async function fetchUsage(){
-    const token = getToken();
-    if (!token){ throw new Error("Ingen JWT hittades – logga in i admin först."); }
-
-    const res = await fetch(`${API_BASE}/api/uploads/usage`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-
-    if (!res.ok){
-      const t = await res.text().catch(()=> "");
-      throw new Error(`HTTP ${res.status} ${t || ""}`);
+    function readCookie(name){
+      const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
     }
-    return res.json();
-  }
 
-  const card = document.getElementById("quota-card");
-  const sub  = document.getElementById("quota-sub");
-  const pill = document.getElementById("quota-pill");
-  const bar  = document.getElementById("quota-bar");
-  const foot = document.getElementById("quota-foot");
+    function getToken(){
+      const qs = new URLSearchParams(location.search);
+      const fromUrl = qs.get('token') || qs.get('jwt');
+      if (fromUrl) return fromUrl;
 
-  function render(u){
-    card.style.display = "";
-    sub.textContent = `Plan: ${u.plan} • ${u.files} fil(er)`;
-    bar.style.width = `${u.percent}%`;
-    pill.textContent = `${u.percent}%`;
-    pill.className = "status-pill " + (u.percent >= 100 ? "pending" : "ok");
-    foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt`;
-  }
+      const keys = [
+        'botjahl.portal.token',  // din befintliga
+        'bj_jwt', 'jwt', 'token', 'auth_token'
+      ];
+      for (const k of keys){
+        const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (v) return v;
+      }
 
-  async function tick(){
-    try{
-      const u = await fetchUsage();
-      render(u);
-    }catch(err){
+      if (window.JWT) return window.JWT;
+
+      const cookieKeys = ['bj_jwt','jwt','token','botjahl.portal.token'];
+      for (const ck of cookieKeys){
+        const v = readCookie(ck);
+        if (v) return v;
+      }
+      return '';
+    }
+
+    async function fetchUsage(token){
+      const res = await fetch(`${API_BASE}/api/uploads/usage`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok){
+        const t = await res.text().catch(()=> "");
+        throw new Error(`HTTP ${res.status} ${t || ""}`);
+      }
+      return res.json();
+    }
+
+    const card = document.getElementById("quota-card");
+    const sub  = document.getElementById("quota-sub");
+    const pill = document.getElementById("quota-pill");
+    const bar  = document.getElementById("quota-bar");
+    const foot = document.getElementById("quota-foot");
+
+    function render(u){
       card.style.display = "";
-      sub.textContent = "Kunde inte läsa användning.";
-      pill.textContent = "—";
-      console.error(err);
+      sub.textContent = `Plan: ${u.plan} • ${u.files} fil(er)`;
+      bar.style.width = `${u.percent}%`;
+      pill.textContent = `${u.percent}%`;
+      pill.className = "status-pill " + (u.percent >= 100 ? "pending" : "ok");
+      foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt`;
     }
-  }
 
-  // Kör direkt + poll var 15:e sekund
-  tick();
-  setInterval(tick, 15000);
-})();
-</script>
-<!-- === /Quota card === -->
+    function renderLoggedOut(){
+      card.style.display = "";
+      sub.textContent = "Logga in för att se användning.";
+      pill.textContent = "—";
+      bar.style.width = "0%";
+      foot.textContent = "";
+    }
 
+    async function tick(){
+      const token = getToken();
+      if (!token){ renderLoggedOut(); return; }
+      try{
+        const u = await fetchUsage(token);
+        render(u);
+      }catch(err){
+        // Visa kortet tyst (ingen konsol-spam i prod)
+        card.style.display = "";
+        sub.textContent = "Kunde inte läsa användning.";
+        pill.textContent = "—";
+      }
+    }
 
+    // Uppdatera när auth sker efter sidladdning
+    window.addEventListener('storage', (e) => {
+      if (['botjahl.portal.token','bj_jwt','jwt','token','auth_token'].includes(e.key)) tick();
+    });
+    window.addEventListener('bj:auth', () => tick());
+
+    tick();
+    setInterval(tick, 15000);
+  })();
+  </script>
+  <!-- === /Quota card driver === -->
 </body>
 </html>
