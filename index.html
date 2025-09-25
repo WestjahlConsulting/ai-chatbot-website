@@ -30,6 +30,7 @@
 
       <div class="nav-links">
         <a href="#demo">Demo</a>
+        <a href="#pricing">Priser</a>
         <a href="#starta">Starta gratis</a>
         <a class="btn secondary" href="admin.html" aria-label="Öppna adminportalen">Logga in</a>
       </div>
@@ -117,6 +118,83 @@
     </div>
   </section>
 
+  <!-- PRISER (mellan Demo och Admin/Starta) -->
+  <section id="pricing" class="container">
+    <h2 class="center">Priser</h2>
+    <p class="muted center">Välj en nivå som passar – du kan alltid uppgradera senare.</p>
+
+    <div class="pricing-grid">
+      <!-- Bas (aktiv) -->
+      <article class="plan plan--active" aria-label="Bas">
+        <header class="plan__header">
+          <h3>Bas</h3>
+          <p class="plan__tagline">För att komma igång</p>
+        </header>
+        <div class="plan__price">
+          <span class="plan__amount">399</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
+        </div>
+        <ul class="plan__features">
+          <li>1 domän/website</li>
+          <li>Upp till ~1 000 frågor/mån*</li>
+          <li>Dokument: 500 MB</li>
+          <li>Inbäddad chat-widget</li>
+          <li>Grundläggande support (e-post)</li>
+          <li>GDPR-vänlig drift</li>
+        </ul>
+        <div class="plan__cta">
+          <button id="buy-bas" class="btn primary">Starta provperiod</button>
+          <p class="small muted">*Exakt kapacitet beror på frågelängd & modellkostnad.</p>
+        </div>
+      </article>
+
+      <!-- Plus (kommer snart) -->
+      <article class="plan plan--soon" aria-label="Plus">
+        <header class="plan__header">
+          <h3>Plus</h3>
+          <span class="badge soon">Kommer snart</span>
+          <p class="plan__tagline">Mer kapacitet & funktioner</p>
+        </header>
+        <div class="plan__price">
+          <span class="plan__amount">999</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
+        </div>
+        <ul class="plan__features">
+          <li>3 domäner/websites</li>
+          <li>Upp till ~10 000 frågor/mån</li>
+          <li>Dokument: 5 GB</li>
+          <li>Förbättrad RAG (Azure AI Search)</li>
+          <li>Prioriterad support</li>
+          <li>Grundläggande analys</li>
+        </ul>
+        <div class="plan__cta">
+          <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
+        </div>
+      </article>
+
+      <!-- Premium (kommer snart) -->
+      <article class="plan plan--soon" aria-label="Premium">
+        <header class="plan__header">
+          <h3>Premium</h3>
+          <span class="badge soon">Kommer snart</span>
+          <p class="plan__tagline">För team & hög trafik</p>
+        </header>
+        <div class="plan__price">
+          <span class="plan__amount">2 499</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
+        </div>
+        <ul class="plan__features">
+          <li>Upp till 5 domäner</li>
+          <li>Upp till ~50 000 frågor/mån</li>
+          <li>Dokument: 20 GB</li>
+          <li>Avancerad RAG & sök</li>
+          <li>SLA & prioriterad support</li>
+          <li>Integrationer & SSO</li>
+        </ul>
+        <div class="plan__cta">
+          <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
   <!-- SIGNUP -->
   <section id="starta">
     <div class="container narrow">
@@ -139,8 +217,7 @@
           <div class="actions">
             <button class="btn primary" type="submit">Skapa min bot</button>
           </div>
-            <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
-          
+          <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
 
           <p class="small muted">Du får ett kund-ID och en betalningslänk. Kodsnutten visas efter att betalmetod lagts in.</p>
         </form>
@@ -161,6 +238,7 @@
     <div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div>
   </footer>
 
+  <!-- JS -->
   <script>
     const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
     const out = document.getElementById('signup-result');
@@ -168,6 +246,7 @@
     const okBanner = (html) => `<div class="banner ok">${html}</div>`;
     const errBanner = (html) => `<div class="banner err">${html}</div>`;
 
+    // Signup
     document.getElementById('signup').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target;
@@ -233,6 +312,39 @@
         out.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
+
+    // Pris: Bas → checkout om kund är känd, annars scrolla till signup
+    (function hookPricing(){
+      const buy = document.getElementById("buy-bas");
+      if (!buy) return;
+
+      async function getJson(url){
+        const r = await fetch(url, { cache: "no-store" });
+        const t = await r.text();
+        try{ return { ok: r.ok, status: r.status, data: JSON.parse(t) }; }
+        catch{ return { ok: r.ok, status: r.status, data: {} }; }
+      }
+
+      buy.addEventListener("click", async () => {
+        const cid = window.BOTJAHL_CUSTOMER_ID || ""; // sätts vid login/session om du har det
+        if (!cid){
+          // Ingen känd kund – guida till signup
+          document.getElementById("starta").scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+
+        buy.disabled = true;
+        const url = `${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`;
+        const r = await getJson(url);
+        buy.disabled = false;
+
+        if (r.ok && r.data && r.data.url) {
+          location.href = r.data.url;
+        } else {
+          alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
+        }
+      });
+    })();
   </script>
 </body>
 </html>

@@ -244,3 +244,80 @@ input[type="text"], textarea {
   height: 100%;
   border: 0;
 }
+
+/* ----- Pricing ----- */
+#pricing { padding: 40px 0; }
+.pricing-grid{
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+  margin-top: 16px;
+}
+@media (max-width: 980px){
+  .pricing-grid{ grid-template-columns: 1fr; }
+}
+
+.plan{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  box-shadow: 0 10px 32px rgba(2,6,23,.18);
+}
+.plan--active{
+  border-color: rgba(96,165,250,.45);
+  box-shadow: 0 14px 40px rgba(34,211,238,.25);
+}
+.plan--soon{
+  opacity: .9;
+}
+
+.plan__header h3{
+  margin: 0;
+  font-size: 22px;
+  color: #fff;
+}
+.plan__tagline{
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.plan__price{
+  margin: 12px 0;
+  display: flex; align-items: baseline; gap: 6px;
+  color: #fff;
+}
+.plan__amount{ font-size: 38px; font-weight: 800; }
+.plan__currency{ font-weight: 700; }
+.plan__period{ color: #cfd6e3; font-size: 14px; }
+
+.plan__features{
+  list-style: none;
+  margin: 8px 0 0; padding: 0;
+  display: grid; gap: 8px;
+  color: #e5e7eb;
+}
+.plan__features li{
+  display: flex; gap: 10px; align-items: flex-start;
+  position: relative; padding-left: 20px;
+}
+.plan__features li::before{
+  content: "✓";
+  position: absolute; left: 0; top: 0;
+  color: #34d399; font-weight: 900;
+}
+
+.plan__cta{ margin-top: 14px; display: grid; gap: 8px; }
+
+.badge.soon{
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+  color: #e5e7eb; font-size: 12px; font-weight: 700;
+}
