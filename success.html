@@ -34,7 +34,6 @@
   </style>
 </head>
 <body>
-  <!-- NAV -->
   <nav>
     <div class="container row">
       <a href="index.html" class="brand" aria-label="BotJahl startsida">
@@ -65,10 +64,8 @@
   </header>
 
   <main class="container stack">
-    <!-- Notis -->
     <div id="warn" class="card hidden"></div>
 
-    <!-- Snippet -->
     <section id="snippetCard" class="card glass hidden">
       <h2>1) Kodsnutt att klistra in</h2>
       <div class="codebox">
@@ -81,7 +78,6 @@
       <p class="muted small" style="margin-top:6px">Placera snutten där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
     </section>
 
-    <!-- Preview -->
     <section id="previewCard" class="preview-card hidden">
       <h2>2) Live-förhandsvisning</h2>
       <div class="preview-wrap">
@@ -95,7 +91,6 @@
       </p>
     </section>
 
-    <!-- Portal -->
     <section class="card glass">
       <h2>Hantera betalning</h2>
       <div class="actions">
@@ -109,27 +104,34 @@
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
   <script>
-    // ---- KONSTANTER ----
-    const API        = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+    // === API resolver (ny) ===
+    async function resolveApiBase(){
+      const qs = new URLSearchParams(location.search);
+      const fromQuery = qs.get("api");
+      if (fromQuery) return fromQuery.replace(/\/+$/,"");
+      if (window.BOTJAHL_API_BASE) return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
+      try{
+        const r = await fetch("./config.json",{cache:"no-store"});
+        if (r.ok){ const j = await r.json(); if (j?.apiBase) return String(j.apiBase).replace(/\/+$/,""); }
+      }catch{}
+      throw new Error("API-bas saknas. Använd ?api=… eller config.json.");
+    }
+    const API_PROMISE = resolveApiBase();
+
     const WIDGET_URL = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
 
-    // ---- HELPERS ----
     function safeJson(t){ try { return t ? JSON.parse(t) : {}; } catch { return {}; } }
-    async function getJson(url){ const r=await fetch(url,{cache:"no-store"}); const t=await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
-    async function postJson(url,body){ const r=await fetch(url,{method:"POST",headers:{ "Content-Type":"application/json" },body: body ? JSON.stringify(body) : null}); const t=await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+    async function getJson(path){ const API = await API_PROMISE; const r=await fetch(API+path,{cache:"no-store"}); const t=await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
+    async function postJson(path,body){ const API = await API_PROMISE; const r=await fetch(API+path,{method:"POST",headers:{ "Content-Type":"application/json" },body: body ? JSON.stringify(body) : null}); const t=await r.text(); return { ok:r.ok, status:r.status, data:safeJson(t) }; }
     function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
     function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
 
-    // ----- Rendera aktiv (VI VISAR BARA SNIPPETEN, kör inte den som HTML) -----
     function renderActive(snippet, cid){
       document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
       document.getElementById("snippetCard").classList.remove("hidden");
       document.getElementById("previewCard").classList.remove("hidden");
-
-      // Visa snutten (som text) och kopieringsknapp
       const ta = document.getElementById("embed-snippet");
       if (ta) ta.value = snippet;
-
       const copyBtn = document.getElementById("copy-snippet");
       if (copyBtn && ta){
         copyBtn.onclick = async () => {
@@ -146,17 +148,19 @@
       const cid = qs.get("cid") || qs.get("customerId");
       if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Öppna sidan med <code>?cid=…</code>."); return; }
 
-      // 1) Visa förhandskortet direkt – förhandsvisning via widget-sidan (inte via snippet)
+      // Preview via widget
       document.getElementById("previewCard").classList.remove("hidden");
       const iframe = document.getElementById("live-preview");
+      const API = await API_PROMISE;
       const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
       iframe.removeAttribute("srcdoc");
       iframe.loading = "lazy";
       iframe.referrerPolicy = "no-referrer-when-downgrade";
       iframe.src = previewUrl;
 
-      // 2) Hämta bäddningssnutten (kan vara låst med 402 strax efter checkout)
+      // Hämta snippeten
       async function tryLoadSnippet(){
+        const API = await API_PROMISE;
         const r = await fetch(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`, { cache:"no-store" });
 
         if (r.status === 402){
@@ -183,13 +187,13 @@
       function wireActions(cid){
         const oc = document.getElementById("openCheckout");
         if (oc) oc.onclick = async () => {
-          const r = await getJson(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+          const r = await getJson(`/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
           if (r.ok && r.data.url) location.href = r.data.url;
           else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
         };
         const op = document.getElementById("openPortal");
         if (op) op.onclick = async () => {
-          const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+          const r = await getJson(`/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
           if (r.ok && r.data.url) location.href = r.data.url;
           else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
         };
@@ -198,14 +202,13 @@
       }
 
       if (await tryLoadSnippet()) return;
-      await postJson(`${API}/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
+      await postJson(`/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
       await tryLoadSnippet();
 
-      // Portal-knappen i nederkortet
       const portalBtn = document.getElementById("portal");
       if (portalBtn){
         portalBtn.onclick = async () => {
-          const r = await getJson(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+          const r = await getJson(`/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
           if (r.ok && r.data.url) location.href = r.data.url;
           else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
         };
