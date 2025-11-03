@@ -8,8 +8,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
   <style>
+    /* Sid-specifik finputsning */
     body{ overflow-x:hidden; }
     .hidden{ display:none!important; }
+
+    /* Loader overlay */
     .loader-backdrop{ position:fixed; inset:0; z-index:60; background:rgba(15,23,42,.55); backdrop-filter: blur(3px); display:none; align-items:center; justify-content:center; }
     .loader-backdrop.show{ display:flex; }
     .loader-card{ background:linear-gradient(135deg, rgba(255,255,255,.92), rgba(250,253,255,.92)); border:1px solid rgba(2,6,23,.08); border-radius:16px; padding:22px 26px; min-width:280px; box-shadow:0 10px 30px rgba(2,6,23,.18); display:grid; gap:10px; justify-items:center; text-align:center; }
@@ -17,15 +20,22 @@
     @keyframes spin{ to{ transform:rotate(360deg); } }
     .loader-text{ font-weight:600; color:#0b1220; }
     .loader-sub{ font-size:13px; color:#6b7280; }
+
+    /* Smidigare knapp-rader */
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .file{ width:100%; }
+
+    /* Logg & filer */
     #log{ list-style:none; padding:0; margin:10px 0 0; display:grid; gap:6px; }
     #files{ list-style:none; padding:0; margin:0; display:grid; gap:12px; }
     #files li{ background:rgba(15,23,42,.65); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; }
     #files .row{ display:flex; gap:16px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; }
     #files .muted{ color:#a7b0c0; }
+
+    /* Kort-stil */
     .glass{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
     .stack{ display:grid; gap:16px; }
+
     header.page .muted{ max-width:860px; }
   </style>
 </head>
@@ -119,7 +129,7 @@
         </div>
       </div>
 
-      <!-- Quota card (visas om backend har /usage) -->
+      <!-- Quota-kort -->
       <section id="quota-card" class="card" style="margin-top:16px; display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
           <div>
@@ -128,9 +138,11 @@
           </div>
           <span id="quota-pill" class="status-pill ok">0%</span>
         </div>
+
         <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
           <div id="quota-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#60a5fa)"></div>
         </div>
+
         <p class="small muted" id="quota-foot" style="margin-top:8px"></p>
       </section>
     </div>
@@ -147,29 +159,33 @@
     </div>
   </div>
 
+  <!-- Huvud-JS -->
   <script>
-    // === API resolver (ny) ===
+    // === API-resolver: ?api=… → window.BOTJAHL_API_BASE → config.json ===
     async function resolveApiBase(){
       const qs = new URLSearchParams(location.search);
       const fromQuery = qs.get("api");
       if (fromQuery) return fromQuery.replace(/\/+$/,"");
 
-      if (window.BOTJAHL_API_BASE) return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
+      if (window.BOTJAHL_API_BASE) {
+        return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
+      }
 
-      try {
-        const r = await fetch("./config.json", { cache: "no-store" });
-        if (r.ok) {
+      try{
+        const r = await fetch("./config.json", { cache:"no-store" });
+        if (r.ok){
           const j = await r.json();
           if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/,"");
         }
-      } catch {}
-      throw new Error("API-bas kunde inte bestämmas. Ange ?api=… eller lägg en config.json med {\"apiBase\":\"https://…\"}.");
+      }catch {}
+
+      throw new Error("API-bas saknas. Använd ?api=… eller config.json.");
     }
     const API_PROMISE = resolveApiBase();
 
     // === Element & state ===
-    const qs = new URLSearchParams(location.search);
-    const presetCid = qs.get("cid");
+    const urlQs     = new URLSearchParams(location.search);
+    const presetCid = urlQs.get("cid");
     if (presetCid) document.getElementById("cid").value = presetCid;
 
     const tokenKey    = "botjahl.portal.token";
@@ -190,7 +206,7 @@
     function setAuth(token, cid){
       if (token) {
         localStorage.setItem(tokenKey, token);
-        localStorage.setItem('bj_jwt', token);
+        localStorage.setItem('bj_jwt', token); // används av quota-kortet
         window.dispatchEvent(new CustomEvent('bj:auth', { detail: { token } }));
       }
       if (cid) localStorage.setItem(customerKey, cid);
@@ -202,6 +218,7 @@
       localStorage.removeItem(customerKey);
       localStorage.removeItem('bj_jwt');
     }
+
     function logout(){
       clearAuth();
       app.classList.add("hidden");
@@ -210,28 +227,32 @@
       filesUl.innerHTML = "";
     }
 
-    // === Hjälpare: läs JSON om möjligt, annars text ===
+    // === Hjälpare för svar ===
     async function readBody(res){
       const text = await res.text();
       if (!text) return null;
       const ct = (res.headers.get("content-type") || "").toLowerCase();
-      if (ct.includes("application/json")) { try { return JSON.parse(text); } catch {} }
+      if (ct.includes("application/json")) {
+        try { return JSON.parse(text); } catch { /* ignore */ }
+      }
       return text;
     }
 
-    // === API-wrapper som alltid prefixar rätt API-bas ===
+    // === API-wrapper ===
     async function api(path, opts = {}){
-      const API = await API_PROMISE;
+      const API_BASE = await API_PROMISE;
       const headers = Object.assign({}, opts.headers || {});
       const tok = getToken();
       if (tok) headers.Authorization = "Bearer " + tok;
-      if (!headers["Content-Type"] && typeof opts.body === "string") headers["Content-Type"] = "application/json";
-      const res = await fetch(API + path, { ...opts, headers });
+      if (!headers["Content-Type"] && typeof opts.body === "string") {
+        headers["Content-Type"] = "application/json";
+      }
+      const res = await fetch(API_BASE + path, { ...opts, headers });
       const data = await readBody(res);
       return { res, data };
     }
 
-    // === Status-hjälpare + auto-poll ===
+    // === Status-hjälpare ===
     async function getStatus(){
       const { res, data } = await api("/api/uploads/status");
       if (!res.ok) return [];
@@ -253,17 +274,20 @@
     // === Login ===
     async function login(){
       const customerId = document.getElementById("cid").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const msg = document.getElementById("loginMsg");
+      const email      = document.getElementById("email").value.trim();
+      const msg        = document.getElementById("loginMsg");
       msg.textContent = "";
       msg.classList.add("hidden");
 
       try{
         showLoading("Loggar in…");
-        const { res, data } = await api("/api/portal/login", {
+        const API_BASE = await API_PROMISE;
+        const res = await fetch(API_BASE + "/api/portal/login", {
           method: "POST",
+          headers: { "Content-Type":"application/json" },
           body: JSON.stringify({ customerId, email })
         });
+        const data = await readBody(res);
 
         if (!res.ok) {
           const errText =
@@ -311,6 +335,7 @@
       for (const it of data){
         const li = document.createElement("li");
         const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
+
         const indexedHtml = it.indexed
           ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
           : ' • <span class="status-pill pending">ej indexerad</span>';
@@ -340,7 +365,7 @@
     // === Reindex ===
     async function reindexAll(){
       const before = await getStatus();
-      const names = before.map(d => d.objectName);
+      const names  = before.map(d => d.objectName);
 
       const { res, data } = await api("/api/uploads/reindex", {
         method: "POST",
@@ -403,7 +428,7 @@
           continue;
         }
 
-        // 2) PUT till SAS
+        // 2) PUT till blob
         try{
           const put = await fetch(start.data.uploadUrl, {
             method: "PUT",
@@ -455,6 +480,7 @@
     document.getElementById("refreshBtn").onclick = refreshStatus;
     document.getElementById("uploadBtn").onclick  = upload;
     document.getElementById("reindexAllBtn").onclick = reindexAll;
+
     document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
 
     // === Boot ===
@@ -477,43 +503,20 @@
     })();
   </script>
 
-  <!-- Quota-kort (oförändrat i sak, använder token i localStorage) -->
+  <!-- Quota-kort driver (använder samma API_PROMISE) -->
   <script>
   (function(){
-    let API_BASE = "";
-    (async ()=>{ try{ API_BASE = await API_PROMISE; }catch{} })();
-
-    function readCookie(name){
-      const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)'));
-      return m ? decodeURIComponent(m[1]) : null;
-    }
-    function getToken(){
-      const qs = new URLSearchParams(location.search);
-      const fromUrl = qs.get('token') || qs.get('jwt');
-      if (fromUrl) return fromUrl;
-      const keys = ['botjahl.portal.token','bj_jwt','jwt','token','auth_token'];
-      for (const k of keys){
-        const v = localStorage.getItem(k) || sessionStorage.getItem(k);
-        if (v) return v;
-      }
-      if (window.JWT) return window.JWT;
-      const cookieKeys = ['bj_jwt','jwt','token','botjahl.portal.token'];
-      for (const ck of cookieKeys){
-        const v = readCookie(ck);
-        if (v) return v;
-      }
-      return '';
-    }
-    async function fetchUsage(token){
-      const res = await fetch(`${API_BASE}/api/uploads/usage`, { headers: { "Authorization": `Bearer ${token}` } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    }
     const card = document.getElementById("quota-card");
     const sub  = document.getElementById("quota-sub");
     const pill = document.getElementById("quota-pill");
     const bar  = document.getElementById("quota-bar");
     const foot = document.getElementById("quota-foot");
+
+    function currentToken(){
+      return localStorage.getItem("bj_jwt") ||
+             localStorage.getItem("botjahl.portal.token") || "";
+    }
+
     function render(u){
       card.style.display = "";
       sub.textContent = `Plan: ${u.plan} • ${u.files} fil(er)`;
@@ -522,6 +525,7 @@
       pill.className = "status-pill " + (u.percent >= 100 ? "pending" : "ok");
       foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt`;
     }
+
     function renderLoggedOut(){
       card.style.display = "";
       sub.textContent = "Logga in för att se användning.";
@@ -529,17 +533,35 @@
       bar.style.width = "0%";
       foot.textContent = "";
     }
-    async function tick(){
-      const token = getToken();
-      if (!token){ renderLoggedOut(); return; }
-      try{ const u = await fetchUsage(token); render(u); }
-      catch{ card.style.display=""; sub.textContent="Kunde inte läsa användning."; pill.textContent="—"; }
+
+    async function fetchUsage(){
+      const token = currentToken();
+      if (!token) { renderLoggedOut(); return; }
+      try{
+        const apiBase = (await API_PROMISE).replace(/\/+$/,"");
+        const res = await fetch(`${apiBase}/api/uploads/usage`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok){
+          renderLoggedOut();
+          return;
+        }
+        const data = await res.json();
+        render(data);
+      }catch{
+        renderLoggedOut();
+      }
     }
+
+    function tick(){ fetchUsage(); }
+
     window.addEventListener('storage', (e) => {
-      if (['botjahl.portal.token','bj_jwt','jwt','token','auth_token'].includes(e.key)) tick();
+      if (['botjahl.portal.token','bj_jwt'].includes(e.key)) tick();
     });
     window.addEventListener('bj:auth', () => tick());
-    (async ()=>{ try{ API_BASE = await API_PROMISE; tick(); setInterval(tick,15000);}catch{} })();
+
+    tick();
+    setInterval(tick, 15000);
   })();
   </script>
 </body>
