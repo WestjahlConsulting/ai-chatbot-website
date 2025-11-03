@@ -17,18 +17,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Om du INTE har npm/vite/react-build etc, hoppa direkt till deploy.
-      # Har du ett byggsteg, lägg in det här (npm ci && npm run build)
-      # och sätt 'output_location' nedan till din build-mapp (ex 'dist').
+      # Skapa config.json från environment variable 'API_BASE'
+      - name: Create config.json
+        run: |
+          if [ -z "${{ vars.API_BASE }}" ]; then
+            echo "❌ Missing vars.API_BASE in environment 'dev'"; exit 1;
+          fi
+          echo "{\"apiBase\":\"${{ vars.API_BASE }}\"}" > ./config.json
+          echo "Wrote config.json:"
+          cat ./config.json
 
       - name: Deploy to Azure Static Web Apps (DEV)
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
           action: upload
-          #### Om webb-filerna ligger i repo-roten:
-          app_location: "/"
-          output_location: "/"
-          #### Om du har ett byggsteg (ex. Vite/React) ändra t.ex. till:
-          # app_location: "/"
-          # output_location: "dist"
+          app_location: "/"          # dina statiska filer i repo-roten
+          output_location: "/"       # ingen separat build-mapp
+          app_build_command: ""      # <- kör inget build-steg
+          api_build_command: ""      # <- inget API-build heller
