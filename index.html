@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>BotJahl – AI-chattbot för din hemsida</title>
-  <meta name="description" content="BotJahl är en AI-chattbot som du bäddar in på din webbplats. Starta gratis i 14 dagar – laddas med dina dokument.">
+  <meta name="description" content="BotJahl är en AI-chattbot som du enkelt bäddar in på din webbplats. Starta gratis i 14 dagar – plug-in & run.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css?v=2025-09-13a">
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
 
   <!-- NAV -->
   <nav>
-    <div class="container">
+    <div class="container row">
       <a href="index.html" class="brand" aria-label="BotJahl startsida">
-        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" width="28" height="28">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
           <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
           <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
           <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
@@ -25,201 +25,67 @@
             <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
           </defs>
         </svg>
-        <span>BotJahl</span>
+        BotJahl
       </a>
-
       <div class="nav-links">
         <a href="#demo">Demo</a>
-        <a href="#pricing">Priser</a>
         <a href="#starta">Starta gratis</a>
-        <a class="btn secondary" href="admin.html" aria-label="Öppna adminportalen">Logga in</a>
+        <a href="admin.html" class="btn secondary" aria-label="Öppna adminportalen">Admin</a>
       </div>
     </div>
   </nav>
 
   <!-- HERO -->
-  <header class="hero">
-    <div class="container hero">
-      <div class="wrap">
-        <div class="card glass stack">
-          <span class="badge">Plug-in & run</span>
-          <h1>AI-chattbot som svarar med ditt innehåll</h1>
-          <p class="muted">Bädda in på din webbplats på några minuter. Ladda upp PDF/DOCX/TXT/MD eller indexera dina webbsidor. Starta gratis i 14 dagar.</p>
-          <div class="actions">
-            <a class="btn primary" href="#starta">Starta gratis</a>
-            <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
-          </div>
+  <header class="hero container">
+    <div class="wrap">
+      <div class="card glass">
+        <span class="badge">Plug-in & run</span>
+        <h1>AI-chattbot som svarar med ditt innehåll</h1>
+        <p class="muted">Bädda in på din webbplats på några minuter. Träna boten med dina PDF:er, DOCX eller webbsidor. Starta gratis i 14 dagar – ingen kod krävs.</p>
+        <div class="grid grid-2">
+          <a class="btn primary" href="#starta">Starta gratis</a>
+          <a class="btn ghost" href="admin.html">Logga in i portalen</a>
         </div>
-
-        <div class="card stack">
-          <div class="feature"><span class="dot"></span><div><strong>Enkel installation</strong><div class="muted">Kopiera en färdig &lt;iframe&gt;-kod.</div></div></div>
-          <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Uppladdning → indexering → klart.</div></div></div>
-          <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Kortbetalning via Stripe. Avsluta när som helst.</div></div></div>
-        </div>
+      </div>
+      <div class="card">
+        <div class="feature"><span class="dot"></span><div><strong>Enkelt att installera</strong><div class="muted">Kopiera en färdig &lt;iframe&gt;-kod.</div></div></div>
+        <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Ladda upp dokument – vi indexerar automatiskt.</div></div></div>
+        <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Provperiod 14 dagar, trygg kortbetalning via Stripe.</div></div></div>
       </div>
     </div>
   </header>
 
   <!-- DEMO -->
   <section id="demo">
-    <div class="container stack">
-      <h2 class="center">Testa BotJahl</h2>
-      <p class="muted center">Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.</p>
-      <div id="iframe-demo" class="narrow">
-        <div class="iframe-wrapper">
-          <iframe
-            id="botjahl-demo"
-            src="https://westjahlconsulting.github.io/ai-chatbot-frontend/?customerId=ceb2df2&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            sandbox="allow-scripts allow-forms allow-same-origin"
-            title="BotJahl demo-chatt"
-            aria-label="Inbäddad demo av BotJahl"
-          ></iframe>
-        </div>
+    <div class="container">
+      <h2>Testa BotJahl direkt</h2>
+      <p class="muted">Demot är kopplat till vår testkund. Fråga vad boten kan hjälpa till med.</p>
+      <div class="iframe-wrapper glass">
+        <iframe
+          id="botjahl-demo"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          sandbox="allow-scripts allow-forms allow-same-origin"
+          title="BotJahl demo-chatt"
+          aria-label="Inbäddad demo av BotJahl"
+        ></iframe>
       </div>
-    </div>
-  </section>
-
-  <!-- SÅ FUNKAR DET -->
-  <section>
-    <div class="container narrow stack">
-      <h2 class="center">Så fungerar det</h2>
-      <div class="grid grid-2">
-        <div class="step">
-          <div class="num">1</div>
-          <div>
-            <strong>Registrera dig</strong>
-            <div class="muted">Fyll i företagsnamn, webbplats och e-post. Du får kund-ID och länk till betalning.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">2</div>
-          <div>
-            <strong>Bädda in</strong>
-            <div class="muted">Klistra in din kodsnutt (iframe) på valfri sida. Klart på minuter.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">3</div>
-          <div>
-            <strong>Ladda upp dokument</strong>
-            <div class="muted">PDF/DOCX/TXT/MD – vi indexerar automatiskt. Boten svarar med ditt innehåll.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">4</div>
-          <div>
-            <strong>Hantera i portalen</strong>
-            <div class="muted">Se status, reindexera, ta bort filer och uppdatera betalmetod.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PRISER (mellan Demo och Admin/Starta) -->
-  <section id="pricing" class="container">
-    <h2 class="center">Priser</h2>
-    <p class="muted center">Välj en nivå som passar – du kan alltid uppgradera senare.</p>
-
-    <div class="pricing-grid">
-      <!-- Bas (aktiv) -->
-      <article class="plan plan--active" aria-label="Bas">
-        <header class="plan__header">
-          <h3>Bas</h3>
-          <p class="plan__tagline">För att komma igång</p>
-        </header>
-        <div class="plan__price">
-          <span class="plan__amount">399</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
-        </div>
-        <ul class="plan__features">
-          <li>1 domän/website</li>
-          <li>Upp till ~1 000 frågor/mån*</li>
-          <li>Dokument: 500 MB</li>
-          <li>Inbäddad chat-widget</li>
-          <li>Grundläggande support (e-post)</li>
-          <li>GDPR-vänlig drift</li>
-        </ul>
-        <div class="plan__cta">
-          <button id="buy-bas" class="btn primary">Starta provperiod</button>
-          <p class="small muted">*Exakt kapacitet beror på frågelängd & modellkostnad.</p>
-        </div>
-      </article>
-
-      <!-- Plus (kommer snart) -->
-      <article class="plan plan--soon" aria-label="Plus">
-        <header class="plan__header">
-          <h3>Plus</h3>
-          <span class="badge soon">Kommer snart</span>
-          <p class="plan__tagline">Mer kapacitet & funktioner</p>
-        </header>
-        <div class="plan__price">
-          <span class="plan__amount">999</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
-        </div>
-        <ul class="plan__features">
-          <li>3 domäner/websites</li>
-          <li>Upp till ~10 000 frågor/mån</li>
-          <li>Dokument: 5 GB</li>
-          <li>Förbättrad RAG (Azure AI Search)</li>
-          <li>Prioriterad support</li>
-          <li>Grundläggande analys</li>
-        </ul>
-        <div class="plan__cta">
-          <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
-        </div>
-      </article>
-
-      <!-- Premium (kommer snart) -->
-      <article class="plan plan--soon" aria-label="Premium">
-        <header class="plan__header">
-          <h3>Premium</h3>
-          <span class="badge soon">Kommer snart</span>
-          <p class="plan__tagline">För team & hög trafik</p>
-        </header>
-        <div class="plan__price">
-          <span class="plan__amount">2 499</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
-        </div>
-        <ul class="plan__features">
-          <li>Upp till 5 domäner</li>
-          <li>Upp till ~50 000 frågor/mån</li>
-          <li>Dokument: 20 GB</li>
-          <li>Avancerad RAG & sök</li>
-          <li>SLA & prioriterad support</li>
-          <li>Integrationer & SSO</li>
-        </ul>
-        <div class="plan__cta">
-          <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
-        </div>
-      </article>
     </div>
   </section>
 
   <!-- SIGNUP -->
   <section id="starta">
-    <div class="container narrow">
-      <h2 class="center">Starta gratis i 14 dagar</h2>
+    <div class="container">
+      <h2>Starta gratis i 14 dagar</h2>
       <div class="card glass">
-        <form id="signup" autocomplete="on" class="stack">
-          <div>
-            <label for="org">Företagsnamn</label>
-            <input id="org" name="name" placeholder="Företagsnamn" autocomplete="organization" required />
-          </div>
-          <div>
-            <label for="site">Webbplats</label>
-            <input id="site" name="websiteUrl" placeholder="https://… eller www.dittföretag.se" inputmode="url" required />
-          </div>
-          <div>
-            <label for="mail">E-post</label>
-            <input id="mail" name="email" type="email" placeholder="E-post" autocomplete="email" required />
-          </div>
-
-          <div class="actions">
+        <form id="signup">
+          <input name="name" placeholder="Företagsnamn" autocomplete="organization" required />
+          <input name="websiteUrl" placeholder="Webbplats (https://… eller www.dittföretag.se)" inputmode="url" required />
+          <input name="email" type="email" placeholder="E-post" autocomplete="email" required />
+          <div class="grid grid-1-auto">
+            <p class="muted">Du får ett kund-ID och en betalningslänk. Kodsnutten lämnas först när betalmetod är lagd.</p>
             <button class="btn primary" type="submit">Skapa min bot</button>
           </div>
-          <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
-
-          <p class="small muted">Du får ett kund-ID och en betalningslänk. Kodsnutten visas efter att betalmetod lagts in.</p>
         </form>
         <div id="signup-result"></div>
       </div>
@@ -228,9 +94,9 @@
 
   <!-- CONTACT -->
   <section>
-    <div class="container narrow stack center">
+    <div class="container">
       <h2>Frågor?</h2>
-      <p class="muted">Maila: <a href="mailto:faijahl75@gmail.com" style="color:#cde2ff">faijahl75@gmail.com</a></p>
+      <p class="muted">Maila oss: <a href="mailto:faijahl75@gmail.com">faijahl75@gmail.com</a> eller <a href="admin.html">logga in i portalen</a> om du redan är kund.</p>
     </div>
   </section>
 
@@ -238,20 +104,50 @@
     <div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div>
   </footer>
 
-  <!-- JS -->
   <script>
-    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-    const out = document.getElementById('signup-result');
+    // === API-resolver: ?api=… → window.BOTJAHL_API_BASE → config.json ===
+    async function resolveApiBase(){
+      const qs = new URLSearchParams(location.search);
+      const fromQuery = qs.get("api");
+      if (fromQuery) return fromQuery.replace(/\/+$/,"");
 
-    const okBanner = (html) => `<div class="banner ok">${html}</div>`;
-    const errBanner = (html) => `<div class="banner err">${html}</div>`;
+      if (window.BOTJAHL_API_BASE) {
+        return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
+      }
 
-    // Signup
+      try{
+        const r = await fetch("./config.json", { cache:"no-store" });
+        if (r.ok){
+          const j = await r.json();
+          if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/,"");
+        }
+      }catch {}
+
+      throw new Error("API-bas kunde inte bestämmas. Ange ?api=… eller lägg en config.json med {\"apiBase\":\"https://…\"}.");
+    }
+    const API_PROMISE = resolveApiBase();
+    const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+    const DEMO_CUSTOMER_ID = "ceb2df2";
+
+    // Sätt demo-iframe src när API-basen är känd
+    (async () => {
+      try{
+        const API = await API_PROMISE;
+        const iframe = document.getElementById("botjahl-demo");
+        if (iframe) {
+          iframe.src = `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}&api=${encodeURIComponent(API)}`;
+        }
+      }catch(err){
+        console.warn("Kunde inte sätta demo-iframe:", err);
+      }
+    })();
+
+    // Signup-hanterare
     document.getElementById('signup').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target;
 
-      // Normalisera websiteUrl
+      // Normalisera websiteUrl så backend slipper ful-URL:er
       let url = f.websiteUrl.value.trim();
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
@@ -261,9 +157,11 @@
         email: f.email.value.trim()
       };
 
-      out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
+      const out = document.getElementById('signup-result');
+      out.innerHTML = `<span class="muted">Skapar bot…</span>`;
 
       try{
+        const API = await API_PROMISE;
         const res = await fetch(API + "/api/public/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -271,80 +169,40 @@
         });
         const data = await res.json().catch(() => ({}));
 
-        // 409 = redan finns
         if (res.status === 409 && data.customerId) {
-          out.innerHTML = okBanner(`
+          // Företaget finns redan – visa ALDRIG snippet här.
+          out.innerHTML = `
             <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
             ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
-            <div class="actions">
+            <div class="grid grid-auto-2auto">
               <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
               <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
             </div>
-          `);
-          out.scrollIntoView({ behavior: "smooth", block: "start" });
+          `;
           return;
         }
 
         if (!res.ok) {
-          out.innerHTML = errBanner(`Något gick fel. Försök igen om en stund.`);
-          out.scrollIntoView({ behavior: "smooth", block: "start" });
+          out.innerHTML = `<p class="warn">Något gick fel. Testa igen.</p>`;
           return;
         }
 
-        // 200 OK – ny kund
+        // 200 OK – ny kund. Visa bara checkout-länk + info.
         const cid = data.customerId;
-        out.innerHTML = okBanner(`
+        out.innerHTML = `
           <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
-          ${
-            data.checkoutUrl
-              ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
-              : `<p class="muted">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
-          }
-          <p class="small muted">
-            När betalmetod lagts in kan du hämta din kodsnutt här:
+          ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>` :
+            `<p class="warn">Kunde inte skapa Checkout-länk just nu. Försök igen om en stund.</p>`}
+          <p class="muted">
+            När du har lagt in betalmetod kan du hämta din kodsnutt här:
             <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
             eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
           </p>
-        `);
-        out.scrollIntoView({ behavior: "smooth", block: "start" });
+        `;
       }catch(err){
-        out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
-        out.scrollIntoView({ behavior: "smooth", block: "start" });
+        out.innerHTML = `<p class="warn">Nätverksfel: ${err.message || "okänt fel"}</p>`;
       }
     });
-
-    // Pris: Bas → checkout om kund är känd, annars scrolla till signup
-    (function hookPricing(){
-      const buy = document.getElementById("buy-bas");
-      if (!buy) return;
-
-      async function getJson(url){
-        const r = await fetch(url, { cache: "no-store" });
-        const t = await r.text();
-        try{ return { ok: r.ok, status: r.status, data: JSON.parse(t) }; }
-        catch{ return { ok: r.ok, status: r.status, data: {} }; }
-      }
-
-      buy.addEventListener("click", async () => {
-        const cid = window.BOTJAHL_CUSTOMER_ID || ""; // sätts vid login/session om du har det
-        if (!cid){
-          // Ingen känd kund – guida till signup
-          document.getElementById("starta").scrollIntoView({ behavior: "smooth", block: "start" });
-          return;
-        }
-
-        buy.disabled = true;
-        const url = `${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`;
-        const r = await getJson(url);
-        buy.disabled = false;
-
-        if (r.ok && r.data && r.data.url) {
-          location.href = r.data.url;
-        } else {
-          alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
-        }
-      });
-    })();
   </script>
 </body>
 </html>

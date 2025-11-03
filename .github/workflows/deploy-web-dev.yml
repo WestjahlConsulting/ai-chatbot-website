@@ -17,7 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Skapa config.json från environment variable 'API_BASE'
       - name: Create config.json
         run: |
           if [ -z "${{ vars.API_BASE }}" ]; then
@@ -32,7 +31,7 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
           action: upload
-          app_location: "/"          # dina statiska filer i repo-roten
-          output_location: "/"       # ingen separat build-mapp
-          app_build_command: ""      # <- kör inget build-steg
-          api_build_command: ""      # <- inget API-build heller
+          app_location: "/"
+          output_location: "/"
+          app_build_command: ""
+          api_build_command: ""
