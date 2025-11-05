@@ -194,7 +194,7 @@
     </div>
   </section>
 
-  <!-- SIGNUP -->
+    <!-- SIGNUP -->
   <section id="starta">
     <div class="container narrow">
       <h2 class="center">Starta gratis i 14 dagar</h2>
@@ -204,13 +204,33 @@
             <label for="org">Företagsnamn</label>
             <input id="org" name="name" placeholder="Företagsnamn" autocomplete="organization" required />
           </div>
+
           <div>
             <label for="site">Webbplats</label>
             <input id="site" name="websiteUrl" placeholder="https://… eller www.dittföretag.se" inputmode="url" required />
           </div>
+
           <div>
             <label for="mail">E-post</label>
             <input id="mail" name="email" type="email" placeholder="E-post" autocomplete="email" required />
+          </div>
+
+          <div>
+            <label for="orgnr">
+              Organisationsnummer
+              <span class="small muted">(valfritt)</span>
+            </label>
+            <input id="orgnr" name="orgNumber" placeholder="Ex: 559123-4567" autocomplete="on" />
+          </div>
+
+          <div>
+            <label class="small" style="display:flex; gap:8px; align-items:flex-start;">
+              <input id="terms" name="terms" type="checkbox" required style="margin-top:3px;">
+              <span>
+                Jag accepterar
+                <a href="terms.html" target="_blank" rel="noopener">användarvillkor och integritetspolicy</a>.
+              </span>
+            </label>
           </div>
 
           <div class="actions">
@@ -218,12 +238,15 @@
           </div>
           <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
 
-          <p class="small muted">Du får ett kund-ID och en betalningslänk. Kodsnutten visas efter att betalmetod lagts in.</p>
+          <p class="small muted">
+            Du får ett kund-ID och en betalningslänk. Kodsnutten visas efter att betalmetod lagts in.
+          </p>
         </form>
         <div id="signup-result"></div>
       </div>
     </div>
   </section>
+
 
   <!-- CONTACT -->
   <section>
@@ -281,72 +304,83 @@
     const errBanner = (html) => `<div class="banner err">${html}</div>`;
 
     // Signup
-    document.getElementById('signup').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const f = e.target;
+  document.getElementById('signup').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
 
-      // Normalisera websiteUrl
-      let url = f.websiteUrl.value.trim();
-      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    // enkel frontend-koll så vi slipper onödiga calls
+    if (!f.terms.checked) {
+      out.innerHTML = errBanner("Du måste acceptera användarvillkoren.");
+      out.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
 
-      const body = {
-        name: f.name.value.trim(),
-        websiteUrl: url,
-        email: f.email.value.trim()
-      };
+    // Normalisera websiteUrl
+    let url = f.websiteUrl.value.trim();
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-      out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
+    const body = {
+      name: f.name.value.trim(),
+      websiteUrl: url,
+      email: f.email.value.trim(),
+      orgNumber: (f.orgNumber && f.orgNumber.value.trim()) || null,
+      termsAccepted: !!f.terms.checked
+    };
 
-      try{
-        const API = await API_PROMISE;
-        const res = await fetch(API + "/api/public/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-        const data = await res.json().catch(() => ({}));
+    out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
 
-        // 409 = redan finns
-        if (res.status === 409 && data.customerId) {
-          out.innerHTML = okBanner(`
-            <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
-            ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
-            <div class="actions">
-              <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
-              <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
-            </div>
-          `);
-          out.scrollIntoView({ behavior: "smooth", block: "start" });
-          return;
-        }
+    try{
+      const API = await API_PROMISE;
+      const res = await fetch(API + "/api/public/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json().catch(() => ({}));
 
-        if (!res.ok) {
-          out.innerHTML = errBanner(`Något gick fel. Försök igen om en stund.`);
-          out.scrollIntoView({ behavior: "smooth", block: "start" });
-          return;
-        }
-
-        // 200 OK – ny kund
-        const cid = data.customerId;
+      // 409 = redan finns
+      if (res.status === 409 && data.customerId) {
         out.innerHTML = okBanner(`
-          <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
-          ${
-            data.checkoutUrl
-              ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
-              : `<p class="muted">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
-          }
-          <p class="small muted">
-            När betalmetod lagts in kan du hämta din kodsnutt här:
-            <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
-            eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
-          </p>
+          <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
+          ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
+          <div class="actions">
+            <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
+            <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
+          </div>
         `);
         out.scrollIntoView({ behavior: "smooth", block: "start" });
-      }catch(err){
-        out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
-        out.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
       }
-    });
+
+      if (!res.ok) {
+        const msg = (data && data.message) || "Något gick fel. Försök igen om en stund.";
+        out.innerHTML = errBanner(msg);
+        out.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
+      // 200 OK – ny kund
+      const cid = data.customerId;
+      out.innerHTML = okBanner(`
+        <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
+        ${
+          data.checkoutUrl
+            ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
+            : `<p class="muted">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
+        }
+        <p class="small muted">
+          När betalmetod lagts in kan du hämta din kodsnutt här:
+          <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
+          eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
+        </p>
+      `);
+      out.scrollIntoView({ behavior: "smooth", block: "start" });
+    }catch(err){
+      out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
+      out.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+
 
     // Pris: Bas → checkout om kund är känd, annars scrolla till signup
     (function hookPricing(){
