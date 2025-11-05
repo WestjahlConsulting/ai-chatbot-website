@@ -306,31 +306,34 @@
       }
 
       for (const it of data){
-        const li = document.createElement("li");
-        const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
-        const name = it.displayName || (it.objectName || "").split("/").pop();
+  const li = document.createElement("li");
+  const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
 
-        const indexedHtml = it.indexed
-          ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
-          : ' • <span class="status-pill pending">ej indexerad</span>';
+  const indexedHtml = it.indexed
+    ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
+    : ' • <span class="status-pill pending">ej indexerad</span>';
 
-        li.innerHTML = `
-          <div class="row">
-            <div class="doc-meta">
-              <strong>${name}</strong>
-              <div class="meta-line">
-                ${(it.contentType || "okänd")} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
-                ${indexedHtml}
-                ${it.blocked ? ' • <span class="status-pill pending">blockerad</span>' : ""}
-              </div>
-            </div>
-            <div class="doc-actions">
-              <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
-              <button class="btn ghost" data-act="delete" data-name="${it.objectName}">Ta bort</button>
-            </div>
-          </div>`;
-        filesUl.appendChild(li);
-      }
+  // NYTT: använd originalName om den finns, annars fall back till blob-namnet
+  const displayName = it.originalName && it.originalName.trim()
+    ? it.originalName
+    : (it.objectName || "").split('/').pop();
+
+  li.innerHTML = `
+    <div class="row">
+      <div class="doc-meta">
+        <strong>${displayName}</strong>
+        <div class="meta-line">
+          ${(it.contentType || "okänd")} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
+          ${indexedHtml}
+        </div>
+      </div>
+      <div class="doc-actions">
+        <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
+        <button class="btn ghost" data-act="delete" data-name="${it.objectName}">Ta bort</button>
+      </div>
+    </div>`;
+  filesUl.appendChild(li);
+}
 
       filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => b.onclick = () => reindexOne(b.dataset.name));
       filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => b.onclick = () => deleteOne(b.dataset.name));
