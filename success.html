@@ -109,132 +109,144 @@
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
   <script>
-    // === API-resolver ===
-    async function resolveApiBase(){
-      const qs = new URLSearchParams(location.search);
-      const fromQuery = qs.get("api");
-      if (fromQuery) return fromQuery.replace(/\/+$/,"");
-      if (window.BOTJAHL_API_BASE) return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
-      try{
-        const r = await fetch("./config.json",{cache:"no-store"});
-        if (r.ok){
-          const j = await r.json();
-          if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/,"");
-        }
-      }catch{}
-      throw new Error("API-bas saknas. Använd ?api=… eller config.json.");
-    }
-    const API_PROMISE = resolveApiBase();
-    const WIDGET_URL  = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
-
-    // Helpers
-    function safeJson(t){ try { return t ? JSON.parse(t) : {}; } catch { return {}; } }
-    async function getJson(path){
-      const API = await API_PROMISE;
-      const r = await fetch(API + path, { cache:"no-store" });
-      const txt = await r.text();
-      return { ok:r.ok, status:r.status, data:safeJson(txt) };
-    }
-    async function postJson(path, body){
-      const API = await API_PROMISE;
-      const r = await fetch(API + path, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: body ? JSON.stringify(body) : null
-      });
-      const txt = await r.text();
-      return { ok:r.ok, status:r.status, data:safeJson(txt) };
-    }
-    function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
-    function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
-
-    function renderActive(snippet, cid){
-      document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
-      document.getElementById("snippetCard").classList.remove("hidden");
-      document.getElementById("previewCard").classList.remove("hidden");
-      const ta = document.getElementById("embed-snippet");
-      if (ta) ta.value = snippet;
-      const copyBtn = document.getElementById("copy-snippet");
-      if (copyBtn && ta){
-        copyBtn.onclick = async () => {
-          try { await navigator.clipboard.writeText(ta.value); }
-          catch { ta.select(); document.execCommand("copy"); }
-          copyBtn.textContent = "Kopierad!";
-          setTimeout(()=> copyBtn.textContent = "Kopiera snutten", 1500);
-        };
+  // === API-resolver ===
+  async function resolveApiBase(){
+    const qs = new URLSearchParams(location.search);
+    const fromQuery = qs.get("api");
+    if (fromQuery) return fromQuery.replace(/\/+$/,"");
+    if (window.BOTJAHL_API_BASE) return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
+    try{
+      const r = await fetch("./config.json",{cache:"no-store"});
+      if (r.ok){
+        const j = await r.json();
+        if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/,"");
       }
+    }catch{}
+    throw new Error("API-bas saknas. Använd ?api=… eller config.json.");
+  }
+  const API_PROMISE = resolveApiBase();
+  const WIDGET_URL  = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+
+  // Helpers
+  function safeJson(t){ try { return t ? JSON.parse(t) : {}; } catch { return {}; } }
+  async function getJson(path){
+    const API = await API_PROMISE;
+    const r = await fetch(API + path, { cache:"no-store" });
+    const txt = await r.text();
+    return { ok:r.ok, status:r.status, data:safeJson(txt) };
+  }
+  async function postJson(path, body){
+    const API = await API_PROMISE;
+    const r = await fetch(API + path, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: body ? JSON.stringify(body) : null
+    });
+    const txt = await r.text();
+    return { ok:r.ok, status:r.status, data:safeJson(txt) };
+  }
+  function showWarn(html){ const w=document.getElementById("warn"); w.classList.remove("hidden"); w.innerHTML=html; }
+  function hideWarn(){ document.getElementById("warn").classList.add("hidden"); }
+
+  function renderActive(snippet, cid){
+    document.getElementById("title").textContent = "Klart! Din bot är aktiverad";
+    document.getElementById("snippetCard").classList.remove("hidden");
+    document.getElementById("previewCard").classList.remove("hidden");
+    const ta = document.getElementById("embed-snippet");
+    if (ta) ta.value = snippet;
+    const copyBtn = document.getElementById("copy-snippet");
+    if (copyBtn && ta){
+      copyBtn.onclick = async () => {
+        try { await navigator.clipboard.writeText(ta.value); }
+        catch { ta.select(); document.execCommand("copy"); }
+        copyBtn.textContent = "Kopierad!";
+        setTimeout(()=> copyBtn.textContent = "Kopiera snutten", 1500);
+      };
+    }
+  }
+
+  (async function (){
+    const qs  = new URLSearchParams(location.search);
+    const cid = qs.get("cid") || qs.get("customerId");
+    if (!cid){
+      showWarn("<strong>Saknar kund-ID.</strong> Öppna sidan med <code>?cid=…</code>.");
+      return;
     }
 
-    (async function (){
-      const qs  = new URLSearchParams(location.search);
-      const cid = qs.get("cid") || qs.get("customerId");
-      if (!cid){ showWarn("<strong>Saknar kund-ID.</strong> Öppna sidan med <code>?cid=…</code>."); return; }
-
-      // Preview via widget
-      document.getElementById("previewCard").classList.remove("hidden");
-      const iframe = document.getElementById("live-preview");
-      const API = await API_PROMISE;
-      const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
-      iframe.removeAttribute("srcdoc");
-      iframe.loading = "lazy";
-      iframe.referrerPolicy = "no-referrer-when-downgrade";
-      iframe.src = previewUrl;
-
-      async function tryLoadSnippet(){
-        const API = await API_PROMISE;
-        const r = await fetch(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`, { cache:"no-store" });
-
-        if (r.status === 402){
-          showWarn(`
-            <strong>Din bot är inte aktiverad ännu.</strong><br>
-            Det kan ta någon minut för Stripe-webhooken att slå igenom.<br><br>
-            <div class="actions">
-              <a id="openCheckout" class="btn primary">Öppna Checkout</a>
-              <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
-              <button id="retry"   class="btn ghost">Kontrollera igen</button>
-            </div>
-            <p class="muted small" style="margin-top:8px">Servern svarade 402 på snippet.</p>
-          `);
-          wireActions(cid);
-          return false;
+    // --- Sätt upp knappen "Öppna kundportal" direkt (ska alltid fungera) ---
+    const portalBtn = document.getElementById("portal");
+    if (portalBtn){
+      portalBtn.onclick = async () => {
+        const r = await getJson(`/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+        if (r.ok && r.data.url) {
+          location.href = r.data.url;
+        } else {
+          alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
         }
+      };
+    }
 
-        const txt  = await r.text();
-        const data = safeJson(txt);
-        if (r.ok && data && data.snippet){ hideWarn(); renderActive(data.snippet, cid); return true; }
+    // --- Preview via widget ---
+    document.getElementById("previewCard").classList.remove("hidden");
+    const iframe = document.getElementById("live-preview");
+    const API = await API_PROMISE;
+    const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
+    iframe.removeAttribute("srcdoc");
+    iframe.loading = "lazy";
+    iframe.referrerPolicy = "no-referrer-when-downgrade";
+    iframe.src = previewUrl;
+
+    async function tryLoadSnippet(){
+      const API = await API_PROMISE;
+      const r = await fetch(`${API}/api/public/snippet?customerId=${encodeURIComponent(cid)}`, { cache:"no-store" });
+
+      if (r.status === 402){
+        showWarn(`
+          <strong>Din bot är inte aktiverad ännu.</strong><br>
+          Det kan ta någon minut för Stripe-webhooken att slå igenom.<br><br>
+          <div class="actions">
+            <a id="openCheckout" class="btn primary">Öppna Checkout</a>
+            <a id="openPortal"   class="btn secondary">Öppna kundportal</a>
+            <button id="retry"   class="btn ghost">Kontrollera igen</button>
+          </div>
+          <p class="muted small" style="margin-top:8px">Servern svarade 402 på snippet.</p>
+        `);
+        wireActions(cid);
         return false;
       }
 
-      function wireActions(cid){
-        const oc = document.getElementById("openCheckout");
-        if (oc) oc.onclick = async () => {
-          const r = await getJson(`/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
-          if (r.ok && r.data.url) location.href = r.data.url;
-          else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
-        };
-        const op = document.getElementById("openPortal");
-        if (op) op.onclick = async () => {
-          const r = await getJson(`/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-          if (r.ok && r.data.url) location.href = r.data.url;
-          else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-        };
-        const rt = document.getElementById("retry");
-        if (rt) rt.onclick = () => location.reload();
+      const txt  = await r.text();
+      const data = safeJson(txt);
+      if (r.ok && data && data.snippet){
+        hideWarn();
+        renderActive(data.snippet, cid);
+        return true;
       }
+      return false;
+    }
 
-      if (await tryLoadSnippet()) return;
-      await postJson(`/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
-      await tryLoadSnippet();
+    function wireActions(cid){
+      const oc = document.getElementById("openCheckout");
+      if (oc) oc.onclick = async () => {
+        const r = await getJson(`/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
+        if (r.ok && r.data.url) location.href = r.data.url;
+        else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna Checkout.");
+      };
+      const op = document.getElementById("openPortal");
+      if (op) op.onclick = async () => {
+        const r = await getJson(`/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
+        if (r.ok && r.data.url) location.href = r.data.url;
+        else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+      };
+      const rt = document.getElementById("retry");
+      if (rt) rt.onclick = () => location.reload();
+    }
 
-      const portalBtn = document.getElementById("portal");
-      if (portalBtn){
-        portalBtn.onclick = async () => {
-          const r = await getJson(`/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-          if (r.ok && r.data.url) location.href = r.data.url;
-          else alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-        };
-      }
-    })();
-  </script>
+    // --- Försök hämta snutten / trigga checkout-sync ---
+    if (await tryLoadSnippet()) return;
+    await postJson(`/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
+    await tryLoadSnippet();
+  })();
+</script>
 </body>
 </html>
