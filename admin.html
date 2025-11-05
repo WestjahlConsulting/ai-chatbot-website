@@ -8,11 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
   <style>
-    /* Sid-specifik finputsning */
     body{ overflow-x:hidden; }
     .hidden{ display:none!important; }
 
-    /* Loader overlay */
     .loader-backdrop{ position:fixed; inset:0; z-index:60; background:rgba(15,23,42,.55); backdrop-filter: blur(3px); display:none; align-items:center; justify-content:center; }
     .loader-backdrop.show{ display:flex; }
     .loader-card{ background:linear-gradient(135deg, rgba(255,255,255,.92), rgba(250,253,255,.92)); border:1px solid rgba(2,6,23,.08); border-radius:16px; padding:22px 26px; min-width:280px; box-shadow:0 10px 30px rgba(2,6,23,.18); display:grid; gap:10px; justify-items:center; text-align:center; }
@@ -21,22 +19,25 @@
     .loader-text{ font-weight:600; color:#0b1220; }
     .loader-sub{ font-size:13px; color:#6b7280; }
 
-    /* Smidigare knapp-rader */
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .file{ width:100%; }
 
-    /* Logg & filer */
     #log{ list-style:none; padding:0; margin:10px 0 0; display:grid; gap:6px; }
     #files{ list-style:none; padding:0; margin:0; display:grid; gap:12px; }
     #files li{ background:rgba(15,23,42,.65); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; }
     #files .row{ display:flex; gap:16px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; }
     #files .muted{ color:#a7b0c0; }
 
-    /* Kort-stil */
     .glass{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
     .stack{ display:grid; gap:16px; }
 
     header.page .muted{ max-width:860px; }
+
+    .status-pill{ display:inline-flex; align-items:center; justify-content:center; min-width:62px; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:600; }
+    .status-pill.ok{ background:rgba(22,163,74,.16); color:#bbf7d0; }
+    .status-pill.pending{ background:rgba(234,179,8,.16); color:#facc15; }
+
+    .small{ font-size:12px; }
   </style>
 </head>
 <body>
@@ -129,7 +130,7 @@
         </div>
       </div>
 
-      <!-- Quota-kort -->
+      <!-- Quota card -->
       <section id="quota-card" class="card" style="margin-top:16px; display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
           <div>
@@ -159,33 +160,12 @@
     </div>
   </div>
 
-  <!-- Huvud-JS -->
+  <!-- Huvudscript (login + uppladdning + status) -->
   <script>
-    // === API-resolver: ?api=… → window.BOTJAHL_API_BASE → config.json ===
-    async function resolveApiBase(){
-      const qs = new URLSearchParams(location.search);
-      const fromQuery = qs.get("api");
-      if (fromQuery) return fromQuery.replace(/\/+$/,"");
+    const API = (window.API_BASE || window.API || "https://botjahl-api-dev.azurewebsites.net").replace(/\/+$/,"");
 
-      if (window.BOTJAHL_API_BASE) {
-        return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
-      }
-
-      try{
-        const r = await fetch("./config.json", { cache:"no-store" });
-        if (r.ok){
-          const j = await r.json();
-          if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/,"");
-        }
-      }catch {}
-
-      throw new Error("API-bas saknas. Använd ?api=… eller config.json.");
-    }
-    const API_PROMISE = resolveApiBase();
-
-    // === Element & state ===
-    const urlQs     = new URLSearchParams(location.search);
-    const presetCid = urlQs.get("cid");
+    const qs = new URLSearchParams(location.search);
+    const presetCid = qs.get("cid");
     if (presetCid) document.getElementById("cid").value = presetCid;
 
     const tokenKey    = "botjahl.portal.token";
@@ -206,8 +186,8 @@
     function setAuth(token, cid){
       if (token) {
         localStorage.setItem(tokenKey, token);
-        localStorage.setItem('bj_jwt', token); // används av quota-kortet
-        window.dispatchEvent(new CustomEvent('bj:auth', { detail: { token } }));
+        localStorage.setItem("bj_jwt", token); // för quota-scriptet
+        window.dispatchEvent(new CustomEvent("bj:auth", { detail: { token } }));
       }
       if (cid) localStorage.setItem(customerKey, cid);
     }
@@ -216,7 +196,7 @@
     function clearAuth(){
       localStorage.removeItem(tokenKey);
       localStorage.removeItem(customerKey);
-      localStorage.removeItem('bj_jwt');
+      localStorage.removeItem("bj_jwt");
     }
 
     function logout(){
@@ -227,42 +207,38 @@
       filesUl.innerHTML = "";
     }
 
-    // === Hjälpare för svar ===
     async function readBody(res){
       const text = await res.text();
       if (!text) return null;
       const ct = (res.headers.get("content-type") || "").toLowerCase();
       if (ct.includes("application/json")) {
-        try { return JSON.parse(text); } catch { /* ignore */ }
+        try { return JSON.parse(text); } catch { }
       }
       return text;
     }
 
-    // === API-wrapper ===
     async function api(path, opts = {}){
-      const API_BASE = await API_PROMISE;
       const headers = Object.assign({}, opts.headers || {});
       const tok = getToken();
       if (tok) headers.Authorization = "Bearer " + tok;
       if (!headers["Content-Type"] && typeof opts.body === "string") {
         headers["Content-Type"] = "application/json";
       }
-      const res = await fetch(API_BASE + path, { ...opts, headers });
+      const res = await fetch(API + path, { ...opts, headers });
       const data = await readBody(res);
       return { res, data };
     }
 
-    // === Status-hjälpare ===
-    async function getStatus(){
+    async function getStatusRaw(){
       const { res, data } = await api("/api/uploads/status");
-      if (!res.ok) return [];
-      return Array.isArray(data) ? data : [];
+      if (!res.ok || !Array.isArray(data)) return [];
+      return data;
     }
 
     async function pollUntilIndexed(objectNames, timeout=20000, interval=1200){
       const deadline = Date.now() + timeout;
       while(Date.now() < deadline){
-        const list = await getStatus();
+        const list = await getStatusRaw();
         const done = objectNames.every(n => list.find(x => x.objectName === n)?.indexed);
         if (done) { await refreshStatus(); return true; }
         await new Promise(r => setTimeout(r, interval));
@@ -271,18 +247,16 @@
       return false;
     }
 
-    // === Login ===
     async function login(){
       const customerId = document.getElementById("cid").value.trim();
-      const email      = document.getElementById("email").value.trim();
-      const msg        = document.getElementById("loginMsg");
+      const email = document.getElementById("email").value.trim();
+      const msg = document.getElementById("loginMsg");
       msg.textContent = "";
       msg.classList.add("hidden");
 
       try{
         showLoading("Loggar in…");
-        const API_BASE = await API_PROMISE;
-        const res = await fetch(API_BASE + "/api/portal/login", {
+        const res = await fetch(API + "/api/portal/login", {
           method: "POST",
           headers: { "Content-Type":"application/json" },
           body: JSON.stringify({ customerId, email })
@@ -310,7 +284,6 @@
       }
     }
 
-    // === Lista status ===
     async function refreshStatus(){
       filesUl.innerHTML = "<li class='muted'>Laddar…</li>";
       const { res, data } = await api("/api/uploads/status");
@@ -335,6 +308,7 @@
       for (const it of data){
         const li = document.createElement("li");
         const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
+        const name = it.displayName || (it.objectName || "").split("/").pop();
 
         const indexedHtml = it.indexed
           ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
@@ -343,12 +317,12 @@
         li.innerHTML = `
           <div class="row">
             <div class="doc-meta">
-              <strong>${(it.objectName || "").split('/').pop()}</strong>
+              <strong>${name}</strong>
               <div class="meta-line">
                 ${(it.contentType || "okänd")} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
                 ${indexedHtml}
+                ${it.blocked ? ' • <span class="status-pill pending">blockerad</span>' : ""}
               </div>
-              ${it.blocked ? `<div class="banner err" style="margin-top:6px">BLOCKERAD (${it.blockedCategory || "policy"}) – ${it.blockedReason || ""}</div>` : ""}
             </div>
             <div class="doc-actions">
               <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
@@ -362,10 +336,9 @@
       filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => b.onclick = () => deleteOne(b.dataset.name));
     }
 
-    // === Reindex ===
     async function reindexAll(){
-      const before = await getStatus();
-      const names  = before.map(d => d.objectName);
+      const before = await getStatusRaw();
+      const names = before.map(d => d.objectName);
 
       const { res, data } = await api("/api/uploads/reindex", {
         method: "POST",
@@ -387,7 +360,6 @@
       await pollUntilIndexed([name]);
     }
 
-    // === Delete ===
     async function deleteOne(name){
       if(!confirm("Ta bort filen?")) return;
       const { res, data } = await api("/api/uploads/file", {
@@ -399,19 +371,17 @@
       await refreshStatus();
     }
 
-    // === Upload ===
     async function upload(){
       const files = document.getElementById("file").files;
       if(!files || files.length===0) return;
 
-      const uploadedObjectNames = [];
+      const uploaded = [];
 
       for (const f of files){
         const li = document.createElement("li");
         li.textContent = `Laddar upp ${f.name}…`;
         logUl.appendChild(li);
 
-        // 1) Start
         let start;
         try{
           start = await api("/api/uploads/start", {
@@ -428,7 +398,6 @@
           continue;
         }
 
-        // 2) PUT till blob
         try{
           const put = await fetch(start.data.uploadUrl, {
             method: "PUT",
@@ -444,7 +413,6 @@
           continue;
         }
 
-        // 3) Complete
         try{
           const comp = await api("/api/uploads/complete", {
             method:"POST",
@@ -463,27 +431,24 @@
           continue;
         }
 
-        uploadedObjectNames.push(start.data.objectName);
+        uploaded.push(start.data.objectName);
         li.innerHTML = `<span class="status-ok">✔</span> Klar: ${f.name}`;
       }
 
-      if (uploadedObjectNames.length){
-        await pollUntilIndexed(uploadedObjectNames);
+      if (uploaded.length){
+        await pollUntilIndexed(uploaded);
       }else{
         await refreshStatus();
       }
     }
 
-    // === Event hooks ===
     document.getElementById("loginBtn").onclick   = login;
     document.getElementById("logoutBtn").onclick  = logout;
     document.getElementById("refreshBtn").onclick = refreshStatus;
     document.getElementById("uploadBtn").onclick  = upload;
     document.getElementById("reindexAllBtn").onclick = reindexAll;
-
     document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
 
-    // === Boot ===
     (async function boot(){
       const token = getToken();
       const cid   = getCid();
@@ -503,19 +468,63 @@
     })();
   </script>
 
-  <!-- Quota-kort driver (använder samma API_PROMISE) -->
+  <!-- Quota card driver -->
   <script>
   (function(){
+    const API_BASE = (window.API_BASE || window.API || "https://botjahl-api-dev.azurewebsites.net").replace(/\/+$/,"");
+
+    function readCookie(name){
+      const parts = document.cookie.split(";");
+      for (let p of parts){
+        p = p.trim();
+        if (!p) continue;
+        if (p.startsWith(name + "=")){
+          return decodeURIComponent(p.substring(name.length + 1));
+        }
+      }
+      return null;
+    }
+
+    function getToken(){
+      const qs = new URLSearchParams(location.search);
+      const fromUrl = qs.get("token") || qs.get("jwt");
+      if (fromUrl) return fromUrl;
+
+      const keys = [
+        "botjahl.portal.token",
+        "bj_jwt", "jwt", "token", "auth_token"
+      ];
+      for (const k of keys){
+        const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (v) return v;
+      }
+
+      if (window.JWT) return window.JWT;
+
+      const cookieKeys = ["bj_jwt","jwt","token","botjahl.portal.token"];
+      for (const ck of cookieKeys){
+        const v = readCookie(ck);
+        if (v) return v;
+      }
+      return "";
+    }
+
+    async function fetchUsage(token){
+      const res = await fetch(`${API_BASE}/api/uploads/usage`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok){
+        const t = await res.text().catch(()=> "");
+        throw new Error(`HTTP ${res.status} ${t || ""}`);
+      }
+      return res.json();
+    }
+
     const card = document.getElementById("quota-card");
     const sub  = document.getElementById("quota-sub");
     const pill = document.getElementById("quota-pill");
     const bar  = document.getElementById("quota-bar");
     const foot = document.getElementById("quota-foot");
-
-    function currentToken(){
-      return localStorage.getItem("bj_jwt") ||
-             localStorage.getItem("botjahl.portal.token") || "";
-    }
 
     function render(u){
       card.style.display = "";
@@ -534,31 +543,23 @@
       foot.textContent = "";
     }
 
-    async function fetchUsage(){
-      const token = currentToken();
-      if (!token) { renderLoggedOut(); return; }
+    async function tick(){
+      const token = getToken();
+      if (!token){ renderLoggedOut(); return; }
       try{
-        const apiBase = (await API_PROMISE).replace(/\/+$/,"");
-        const res = await fetch(`${apiBase}/api/uploads/usage`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (!res.ok){
-          renderLoggedOut();
-          return;
-        }
-        const data = await res.json();
-        render(data);
-      }catch{
-        renderLoggedOut();
+        const u = await fetchUsage(token);
+        render(u);
+      }catch(err){
+        card.style.display = "";
+        sub.textContent = "Kunde inte läsa användning.";
+        pill.textContent = "—";
       }
     }
 
-    function tick(){ fetchUsage(); }
-
-    window.addEventListener('storage', (e) => {
-      if (['botjahl.portal.token','bj_jwt'].includes(e.key)) tick();
+    window.addEventListener("storage", (e) => {
+      if (["botjahl.portal.token","bj_jwt","jwt","token","auth_token"].includes(e.key)) tick();
     });
-    window.addEventListener('bj:auth', () => tick());
+    window.addEventListener("bj:auth", () => tick());
 
     tick();
     setInterval(tick, 15000);
