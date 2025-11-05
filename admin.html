@@ -321,7 +321,11 @@
   li.innerHTML = `
     <div class="row">
       <div class="doc-meta">
-        <strong>${displayName}</strong>
+         <strong>${
+          (it.displayName && it.displayName.trim())
+            ? it.displayName
+            : (it.objectName || "").split('/').pop()
+        }</strong>
         <div class="meta-line">
           ${(it.contentType || "okänd")} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
           ${indexedHtml}
@@ -418,13 +422,15 @@
 
         try{
           const comp = await api("/api/uploads/complete", {
-            method:"POST",
-            body: JSON.stringify({
-              objectName: start.data.objectName,
-              sizeBytes: f.size,
-              contentType: f.type || "application/octet-stream"
-            })
-          });
+  method: "POST",
+  body: JSON.stringify({
+    objectName: start.data.objectName,
+    sizeBytes:  f.size,
+    contentType: f.type || "text/plain",
+    originalName: f.name          
+  })
+});
+
           if (!comp.res.ok){
             li.textContent = `Fel vid complete: ${typeof comp.data === "string" ? comp.data : "okänt fel"}`;
             continue;
