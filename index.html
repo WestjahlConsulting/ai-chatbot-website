@@ -80,39 +80,58 @@
     </div>
   </section>
 
-  <!-- SÅ FUNKAR DET -->
+  <!-- SÅ FUNKAR DET – MINI-TABELL -->
   <section>
     <div class="container narrow stack">
       <h2 class="center">Så fungerar det</h2>
-      <div class="grid grid-2">
-        <div class="step">
-          <div class="num">1</div>
+      <div class="card glass stack">
+        <p class="muted">
+          BotJahl är en AI-chattbot som ni bäddar in på er befintliga webbplats.
+          Den svarar på frågor från besökare med utgångspunkt i <strong>ert eget innehåll</strong> – till exempel informationssidor, PDF:er och interna dokument.
+        </p>
+
+        <div class="grid grid-2">
           <div>
-            <strong>Registrera dig</strong>
-            <div class="muted">Fyll i företagsnamn, webbplats och e-post. Du får kund-ID och länk till betalning.</div>
+            <h3>Vad ni gör</h3>
+            <ol class="muted" style="padding-left:18px; margin:0;">
+              <li>
+                <strong>Registrerar er</strong> – fyll i företagsnamn, webbplats och e-post.
+              </li>
+              <li>
+                <strong>Lägger in betalmetod</strong> via Stripe (kortbetalning). Ni kan avsluta när som helst.
+              </li>
+              <li>
+                <strong>Klistrar in kodsnutten</strong> på den sida där chatten ska synas.
+              </li>
+              <li>
+                <strong>Laddar upp material</strong> i adminportalen: PDF/DOCX/TXT/MD eller befintliga webbsidor.
+              </li>
+            </ol>
+          </div>
+
+          <div>
+            <h3>Vad BotJahl gör</h3>
+            <ol class="muted" style="padding-left:18px; margin:0;">
+              <li>
+                <strong>Skapar en unik bot</strong> kopplad till ert kund-ID och er webbplats.
+              </li>
+              <li>
+                <strong>Genererar en färdig kodsnutt</strong> som fungerar direkt på er sida.
+              </li>
+              <li>
+                <strong>Läser och indexerar</strong> ert innehåll automatiskt i bakgrunden.
+              </li>
+              <li>
+                <strong>Svarar på frågor dygnet runt</strong> och använder ert material som faktabank.
+              </li>
+            </ol>
           </div>
         </div>
-        <div class="step">
-          <div class="num">2</div>
-          <div>
-            <strong>Bädda in</strong>
-            <div class="muted">Klistra in din kodsnutt (iframe) på valfri sida. Klart på minuter.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">3</div>
-          <div>
-            <strong>Ladda upp dokument</strong>
-            <div class="muted">PDF/DOCX/TXT/MD – vi indexerar automatiskt. Boten svarar med ditt innehåll.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">4</div>
-          <div>
-            <strong>Hantera i portalen</strong>
-            <div class="muted">Se status, reindexera, ta bort filer och uppdatera betalmetod.</div>
-          </div>
-        </div>
+
+        <p class="muted">
+          Resultatet blir en <strong>digital medarbetare</strong> som avlastar kundtjänst, minskar antalet återkommande frågor
+          och gör det enklare för besökare att hitta vad de söker – utan att ni behöver någon egen IT-kompetens.
+        </p>
       </div>
     </div>
   </section>
@@ -133,11 +152,11 @@
           <span class="plan__amount">399</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
         </div>
         <ul class="plan__features">
-          <li>1 domän/website</li>
+          <li>1 domän/webbplats</li>
           <li>Upp till ~1 000 frågor/mån*</li>
-          <li>Dokument: 500 MB</li>
+          <li>Dokument upp till 500 MB</li>
           <li>Inbäddad chat-widget</li>
-          <li>Grundläggande support (e-post)</li>
+          <li>Grundläggande support via e-post</li>
           <li>GDPR-vänlig drift</li>
         </ul>
         <div class="plan__cta">
@@ -157,12 +176,12 @@
           <span class="plan__amount">999</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
         </div>
         <ul class="plan__features">
-          <li>3 domäner/websites</li>
+          <li>Upp till 3 domäner/webbplatser</li>
           <li>Upp till ~10 000 frågor/mån</li>
-          <li>Dokument: 5 GB</li>
-          <li>Förbättrad RAG (Azure AI Search)</li>
+          <li>Större dokumentmängd (upp till 5 GB)</li>
+          <li>Förbättrad sök och träffsäkerhet</li>
           <li>Prioriterad support</li>
-          <li>Grundläggande analys</li>
+          <li>Grundläggande rapportering</li>
         </ul>
         <div class="plan__cta">
           <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
@@ -174,7 +193,7 @@
         <header class="plan__header">
           <h3>Premium</h3>
           <span class="badge soon">Kommer snart</span>
-          <p class="plan__tagline">För team & hög trafik</p>
+          <p class="plan__tagline">För kommuner & större organisationer</p>
         </header>
         <div class="plan__price">
           <span class="plan__amount">2 499</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
@@ -182,10 +201,10 @@
         <ul class="plan__features">
           <li>Upp till 5 domäner</li>
           <li>Upp till ~50 000 frågor/mån</li>
-          <li>Dokument: 20 GB</li>
-          <li>Avancerad RAG & sök</li>
+          <li>Stora dokumentvolymer (upp till 20 GB)</li>
+          <li>Avancerad sök/RAG och anpassningar</li>
           <li>SLA & prioriterad support</li>
-          <li>Integrationer & SSO</li>
+          <li>Möjlighet till integrationer & SSO</li>
         </ul>
         <div class="plan__cta">
           <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
@@ -194,7 +213,7 @@
     </div>
   </section>
 
-    <!-- SIGNUP -->
+  <!-- SIGNUP -->
   <section id="starta">
     <div class="container narrow">
       <h2 class="center">Starta gratis i 14 dagar</h2>
@@ -224,17 +243,16 @@
           </div>
 
           <div class="terms-row">
-  <label for="terms" class="terms-label">
-    <input type="checkbox" id="terms" name="terms" required />
-    <span>
-      Jag accepterar
-      <a href="/terms.html" target="_blank" rel="noopener">användarvillkor</a>
-      och
-      <a href="/privacy.html" target="_blank" rel="noopener">integritetspolicy</a>.
-    </span>
-  </label>
-</div>
-
+            <label for="terms" class="terms-label">
+              <input type="checkbox" id="terms" name="terms" required />
+              <span>
+                Jag accepterar
+                <a href="/terms.html" target="_blank" rel="noopener">användarvillkor</a>
+                och
+                <a href="/privacy.html" target="_blank" rel="noopener">integritetspolicy</a>.
+              </span>
+            </label>
+          </div>
 
           <div class="actions">
             <button class="btn primary" type="submit">Skapa min bot</button>
@@ -250,7 +268,6 @@
     </div>
   </section>
 
-
   <!-- CONTACT -->
   <section>
     <div class="container narrow stack center">
@@ -258,10 +275,6 @@
       <p class="muted">Maila: <a href="mailto:faijahl75@gmail.com" style="color:#cde2ff">faijahl75@gmail.com</a></p>
     </div>
   </section>
-
-  <footer>
-    <div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div>
-  </footer>
 
   <!-- JS -->
   <script>
@@ -307,43 +320,43 @@
     const errBanner = (html) => `<div class="banner err">${html}</div>`;
 
     // Signup
-  document.getElementById('signup').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const f = e.target;
+    document.getElementById('signup').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
 
-    // enkel frontend-koll så vi slipper onödiga calls
-    if (!f.terms.checked) {
-      out.innerHTML = errBanner("Du måste acceptera användarvillkoren.");
-      out.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
+      // enkel frontend-koll så vi slipper onödiga calls
+      if (!f.terms.checked) {
+        out.innerHTML = errBanner("Du måste acceptera användarvillkoren.");
+        out.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
 
-    // Normalisera websiteUrl
-    let url = f.websiteUrl.value.trim();
-    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      // Normalisera websiteUrl
+      let url = f.websiteUrl.value.trim();
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-    const body = {
-      name: f.name.value.trim(),
-      websiteUrl: url,
-      email: f.email.value.trim(),
-      orgNumber: (f.orgNumber && f.orgNumber.value.trim()) || null,
-      termsAccepted: !!f.terms.checked
-    };
+      const body = {
+        name: f.name.value.trim(),
+        websiteUrl: url,
+        email: f.email.value.trim(),
+        orgNumber: (f.orgNumber && f.orgNumber.value.trim()) || null,
+        termsAccepted: !!f.terms.checked
+      };
 
-    out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
+      out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
 
-    try{
-      const API = await API_PROMISE;
-      const res = await fetch(API + "/api/public/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json().catch(() => ({}));
+      try{
+        const API = await API_PROMISE;
+        const res = await fetch(API + "/api/public/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
 
-      // 409 = redan finns
-      if (res.status === 409 && data.customerId) {
-        out.innerHTML = okBanner(`
+        // 409 = redan finns
+        if (res.status === 409 && data.customerId) {
+          out.innerHTML = okBanner(`
           <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
           ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
           <div class="actions">
@@ -351,20 +364,20 @@
             <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
           </div>
         `);
-        out.scrollIntoView({ behavior: "smooth", block: "start" });
-        return;
-      }
+          out.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
 
-      if (!res.ok) {
-        const msg = (data && data.message) || "Något gick fel. Försök igen om en stund.";
-        out.innerHTML = errBanner(msg);
-        out.scrollIntoView({ behavior: "smooth", block: "start" });
-        return;
-      }
+        if (!res.ok) {
+          const msg = (data && data.message) || "Något gick fel. Försök igen om en stund.";
+          out.innerHTML = errBanner(msg);
+          out.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
 
-      // 200 OK – ny kund
-      const cid = data.customerId;
-      out.innerHTML = okBanner(`
+        // 200 OK – ny kund
+        const cid = data.customerId;
+        out.innerHTML = okBanner(`
         <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
         ${
           data.checkoutUrl
@@ -377,13 +390,12 @@
           eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
         </p>
       `);
-      out.scrollIntoView({ behavior: "smooth", block: "start" });
-    }catch(err){
-      out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
-      out.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  });
-
+        out.scrollIntoView({ behavior: "smooth", block: "start" });
+      }catch(err){
+        out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
+        out.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
 
     // Pris: Bas → checkout om kund är känd, annars scrolla till signup
     (function hookPricing(){
@@ -420,12 +432,12 @@
   </script>
 
   <footer>
-  <div class="container">
-    © 2025 BotJahl – Enkelt. Smart. Anpassat.
-    · <a href="terms.html">Användarvillkor</a>
-    · <a href="privacy.html">Integritetspolicy</a>
-  </div>
-</footer>
+    <div class="container">
+      © 2025 BotJahl – Enkelt. Smart. Anpassat.
+      · <a href="terms.html">Användarvillkor</a>
+      · <a href="privacy.html">Integritetspolicy</a>
+    </div>
+  </footer>
 
 </body>
 </html>
