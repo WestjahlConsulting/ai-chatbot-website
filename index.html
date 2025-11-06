@@ -223,15 +223,18 @@
             <input id="orgnr" name="orgNumber" placeholder="Ex: 559123-4567" autocomplete="on" />
           </div>
 
-          <div>
-            <label class="small" style="display:flex; gap:8px; align-items:flex-start;">
-              <input id="terms" name="terms" type="checkbox" required style="margin-top:3px;">
-              <span>
-                Jag accepterar
-                <a href="terms.html" target="_blank" rel="noopener">användarvillkor och integritetspolicy</a>.
-              </span>
-            </label>
-          </div>
+          <div class="terms-row">
+  <label for="terms" class="terms-label">
+    <input type="checkbox" id="terms" name="terms" required />
+    <span>
+      Jag accepterar
+      <a href="/terms.html" target="_blank" rel="noopener">användarvillkor</a>
+      och
+      <a href="/privacy.html" target="_blank" rel="noopener">integritetspolicy</a>.
+    </span>
+  </label>
+</div>
+
 
           <div class="actions">
             <button class="btn primary" type="submit">Skapa min bot</button>

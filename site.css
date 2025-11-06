@@ -321,3 +321,46 @@ input[type="text"], textarea {
   background: rgba(255,255,255,.14);
   color: #e5e7eb; font-size: 12px; font-weight: 700;
 }
+
+/* Layout för villkors-checkboxen – mobilvänlig */
+.terms-row {
+  margin-top: 8px;
+}
+
+/* Gör label till en liten flex-rad där rutan står till vänster 
+   och texten får wrap:a snyggt på små skärmar */
+.terms-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 100%;
+  font-size: 0.9rem;
+  color: var(--muted, #9ca3af);
+  line-height: 1.4;
+}
+
+/* Själva checkboxen ska inte krympa, bara stå till vänster */
+.terms-label input[type="checkbox"] {
+  margin-top: 3px;
+  flex: 0 0 auto;
+}
+
+/* Texten får ta resten av raden och bryta om vid behov */
+.terms-label span {
+  display: block;
+  flex: 1 1 auto;
+  word-break: break-word;
+}
+
+/* Länkarna i texten kan vara diskret understrukna */
+.terms-label a {
+  text-decoration: underline;
+}
+
+/* På riktigt små skärmar kan vi centrera lite utan att skjuta utanför */
+@media (max-width: 480px) {
+  .terms-label {
+    align-items: flex-start;
+  }
+}
+
