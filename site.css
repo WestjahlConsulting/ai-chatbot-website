@@ -327,29 +327,44 @@ input[type="text"], textarea {
   margin-top: 12px;
 }
 
-/* Labeln blir en vanlig block-rad som fyller hela bredden */
+/* Label och checkbox i samma rad */
 .terms-label {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.9rem;
   color: var(--muted, #9ca3af);
   line-height: 1.4;
-  text-align: left;
+  flex-wrap: wrap;
 }
 
-/* Checkboxen står till vänster, med lite luft till texten */
+/* Checkboxen står till vänster */
 .terms-label input[type="checkbox"] {
-  margin-right: 8px;
-  vertical-align: middle;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6; /* blå ton som matchar din design */
 }
 
-/* Texten ligger direkt efter checkboxen och får wrap:a naturligt */
+/* Texten kan bryta fint på små skärmar */
 .terms-label span {
-  vertical-align: middle;
+  flex: 1 1 auto;
+  display: inline;
 }
 
-/* Länkarna i texten – diskret men tydligt klickbara */
+/* Länkarna i texten */
 .terms-label a {
   text-decoration: underline;
+  color: #60a5fa;
 }
 
+.terms-label a:hover {
+  text-decoration: none;
+  color: #93c5fd;
+}
 
+@media (max-width: 480px) {
+  .terms-label input[type="checkbox"] {
+    transform: scale(1.2);
+  }
+}
