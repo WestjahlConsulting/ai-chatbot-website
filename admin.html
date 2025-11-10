@@ -183,6 +183,19 @@
     function showLoading(text){ if(text) loadingText.textContent = text; loading.classList.add("show"); }
     function hideLoading(){ loading.classList.remove("show"); }
 
+    // HTML-escape för värden som läggs i innerHTML / attribut
+    function esc(value){
+      return (value ?? "").toString().replace(/[&<>"']/g, c => {
+        switch (c) {
+          case "&": return "&amp;";
+          case "<": return "&lt;";
+          case ">": return "&gt;";
+          case '"': return "&quot;";
+          default:  return "&#39;"; // '
+        }
+      });
+    }
+
     function setAuth(token, cid){
       if (token) {
         localStorage.setItem(tokenKey, token);
@@ -296,7 +309,7 @@
       }
       if (!res.ok) {
         const errText = (typeof data === "string" ? data : "Kunde inte hämta status.");
-        filesUl.innerHTML = `<li class='banner err'>${errText}</li>`;
+        filesUl.innerHTML = `<li class='banner err'>${esc(errText)}</li>`;
         return;
       }
 
@@ -306,38 +319,41 @@
       }
 
       for (const it of data){
-  const li = document.createElement("li");
-  const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
+        const li = document.createElement("li");
+        const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
 
-  const indexedHtml = it.indexed
-    ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
-    : ' • <span class="status-pill pending">ej indexerad</span>';
+        const indexedHtml = it.indexed
+          ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
+          : ' • <span class="status-pill pending">ej indexerad</span>';
 
-  // NYTT: använd originalName om den finns, annars fall back till blob-namnet
-  const displayName = it.originalName && it.originalName.trim()
-    ? it.originalName
-    : (it.objectName || "").split('/').pop();
-
-  li.innerHTML = `
-    <div class="row">
-      <div class="doc-meta">
-         <strong>${
+        // displayName/originalName → filnamn
+        const rawName =
           (it.displayName && it.displayName.trim())
             ? it.displayName
-            : (it.objectName || "").split('/').pop()
-        }</strong>
-        <div class="meta-line">
-          ${(it.contentType || "okänd")} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
-          ${indexedHtml}
-        </div>
-      </div>
-      <div class="doc-actions">
-        <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
-        <button class="btn ghost" data-act="delete" data-name="${it.objectName}">Ta bort</button>
-      </div>
-    </div>`;
-  filesUl.appendChild(li);
-}
+            : (it.originalName && it.originalName.trim())
+              ? it.originalName
+              : (it.objectName || "").split('/').pop();
+
+        const safeName       = esc(rawName);
+        const safeContent    = esc(it.contentType || "okänd");
+        const safeObjectName = esc(it.objectName || "");
+
+        li.innerHTML = `
+          <div class="row">
+            <div class="doc-meta">
+               <strong>${safeName}</strong>
+              <div class="meta-line">
+                ${safeContent} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
+                ${indexedHtml}
+              </div>
+            </div>
+            <div class="doc-actions">
+              <button class="btn secondary" data-act="reindex" data-name="${safeObjectName}">Reindex</button>
+              <button class="btn ghost" data-act="delete" data-name="${safeObjectName}">Ta bort</button>
+            </div>
+          </div>`;
+        filesUl.appendChild(li);
+      }
 
       filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => b.onclick = () => reindexOne(b.dataset.name));
       filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => b.onclick = () => deleteOne(b.dataset.name));
@@ -422,14 +438,14 @@
 
         try{
           const comp = await api("/api/uploads/complete", {
-  method: "POST",
-  body: JSON.stringify({
-    objectName: start.data.objectName,
-    sizeBytes:  f.size,
-    contentType: f.type || "text/plain",
-    originalName: f.name          
-  })
-});
+            method: "POST",
+            body: JSON.stringify({
+              objectName: start.data.objectName,
+              sizeBytes:  f.size,
+              contentType: f.type || "text/plain",
+              originalName: f.name
+            })
+          });
 
           if (!comp.res.ok){
             li.textContent = `Fel vid complete: ${typeof comp.data === "string" ? comp.data : "okänt fel"}`;
@@ -441,7 +457,7 @@
         }
 
         uploaded.push(start.data.objectName);
-        li.innerHTML = `<span class="status-ok">✔</span> Klar: ${f.name}`;
+        li.innerHTML = `<span class="status-ok">✔</span> Klar: ${esc(f.name)}`;
       }
 
       if (uploaded.length){
@@ -574,14 +590,15 @@
     setInterval(tick, 60000);
   })();
   </script>
+
   <footer>
-  <div class="container">
-    © 2025 BotJahl – Enkelt. Smart. Anpassat.
-    · <a href="terms.html">Användarvillkor</a>
-    · <a href="privacy.html">Integritetspolicy</a>
-    · <a href="dpa.html">Personuppgiftsbiträdesavtalet (DPA)</a>
-  </div>
-</footer>
+    <div class="container">
+      © 2025 BotJahl – Enkelt. Smart. Anpassat.
+      · <a href="terms.html">Användarvillkor</a>
+      · <a href="privacy.html">Integritetspolicy</a>
+      · <a href="dpa.html">Personuppgiftsbiträdesavtalet (DPA)</a>
+    </div>
+  </footer>
 
 </body>
 </html>
