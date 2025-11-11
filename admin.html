@@ -21,6 +21,12 @@
 
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .file{ width:100%; }
+    .upload-area{
+      margin-top:16px;     /* luft mellan reindex-knappar och "Välj filer" */
+      display:grid;
+      gap:12px;            /* avstånd mellan "Välj filer" och knapparna under */
+      align-items:flex-start;
+    }
 
     #log{ list-style:none; padding:0; margin:10px 0 0; display:grid; gap:6px; }
     #files{ list-style:none; padding:0; margin:0; display:grid; gap:12px; }
@@ -117,14 +123,17 @@
 </div>
 
 
-        <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
+        <div class="upload-area">
+          <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
 
-        <div class="actions">
-          <button id="uploadBtn" class="btn primary">Ladda upp</button>
-          <button id="refreshBtn" class="btn secondary">Uppdatera status</button>
+          <div class="actions">
+            <button id="uploadBtn" class="btn primary">Ladda upp</button>
+            <button id="refreshBtn" class="btn secondary">Uppdatera status</button>
+          </div>
         </div>
+
         <ul id="log"></ul>
-      </div>
+
 
       <div class="glass">
         <h2>Dina dokument</h2>
