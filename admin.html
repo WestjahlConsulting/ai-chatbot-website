@@ -96,16 +96,26 @@
     <!-- APP -->
     <div id="app" class="hidden">
       <div class="glass">
-        <div class="actions" style="justify-content:space-between">
-          <div>
-            <h2>Uppladdning</h2>
-            <p class="muted" style="margin:6px 0 0">Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.</p>
-          </div>
-          <div class="actions">
-            <button id="reindexAllBtn" class="btn secondary">Reindexera alla</button>
-            <button id="logoutBtn" class="btn ghost">Logga ut</button>
-          </div>
-        </div>
+<div class="actions" style="justify-content:space-between">
+  <div>
+    <h2>Uppladdning</h2>
+    <p class="muted" style="margin:6px 0 4px">
+      Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.
+    </p>
+    <p class="small muted" style="margin:0">
+      <strong>Tips:</strong> Använd
+      <em>Reindexera webbplatsen</em> när du ändrat innehåll på din hemsida
+      och <em>Reindexera alla dokument</em> när du vill att boten ska läsa in dina uppladdade
+      filer på nytt.
+    </p>
+  </div>
+  <div class="actions">
+    <button id="reindexSiteBtn" class="btn secondary">Reindexera webbplatsen</button>
+    <button id="reindexAllBtn" class="btn secondary">Reindexera alla dokument</button>
+    <button id="logoutBtn" class="btn ghost">Logga ut</button>
+  </div>
+</div>
+
 
         <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
 
@@ -359,6 +369,25 @@
       filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => b.onclick = () => deleteOne(b.dataset.name));
     }
 
+        async function reindexWebsite(){
+      const { res, data } = await api("/api/portal/reindex-website", {
+        method: "POST"
+      });
+
+      if (res.status === 401) return logout();
+
+      if (!res.ok) {
+        const msg =
+          (data && typeof data === "object" && (data.error || data.message)) ||
+          (typeof data === "string" ? data : "Kunde inte starta reindexering av webbplatsen.");
+        alert(msg);
+        return;
+      }
+
+      alert("Webbplatsen har köats för ny indexering. Det kan ta upp till någon minut innan svaren uppdateras.");
+    }
+
+
     async function reindexAll(){
       const before = await getStatusRaw();
       const names = before.map(d => d.objectName);
@@ -467,11 +496,12 @@
       }
     }
 
-    document.getElementById("loginBtn").onclick   = login;
-    document.getElementById("logoutBtn").onclick  = logout;
-    document.getElementById("refreshBtn").onclick = refreshStatus;
-    document.getElementById("uploadBtn").onclick  = upload;
-    document.getElementById("reindexAllBtn").onclick = reindexAll;
+document.getElementById("loginBtn").onclick      = login;
+document.getElementById("logoutBtn").onclick     = logout;
+document.getElementById("refreshBtn").onclick    = refreshStatus;
+document.getElementById("uploadBtn").onclick     = upload;
+document.getElementById("reindexAllBtn").onclick = reindexAll;
+document.getElementById("reindexSiteBtn").onclick = reindexWebsite;
     document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
 
     (async function boot(){
