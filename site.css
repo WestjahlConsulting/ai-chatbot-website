@@ -11,6 +11,7 @@
 *{box-sizing:border-box}
 html,body{min-height:100%}
 html,body{overflow-x:hidden} /* förhindra sidoförskjutning horisontellt */
+
 body{
   margin:0;
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
@@ -20,14 +21,14 @@ body{
 
 /* --- layout --- */
 .container{max-width:1200px;margin:0 auto;padding:0 20px}
-section{padding:32px 0}
+section{padding:40px 0} /* lite mer luft vertikalt */
 h1,h2,h3{color:#fff;margin:0 0 8px}
 .muted{color:var(--muted)}
-.center{text-align:center}                /* <— saknades tidigare */
+.center{text-align:center}
 
 /* helpers */
 .stack{display:grid;gap:16px}
-.narrow{max-width:980px;margin:0 auto}    /* säker centrering även på narrow */
+.narrow{max-width:980px;margin:0 auto}
 .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 
 /* --- top nav --- */
@@ -36,26 +37,73 @@ nav{
   backdrop-filter:saturate(140%) blur(8px);
   background:rgba(10,15,31,.55);
   border-bottom:1px solid rgba(255,255,255,.06);
+  box-shadow:0 15px 40px rgba(15,23,42,.85);
 }
 nav .container{display:flex;align-items:center;justify-content:space-between;padding:10px 20px}
 .brand{display:flex;gap:10px;align-items:center;text-decoration:none;color:#fff;font-weight:700}
-.nav-links a{color:#cfd6e3;text-decoration:none;margin-left:16px}
+nav .brand svg{filter:drop-shadow(0 0 14px rgba(96,165,250,.55));}
+
+.nav-links a{
+  color:#cfd6e3;
+  text-decoration:none;
+  margin-left:16px;
+  position:relative;
+}
+.nav-links a:not(.btn)::after{
+  content:"";
+  position:absolute;
+  left:0; bottom:-3px;
+  width:0;
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#22d3ee,#60a5fa);
+  transition:width .18s ease;
+}
+.nav-links a:not(.btn):hover::after{
+  width:100%;
+}
 .nav-links .btn{margin-left:16px}
 
 /* --- buttons --- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;
   padding:11px 16px;border:0;border-radius:12px;font-weight:700;
-  cursor:pointer;text-decoration:none;transition:transform .08s ease,opacity .15s ease, box-shadow .15s ease;
+  cursor:pointer;text-decoration:none;
+  transition:transform .08s ease,opacity .15s ease, box-shadow .15s ease;
 }
 .btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(2,6,23,.25)}
 .btn:active{transform:translateY(0)}
 .btn[disabled]{opacity:.55;cursor:not-allowed}
-.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0f1f}
+
+/* premium-look på primärknapp */
+.btn.primary{
+  position:relative;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#0a0f1f;
+  box-shadow:0 10px 30px rgba(37,99,235,.45);
+  overflow:hidden;
+}
+.btn.primary::before{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background:radial-gradient(circle at 0 0, rgba(255,255,255,.45), transparent 55%);
+  opacity:0;
+  transform:translate3d(-40%, 40%, 0);
+  transition:opacity .25s ease, transform .25s ease;
+  pointer-events:none;
+}
+.btn.primary:hover::before{
+  opacity:.9;
+  transform:translate3d(10%, -10%, 0);
+}
+.btn.primary:hover{
+  box-shadow:0 18px 40px rgba(37,99,235,.60);
+}
+
 .btn.secondary{background:#1e293b;color:#fff}
 .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#e5e7eb}
 .btn.sm{padding:8px 12px;border-radius:10px;font-weight:600}
-/* om två knappar står bredvid varandra */
 .btn + .btn{margin-left:10px}
 
 /* --- hero --- */
@@ -63,28 +111,98 @@ nav .container{display:flex;align-items:center;justify-content:space-between;pad
 .hero .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px}
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:#e5e7eb;font-size:12px}
 
-/* ===== DEMO-IFRAME – EN TIDIG & ENDA REGEL ===== */
+/* === Hero – mer modern glaslook === */
 
-/* Se till att föräldern tar hela radens bredd */
+header.hero {
+  padding: 56px 0 40px;
+}
+
+header.hero .wrap {
+  align-items: stretch;
+}
+
+/* båda hero-korten */
+header.hero .card {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+  background: rgba(15,23,42,.82);
+  border: 1px solid rgba(148, 163, 184, .25);
+  box-shadow: 0 24px 60px rgba(15,23,42,.55);
+}
+
+/* subtilt glow i hörnet på vänstra kortet */
+header.hero .wrap > .card:first-child::before {
+  content: "";
+  position: absolute;
+  inset: -40% 10% auto auto;
+  background: radial-gradient(circle at top right,
+              rgba(96,165,250,.55),
+              rgba(56,189,248,0) 60%);
+  opacity: .7;
+  pointer-events: none;
+}
+
+/* lite "lift" on hover, men inte för aggressivt */
+header.hero .wrap > .card {
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease;
+}
+
+header.hero .wrap > .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 80px rgba(15,23,42,.70);
+  border-color: rgba(96,165,250,.55);
+}
+
+/* små feature-rader i heron */
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(15,23,42,.75);
+  border: 1px solid rgba(148,163,184,.16);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.feature .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  margin-top: 5px;
+  background: radial-gradient(circle, #a5b4fc 0, #60a5fa 40%, #22d3ee 100%);
+  box-shadow: 0 0 0 4px rgba(37,99,235,.25);
+}
+
+.feature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15,23,42,.65);
+  border-color: rgba(96,165,250,.55);
+}
+
+/* ===== DEMO-IFRAME ===== */
+
 #iframe-demo {
   display:block;
   width:100%;
 }
 
-/* .narrow används runt demon – låt den vara fullbredd men med max */
 #iframe-demo.narrow,
 #demo .narrow {
   display:block;
   width:100%;
-  max-width: 980px;     /* du kan sätta 960/1000 om du vill */
-  margin: 0 auto;       /* centrera */
+  max-width: 980px;
+  margin: 0 auto;
 }
 
-/* Själva ramen som innehåller iframen */
 #iframe-demo .iframe-wrapper {
   display:block;
-  width:100%;           /* inte min(...) – låt den fylla .narrow */
-  max-width:960px;      /* hårt tak så den inte blir för stor */
+  width:100%;
+  max-width:960px;
   margin:20px auto;
   background:var(--card);
   border:1px solid var(--ring);
@@ -95,7 +213,6 @@ nav .container{display:flex;align-items:center;justify-content:space-between;pad
   overscroll-behavior:contain;
 }
 
-/* Iframen måste verkligen fylla wrappern */
 #iframe-demo .iframe-wrapper iframe {
   display:block;
   width:100%;
@@ -129,10 +246,10 @@ form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130
 /* Luft mellan submit och “Redan kund?” */
 #signup .btn.ghost{display:block;margin-top:12px;text-align:center}
 
-/* --- success.html preview (samma stil) */
+/* --- success.html preview --- */
 .preview-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:18px}
 .preview-box{
-  overscroll-behavior:contain; /* hindra scroll-kedja */
+  overscroll-behavior:contain;
   max-width:960px;
   margin:10px auto 0;
   height:clamp(460px,68vh,760px);
@@ -165,13 +282,22 @@ form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130
 .status-pill.pending{background:rgba(249,115,22,.15);color:#fb923c}
 .doc-actions{display:flex;gap:8px;flex-wrap:wrap}
 
+/* --- upload-block i admin (mer luft runt Välj filer) --- */
+.upload-area{
+  margin-top:16px;
+  display:grid;
+  gap:12px;
+  align-items:flex-start;
+}
+
 /* --- footer --- */
 footer{border-top:1px solid rgba(255,255,255,.06);margin-top:40px}
-footer .container{padding:14px 20px;color:#a7b0c0;text-align:center} /* <— centrera copyright */
+footer .container{padding:14px 20px;color:#a7b0c0;text-align:center}
 
 /* --- responsive --- */
 @media (max-width:980px){
   .hero .wrap{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
 }
 @media (max-width:640px){
   #iframe-demo .iframe-wrapper{height:82vh;width:100%}
@@ -181,26 +307,25 @@ footer .container{padding:14px 20px;color:#a7b0c0;text-align:center} /* <— cen
 /* motion reduce */
 @media (prefers-reduced-motion: reduce){
   .btn,.card{transition:none}
+  body::before{animation:none;}
 }
 
-/* --- Fix: undvik "dubbelscroll" när chat-iframe:n är i fokus --- */
-
-/* Visa alltid en (1) vertikal scrollbar och ta bort ev. horisontell spillbredd. */
+/* --- Fix: undvik "dubbelscroll" --- */
 html { overflow-y: scroll; }
 body { overflow-x: hidden; }
 
 /* Låt långa kodrader inte spränga layouten */
 pre, code { 
-  white-space: pre-wrap;      /* bryt rader */
-  word-break: break-word;     /* bryt mycket långa ord/URL:er */
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-/* Om din kodsnutt visas i ett input/textarea – hindra flex overflow */
+/* input i flex-kontekster */
 input[type="text"], textarea {
-  min-width: 0;               /* viktigt i flex-kontekster */
+  min-width: 0;
 }
 
-/* Stil för kodsnuttsfält med egen scroll (rekommenderat) */
+/* Stil för kodsnuttsfält */
 .snippet-field {
   width: 100%;
   max-width: 100%;
@@ -212,11 +337,10 @@ input[type="text"], textarea {
   border: 1px solid #1e293b;
   border-radius: 10px;
   padding: 12px 14px;
-  white-space: nowrap;        /* håll en rad */
-  overflow-x: auto;           /* men scrolla vågrätt inom rutan */
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
-/* Behållare runt snutten (valfritt men snyggt) */
 .codebox {
   background: #0b1220;
   border: 1px solid #1e293b;
@@ -224,20 +348,17 @@ input[type="text"], textarea {
   padding: 12px;
 }
 
-/* Gör live-iframe helt responsiv utan att påverka sidbredd */
+/* responsiv live-iframe */
 .widget-frame {
   width: 100%;
   max-width: 100%;
   display: block;
   border: 0;
   margin-inline: auto;
-  height: min(70vh, 700px);   /* kan justeras */
+  height: min(70vh, 700px);
 }
 
-/* Hindra att scrollbeteende bubblar mellan förhandsvisningen och sidan. */
 #iframe-demo .iframe-wrapper { overscroll-behavior: contain; }
-
-/* Säkerställ att iframen inte skapar en egen extra scrollbredd. */
 #iframe-demo .iframe-wrapper iframe {
   display: block;
   width: 100%;
@@ -254,9 +375,6 @@ input[type="text"], textarea {
   align-items: stretch;
   margin-top: 16px;
 }
-@media (max-width: 980px){
-  .pricing-grid{ grid-template-columns: 1fr; }
-}
 
 .plan{
   background: rgba(255,255,255,.06);
@@ -266,7 +384,32 @@ input[type="text"], textarea {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
   box-shadow: 0 10px 32px rgba(2,6,23,.18);
+  position:relative;
+  overflow:hidden;
+  transform:translateY(0);
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease;
 }
+.plan::before{
+  content:"";
+  position:absolute;
+  inset:-60% -60% auto auto;
+  background:radial-gradient(circle at 100% 0, rgba(96,165,250,.45), transparent 60%);
+  opacity:0;
+  transition:opacity .2s ease;
+  pointer-events:none;
+}
+.plan:hover{
+  transform:translateY(-4px);
+  box-shadow:0 20px 50px rgba(15,23,42,.75);
+  border-color:rgba(96,165,250,.55);
+}
+.plan:hover::before{
+  opacity:.9;
+}
+
 .plan--active{
   border-color: rgba(96,165,250,.45);
   box-shadow: 0 14px 40px rgba(34,211,238,.25);
@@ -322,12 +465,10 @@ input[type="text"], textarea {
   color: #e5e7eb; font-size: 12px; font-weight: 700;
 }
 
-/* Rad för villkors-checkboxen */
+/* --- villkors-checkboxen --- */
 .terms-row {
   margin-top: 12px;
 }
-
-/* Label och checkbox i samma rad */
 .terms-label {
   display: inline-flex;
   align-items: center;
@@ -337,34 +478,49 @@ input[type="text"], textarea {
   line-height: 1.4;
   flex-wrap: wrap;
 }
-
-/* Checkboxen står till vänster */
 .terms-label input[type="checkbox"] {
   flex-shrink: 0;
   width: 18px;
   height: 18px;
-  accent-color: #3b82f6; /* blå ton som matchar din design */
+  accent-color: #3b82f6;
 }
-
-/* Texten kan bryta fint på små skärmar */
 .terms-label span {
   flex: 1 1 auto;
   display: inline;
 }
-
-/* Länkarna i texten */
 .terms-label a {
   text-decoration: underline;
   color: #60a5fa;
 }
-
 .terms-label a:hover {
   text-decoration: none;
   color: #93c5fd;
 }
-
 @media (max-width: 480px) {
   .terms-label input[type="checkbox"] {
     transform: scale(1.2);
   }
+}
+
+/* === Modern bakgrund med soft glow === */
+body {
+  position: relative;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: -200px -120px auto;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(96,165,250,.35), transparent 60%),
+    radial-gradient(circle at 90% 10%, rgba(56,189,248,.25), transparent 65%);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+  z-index: -1;
+  animation: bg-float 22s ease-in-out infinite alternate;
+}
+@keyframes bg-float {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(0, 10px, 0) scale(1.03); }
+  100% { transform: translate3d(0, -10px, 0) scale(1.02); }
 }
