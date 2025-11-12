@@ -626,3 +626,19 @@ img, iframe{ max-width: 100%; height: auto; }
     text-align: center;
   }
 }
+
+/* --- Hero lead text --- */
+.lead{
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: #f3f4f6;
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+/* Hero-knappar – justera spacing */
+header.hero .actions {
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}

@@ -38,27 +38,54 @@
   </nav>
 
   <!-- HERO -->
-  <header class="hero">
-    <div class="container hero">
-      <div class="wrap">
-        <div class="card glass stack">
-          <span class="badge">Plug-in & run</span>
-          <h1>AI-chattbot som svarar med ditt innehåll</h1>
-          <p class="muted">Bädda in på din webbplats på några minuter. Ladda upp PDF/DOCX/TXT/MD eller indexera dina webbsidor. Starta gratis i 14 dagar.</p>
-          <div class="actions">
-            <a class="btn primary" href="#starta">Starta gratis</a>
-            <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
-          </div>
-        </div>
 
-        <div class="card stack">
-          <div class="feature"><span class="dot"></span><div><strong>Enkel installation</strong><div class="muted">Kopiera en färdig &lt;iframe&gt;-kod.</div></div></div>
-          <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Uppladdning → indexering → klart.</div></div></div>
-          <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Kortbetalning via Stripe. Avsluta när som helst.</div></div></div>
+<header class="hero">
+  <div class="container wrap">
+    <div class="card">
+      <div class="badge">Plug-in & run</div>
+      <h1>AI-chattbot som svarar med ditt innehåll</h1>
+      <p class="lead">
+        BotJahl gör det enkelt för företag att skapa en smart chattbot som
+        svarar utifrån ditt eget material – utan teknisk kunskap.
+      </p>
+      <p class="muted">
+        Ladda upp dokument eller låt oss läsa in din webbplats. Du får en färdig
+        chatt som kan bäddas in direkt på din sida.
+      </p>
+
+      <div class="actions">
+        <a href="#signup" class="btn primary">Starta gratis</a>
+        <a href="#login" class="btn ghost">Redan kund? Logga in</a>
+        <a href="#how-it-works" class="btn secondary">Så fungerar det</a>
+      </div>
+    </div>
+
+    <div class="card stack">
+      <div class="feature">
+        <div class="dot"></div>
+        <div>
+          <strong>Enkel installation</strong><br />
+          Kopiera en färdig <code>&lt;iframe&gt;</code>-kod.
+        </div>
+      </div>
+      <div class="feature">
+        <div class="dot"></div>
+        <div>
+          <strong>Tränas på ditt material</strong><br />
+          Ladda upp dokument eller indexera din webbplats.
+        </div>
+      </div>
+      <div class="feature">
+        <div class="dot"></div>
+        <div>
+          <strong>Byggd för företag</strong><br />
+          Betalning via Stripe. GDPR-vänlig. Inga bindningstider.
         </div>
       </div>
     </div>
-  </header>
+  </div>
+</header>
+
 
   <!-- DEMO -->
   <section id="demo">
@@ -441,6 +468,18 @@
       · <a href="dpa.html">Personuppgiftsbiträdesavtal (DPA)</a>
     </div>
   </footer>
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+</script>
 
+  
 </body>
 </html>
