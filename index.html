@@ -55,7 +55,7 @@
 
       <div class="actions">
         <a href="#signup" class="btn primary">Starta gratis</a>
-        <a href="#login" class="btn ghost">Redan kund? Logga in</a>
+        <a href="admin.html" class="btn ghost">Redan kund? Logga in</a>
         <a href="#how-it-works" class="btn secondary">Så fungerar det</a>
       </div>
     </div>
@@ -469,14 +469,15 @@
     </div>
   </footer>
 <script>
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) {
-        e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth' });
-      }
-    });
+  // Smidig scroll endast om målet finns
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const sel = a.getAttribute('href');
+    const target = document.querySelector(sel);
+    if (!target) return; // om målet inte finns, låt browsern hantera länken normalt
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 </script>
 

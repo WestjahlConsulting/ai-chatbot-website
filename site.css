@@ -642,3 +642,8 @@ header.hero .actions {
   flex-wrap: wrap;
   gap: 10px;
 }
+
+/* Hindra att nav-baren täcker rubriker vid internlänk-scroll */
+section {
+  scroll-margin-top: 80px; /* justera om din navbar är högre/lägre */
+}
