@@ -309,26 +309,37 @@
 
       throw new Error("API-bas kunde inte bestämmas. Ange ?api=… eller lägg en config.json med {\"apiBase\":\"https://…\"}.");
     }
-    const API_PROMISE      = resolveApiBase();
-    const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
-    const DEMO_CUSTOMER_ID = "ceb2df2";
+   const API_PROMISE      = resolveApiBase();
+  const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+  const DEMO_CUSTOMER_ID = "ceb2df2";
 
-    // Liten hjälpare för sessionId
-    const makeSid = () => (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
+  // Stabil "session" per besökare (lagras i sessionStorage)
+  function getOrCreateDemoSessionId(){
+    const k = "botjahl.demo.sid";
+    let v = sessionStorage.getItem(k);
+    if (!v){
+      // hyfsat unikt men stabilt under fliken
+      v = (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
+      sessionStorage.setItem(k, v);
+    }
+    return v;
+  }
 
-    // Sätt demo-iframe när API-basen är känd (preview ON + sessionId)
-    (async () => {
-      try{
-        const API = await API_PROMISE;
-        const iframe = document.getElementById("botjahl-demo");
-        if (iframe){
-          const sid = makeSid();
-          iframe.src = `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`;
-        }
-      }catch(err){
-        console.warn("Kunde inte sätta demo-iframe:", err);
+  // Sätt demo-iframe när API-basen är känd – med preview=1 + sessionId
+  (async () => {
+    try{
+      const API = await API_PROMISE;
+      const iframe = document.getElementById("botjahl-demo");
+      if (iframe){
+        const sid = getOrCreateDemoSessionId();
+        iframe.src =
+          `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}`
+          + `&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`;
       }
-    })();
+    }catch(err){
+      console.warn("Kunde inte sätta demo-iframe:", err);
+    }
+  })();
 
     const out = document.getElementById('signup-result');
     const okBanner  = (html) => `<div class="banner ok">${html}</div>`;
