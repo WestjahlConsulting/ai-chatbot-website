@@ -179,8 +179,14 @@
     </div>
   </div>
 
+  
+
   <!-- Huvudscript (login + uppladdning + status) -->
   <script>
+    const sid = self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2));
+const src = `${WIDGET_URL}?customerId=${encodeURIComponent(customerId)}&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`;
+iframe.src = src;            // och ev. snippet använder samma src
+
     const API = (window.API_BASE || window.API || "https://botjahl-api-dev.azurewebsites.net").replace(/\/+$/,"");
 
     const qs = new URLSearchParams(location.search);
