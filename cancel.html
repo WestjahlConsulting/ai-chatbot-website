@@ -14,7 +14,6 @@
   </style>
 </head>
 <body>
-  <!-- NAV -->
   <nav>
     <div class="container row">
       <a href="index.html" class="brand" aria-label="BotJahl startsida">
@@ -47,7 +46,6 @@
   <main class="container grid">
     <div id="warn" class="card hidden"></div>
 
-    <!-- Actions -->
     <div class="card glass">
       <h2>Fortsätt när du är redo</h2>
       <div class="grid grid-auto-2auto">
@@ -57,7 +55,6 @@
       <p class="note" id="status"></p>
     </div>
 
-    <!-- Snippet -->
     <div class="card glass">
       <h2>Kodsnutt till din hemsida</h2>
       <pre><code id="snippet">Laddar…</code></pre>
@@ -68,7 +65,6 @@
       </div>
     </div>
 
-    <!-- Live preview -->
     <div class="card glass">
       <h2>Live-förhandsvisning</h2>
       <div id="iframe-host" class="iframe-wrapper">
@@ -96,6 +92,7 @@
   }
   const API_PROMISE = resolveApiBase();
   const WIDGET      = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+  const makeSid = () => (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
 
   (async function () {
     const qs = new URLSearchParams(location.search);
@@ -116,15 +113,16 @@
 
     const API = await API_PROMISE;
 
-    // Snippet + preview
-    const iframeSrc = `${WIDGET}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}`;
-    const snippet = `<iframe src="${iframeSrc}" style="width:100%;height:680px;border:0;border-radius:12px"></iframe>`;
+    // Snippet + preview (preview=1 + sessionId)
+    const sid = makeSid();
+    const base = `${WIDGET}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`;
+    const snippet = `<iframe src="${base}" style="width:100%;height:680px;border:0;border-radius:12px"></iframe>`;
     document.getElementById("snippet").textContent = snippet;
 
     const host = document.getElementById("iframe-host");
     host.innerHTML = "";
     const iframe = document.createElement("iframe");
-    iframe.src = iframeSrc + "&debug=1";
+    iframe.src = base + "&debug=1";
     iframe.loading = "lazy";
     iframe.referrerPolicy = "no-referrer";
     iframe.sandbox = "allow-scripts allow-forms allow-same-origin";
@@ -137,7 +135,6 @@
       setTimeout(()=>statusEl.textContent="", 2200);
     };
 
-    // Checkout
     document.getElementById("btnCheckout").onclick = async () => {
       try {
         const r = await fetch(`${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`);
@@ -149,7 +146,6 @@
       }
     };
 
-    // Portal
     document.getElementById("btnPortal").onclick = async () => {
       try {
         const r = await fetch(`${API}/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);

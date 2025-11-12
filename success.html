@@ -14,27 +14,16 @@
     .hidden { display:none !important; }
     .small  { font-size:12px; }
     .codebox { background:#0b1220; border:1px solid #1e293b; border-radius:12px; padding:12px; }
-    .snippet-field{
-      width:100%; max-width:100%;
-      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      font-size:14px; line-height:1.4;
-      background:#0b1220; color:#e2e8f0; border:0; border-radius:8px; padding:10px 12px;
-      white-space:nowrap; overflow-x:auto; resize:vertical; min-height:56px;
-    }
+    .snippet-field{ width:100%; max-width:100%; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:14px; line-height:1.4; background:#0b1220; color:#e2e8f0; border:0; border-radius:8px; padding:10px 12px; white-space:nowrap; overflow-x:auto; resize:vertical; min-height:56px; }
     .preview-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
     .preview-wrap { display:flex; justify-content:center; }
-    .preview-box{
-      width:100%; max-width:960px; height:clamp(460px,68vh,760px);
-      border:1px solid var(--ring); border-radius:14px; overflow:hidden; background:#fff;
-      box-shadow:0 12px 40px rgba(2,6,23,.22);
-    }
+    .preview-box{ width:100%; max-width:960px; height:clamp(460px,68vh,760px); border:1px solid var(--ring); border-radius:14px; overflow:hidden; background:#fff; box-shadow:0 12px 40px rgba(2,6,23,.22); }
     .preview-box iframe{ display:block; width:100%; height:100%; border:0; }
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .actions .btn{ min-width:auto; }
   </style>
 </head>
 <body>
-  <!-- NAV -->
   <nav>
     <div class="container row">
       <a href="index.html" class="brand" aria-label="BotJahl startsida">
@@ -65,10 +54,8 @@
   </header>
 
   <main class="container stack">
-    <!-- Notis -->
     <div id="warn" class="card hidden"></div>
 
-    <!-- Snippet -->
     <section id="snippetCard" class="card glass hidden">
       <h2>1) Kodsnutt att klistra in</h2>
       <div class="codebox">
@@ -81,7 +68,6 @@
       <p class="muted small" style="margin-top:6px">Placera snutten där chatten ska visas. Du kan ändra kund-ID eller API-adress senare.</p>
     </section>
 
-    <!-- Preview -->
     <section id="previewCard" class="preview-card hidden">
       <h2>2) Live-förhandsvisning</h2>
       <div class="preview-wrap">
@@ -95,7 +81,6 @@
       </p>
     </section>
 
-    <!-- Portal -->
     <section class="card glass">
       <h2>Hantera betalning</h2>
       <div class="actions">
@@ -109,7 +94,6 @@
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
   <script>
-  // === API-resolver ===
   async function resolveApiBase(){
     const qs = new URLSearchParams(location.search);
     const fromQuery = qs.get("api");
@@ -126,8 +110,8 @@
   }
   const API_PROMISE = resolveApiBase();
   const WIDGET_URL  = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+  const makeSid = () => (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
 
-  // Helpers
   function safeJson(t){ try { return t ? JSON.parse(t) : {}; } catch { return {}; } }
   async function getJson(path){
     const API = await API_PROMISE;
@@ -173,7 +157,6 @@
       return;
     }
 
-    // --- Sätt upp knappen "Öppna kundportal" direkt (ska alltid fungera) ---
     const portalBtn = document.getElementById("portal");
     if (portalBtn){
       portalBtn.onclick = async () => {
@@ -186,11 +169,12 @@
       };
     }
 
-    // --- Preview via widget ---
+    // Preview-iframe (preview=1 + sessionId)
     document.getElementById("previewCard").classList.remove("hidden");
     const iframe = document.getElementById("live-preview");
     const API = await API_PROMISE;
-    const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1`;
+    const sid = makeSid();
+    const previewUrl = `${WIDGET_URL}?customerId=${encodeURIComponent(cid)}&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`;
     iframe.removeAttribute("srcdoc");
     iframe.loading = "lazy";
     iframe.referrerPolicy = "no-referrer-when-downgrade";
@@ -242,7 +226,6 @@
       if (rt) rt.onclick = () => location.reload();
     }
 
-    // --- Försök hämta snutten / trigga checkout-sync ---
     if (await tryLoadSnippet()) return;
     await postJson(`/api/public/checkout-sync?customerId=${encodeURIComponent(cid)}`);
     await tryLoadSnippet();
@@ -254,7 +237,7 @@
     © 2025 BotJahl – Enkelt. Smart. Anpassat.
     · <a href="terms.html">Användarvillkor</a>
     · <a href="privacy.html">Integritetspolicy</a>
-    · <a href="dpa.html">Personuppgiftsbiträdesavtalet (DPA)</a>
+    · <a href="dpa.html">Personuppgiftsbiträdesavtal (DPA)</a>
   </div>
 </footer>
 

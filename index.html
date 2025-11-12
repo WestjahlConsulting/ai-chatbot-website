@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
@@ -38,54 +38,52 @@
   </nav>
 
   <!-- HERO -->
+  <header class="hero">
+    <div class="container wrap">
+      <div class="card">
+        <div class="badge">Plug-in & run</div>
+        <h1>AI-chattbot som svarar med ditt innehåll</h1>
+        <p class="lead">
+          BotJahl gör det enkelt för företag att skapa en smart chattbot som
+          svarar utifrån ditt eget material – utan teknisk kunskap.
+        </p>
+        <p class="muted">
+          Ladda upp dokument eller låt oss läsa in din webbplats. Du får en färdig
+          chatt som kan bäddas in direkt på din sida.
+        </p>
 
-<header class="hero">
-  <div class="container wrap">
-    <div class="card">
-      <div class="badge">Plug-in & run</div>
-      <h1>AI-chattbot som svarar med ditt innehåll</h1>
-      <p class="lead">
-        BotJahl gör det enkelt för företag att skapa en smart chattbot som
-        svarar utifrån ditt eget material – utan teknisk kunskap.
-      </p>
-      <p class="muted">
-        Ladda upp dokument eller låt oss läsa in din webbplats. Du får en färdig
-        chatt som kan bäddas in direkt på din sida.
-      </p>
+        <div class="actions">
+          <a href="#signup" class="btn primary">Starta gratis</a>
+          <a href="admin.html" class="btn ghost">Redan kund? Logga in</a>
+          <a href="#how-it-works" class="btn secondary">Så fungerar det</a>
+        </div>
+      </div>
 
-      <div class="actions">
-        <a href="#signup" class="btn primary">Starta gratis</a>
-        <a href="admin.html" class="btn ghost">Redan kund? Logga in</a>
-        <a href="#how-it-works" class="btn secondary">Så fungerar det</a>
+      <div class="card stack">
+        <div class="feature">
+          <div class="dot"></div>
+          <div>
+            <strong>Enkel installation</strong><br />
+            Kopiera en färdig <code>&lt;iframe&gt;</code>-kod.
+          </div>
+        </div>
+        <div class="feature">
+          <div class="dot"></div>
+          <div>
+            <strong>Tränas på ditt material</strong><br />
+            Ladda upp dokument eller indexera din webbplats.
+          </div>
+        </div>
+        <div class="feature">
+          <div class="dot"></div>
+          <div>
+            <strong>Byggd för företag</strong><br />
+            Betalning via Stripe. GDPR-vänlig. Inga bindningstider.
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="card stack">
-      <div class="feature">
-        <div class="dot"></div>
-        <div>
-          <strong>Enkel installation</strong><br />
-          Kopiera en färdig <code>&lt;iframe&gt;</code>-kod.
-        </div>
-      </div>
-      <div class="feature">
-        <div class="dot"></div>
-        <div>
-          <strong>Tränas på ditt material</strong><br />
-          Ladda upp dokument eller indexera din webbplats.
-        </div>
-      </div>
-      <div class="feature">
-        <div class="dot"></div>
-        <div>
-          <strong>Byggd för företag</strong><br />
-          Betalning via Stripe. GDPR-vänlig. Inga bindningstider.
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
-
+  </header>
 
   <!-- DEMO -->
   <section id="demo">
@@ -121,36 +119,20 @@
           <div>
             <h3>Vad ni gör</h3>
             <ol class="muted" style="padding-left:18px; margin:0;">
-              <li>
-                <strong>Registrerar er</strong> – fyll i företagsnamn, webbplats och e-post.
-              </li>
-              <li>
-                <strong>Lägger in betalmetod</strong> via Stripe (kortbetalning). Ni kan avsluta när som helst.
-              </li>
-              <li>
-                <strong>Klistrar in kodsnutten</strong> på den sida där chatten ska synas.
-              </li>
-              <li>
-                <strong>Laddar upp material</strong> i adminportalen: PDF/DOCX/TXT/MD eller befintliga webbsidor.
-              </li>
+              <li><strong>Registrerar er</strong> – fyll i företagsnamn, webbplats och e-post.</li>
+              <li><strong>Lägger in betalmetod</strong> via Stripe (kortbetalning). Ni kan avsluta när som helst.</li>
+              <li><strong>Klistrar in kodsnutten</strong> på den sida där chatten ska synas.</li>
+              <li><strong>Laddar upp material</strong> i adminportalen: PDF/DOCX/TXT/MD eller befintliga webbsidor.</li>
             </ol>
           </div>
 
           <div>
             <h3>Vad BotJahl gör</h3>
             <ol class="muted" style="padding-left:18px; margin:0;">
-              <li>
-                <strong>Skapar en unik bot</strong> kopplad till ert kund-ID och er webbplats.
-              </li>
-              <li>
-                <strong>Genererar en färdig kodsnutt</strong> som fungerar direkt på er sida.
-              </li>
-              <li>
-                <strong>Läser och indexerar</strong> ert innehåll automatiskt i bakgrunden.
-              </li>
-              <li>
-                <strong>Svarar på frågor dygnet runt</strong> och använder ert material som faktabank.
-              </li>
+              <li><strong>Skapar en unik bot</strong> kopplad till ert kund-ID och er webbplats.</li>
+              <li><strong>Genererar en färdig kodsnutt</strong> som fungerar direkt på er sida.</li>
+              <li><strong>Läser och indexerar</strong> ert innehåll automatiskt i bakgrunden.</li>
+              <li><strong>Svarar på frågor dygnet runt</strong> och använder ert material som faktabank.</li>
             </ol>
           </div>
         </div>
@@ -331,13 +313,17 @@
     const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
     const DEMO_CUSTOMER_ID = "ceb2df2";
 
-    // Sätt demo-iframe när API-basen är känd
+    // Liten hjälpare för sessionId
+    const makeSid = () => (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
+
+    // Sätt demo-iframe när API-basen är känd (preview ON + sessionId)
     (async () => {
       try{
         const API = await API_PROMISE;
         const iframe = document.getElementById("botjahl-demo");
         if (iframe){
-          iframe.src = `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}&api=${encodeURIComponent(API)}`;
+          const sid = makeSid();
+          iframe.src = `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`;
         }
       }catch(err){
         console.warn("Kunde inte sätta demo-iframe:", err);
@@ -353,14 +339,12 @@
       e.preventDefault();
       const f = e.target;
 
-      // enkel frontend-koll så vi slipper onödiga calls
       if (!f.terms.checked) {
         out.innerHTML = errBanner("Du måste acceptera användarvillkoren.");
         out.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
       }
 
-      // Normalisera websiteUrl
       let url = f.websiteUrl.value.trim();
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
@@ -383,7 +367,6 @@
         });
         const data = await res.json().catch(() => ({}));
 
-        // 409 = redan finns
         if (res.status === 409 && data.customerId) {
           out.innerHTML = okBanner(`
           <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
@@ -404,7 +387,6 @@
           return;
         }
 
-        // 200 OK – ny kund
         const cid = data.customerId;
         out.innerHTML = okBanner(`
         <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
@@ -468,19 +450,18 @@
       · <a href="dpa.html">Personuppgiftsbiträdesavtal (DPA)</a>
     </div>
   </footer>
-<script>
-  // Smidig scroll endast om målet finns
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href^="#"]');
-    if (!a) return;
-    const sel = a.getAttribute('href');
-    const target = document.querySelector(sel);
-    if (!target) return; // om målet inte finns, låt browsern hantera länken normalt
-    e.preventDefault();
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-</script>
 
-  
+  <!-- Robust smooth scroll (bara om mål finns) -->
+  <script>
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+      const sel = a.getAttribute('href');
+      const target = document.querySelector(sel);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  </script>
 </body>
 </html>
