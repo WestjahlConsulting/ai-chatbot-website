@@ -85,25 +85,7 @@
     </div>
   </header>
 
-  <!-- DEMO -->
-  <section id="demo">
-    <div class="container stack">
-      <h2 class="center">Testa BotJahl</h2>
-      <p class="muted center">Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar. Demot är begränsat till 6 frågor per besökare.</p>
-      <div id="iframe-demo" class="narrow">
-        <div class="iframe-wrapper">
-          <iframe
-            id="botjahl-demo"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            sandbox="allow-scripts allow-forms allow-same-origin"
-            title="BotJahl demo-chatt"
-            aria-label="Inbäddad demo av BotJahl"
-          ></iframe>
-        </div>
-      </div>
-    </div>
-  </section>
+ 
 
   <!-- SÅ FUNKAR DET – MINI-TABELL -->
   <section id="how-it-works">
@@ -475,14 +457,33 @@
     });
   </script>
 
-  <!-- Launcher-knapp nere till höger -->
-<button id="botjahl-launcher" aria-label="Öppna demo-chat">
-  💬
+<button id="botjahl-launcher" type="button" aria-label="Öppna demo-chat">
+  <span class="bj-icon">💬</span>
+  <span class="bj-label">Testa demot</span>
 </button>
 
 <!-- Chat-widget (nuvarande demo-chatt) -->
 <div id="botjahl-widget" class="botjahl-hidden">
   <!-- här inne ligger din befintliga #chat, form, input osv -->
+    <!-- DEMO -->
+  <section id="demo">
+    <div class="container stack">
+      <h2 class="center">Testa BotJahl</h2>
+      <p class="muted center">Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar. Demot är begränsat till 6 frågor per besökare.</p>
+      <div id="iframe-demo" class="narrow">
+        <div class="iframe-wrapper">
+          <iframe
+            id="botjahl-demo"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-forms allow-same-origin"
+            title="BotJahl demo-chatt"
+            aria-label="Inbäddad demo av BotJahl"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 </body>
