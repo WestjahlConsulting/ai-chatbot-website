@@ -462,6 +462,41 @@
   <span class="bj-label">Testa demot</span>
 </button>
 
+<script>
+  (function () {
+    const launcher = document.getElementById("botjahl-launcher");
+    const widget   = document.getElementById("botjahl-widget");
+    if (!launcher || !widget) return;
+
+    function openWidget() {
+      widget.classList.add("botjahl-open");
+      widget.classList.remove("botjahl-hidden");
+      widget.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function closeWidget() {
+      widget.classList.remove("botjahl-open");
+      widget.classList.add("botjahl-hidden");
+    }
+
+    function toggleWidget() {
+      const isOpen = widget.classList.contains("botjahl-open");
+      if (isOpen) closeWidget(); else openWidget();
+    }
+
+    // Klick på bubblan nere till höger
+    launcher.addEventListener("click", function (e) {
+      e.preventDefault();
+      toggleWidget();
+    });
+
+    // Används av länken "Demo" i headern
+    window.botjahlOpenDemo = function () {
+      openWidget();
+    };
+  })();
+</script>
+
 <!-- Chat-widget (nuvarande demo-chatt) -->
 <div id="botjahl-widget" class="botjahl-hidden">
   <!-- här inne ligger din befintliga #chat, form, input osv -->
