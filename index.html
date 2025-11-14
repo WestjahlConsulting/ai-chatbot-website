@@ -315,8 +315,9 @@
       if (iframe){
         const sid = getOrCreateDemoSessionId();
         iframe.src =
-          `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}`
-          + `&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`;
+  `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}`
+  + `&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`
+  + `&demo=1`;
       }
     }catch(err){
       console.warn("Kunde inte sätta demo-iframe:", err);
