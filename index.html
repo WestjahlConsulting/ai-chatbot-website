@@ -444,12 +444,23 @@
     </div>
   </footer>
 
-  <!-- Robust smooth scroll (bara om mål finns) -->
+    <!-- Robust smooth scroll (bara om mål finns) -->
   <script>
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a[href^="#"]');
       if (!a) return;
+
       const sel = a.getAttribute('href');
+
+      // Låt "Demo"-länken skötas av JS-funktionen botjahlOpenDemo i stället
+      if (sel === '#demo') {
+        if (window.botjahlOpenDemo) {
+          e.preventDefault();
+          window.botjahlOpenDemo();
+        }
+        return;
+      }
+
       const target = document.querySelector(sel);
       if (!target) return;
       e.preventDefault();
@@ -457,69 +468,73 @@
     });
   </script>
 
-<button id="botjahl-launcher" type="button" aria-label="Öppna demo-chat">
-  <span class="bj-icon">💬</span>
-  <span class="bj-label">Testa demot</span>
-</button>
+  <!-- Chat launcher nere till höger -->
+  <button id="botjahl-launcher" type="button" aria-label="Öppna demo-chat">
+    <span class="bj-icon">💬</span>
+    <span class="bj-label">Testa demot</span>
+  </button>
 
-<script>
-  (function () {
-    const launcher = document.getElementById("botjahl-launcher");
-    const widget   = document.getElementById("botjahl-widget");
-    if (!launcher || !widget) return;
-
-    function openWidget() {
-      widget.classList.add("botjahl-open");
-      widget.classList.remove("botjahl-hidden");
-      widget.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    function closeWidget() {
-      widget.classList.remove("botjahl-open");
-      widget.classList.add("botjahl-hidden");
-    }
-
-    function toggleWidget() {
-      const isOpen = widget.classList.contains("botjahl-open");
-      if (isOpen) closeWidget(); else openWidget();
-    }
-
-    // Klick på bubblan nere till höger
-    launcher.addEventListener("click", function (e) {
-      e.preventDefault();
-      toggleWidget();
-    });
-
-    // Används av länken "Demo" i headern
-    window.botjahlOpenDemo = function () {
-      openWidget();
-    };
-  })();
-</script>
-
-<!-- Chat-widget (nuvarande demo-chatt) -->
-<div id="botjahl-widget" class="botjahl-hidden">
-  <!-- här inne ligger din befintliga #chat, form, input osv -->
+  <!-- Chat-widget (nuvarande demo-chatt) -->
+  <div id="botjahl-widget" class="botjahl-hidden">
     <!-- DEMO -->
-  <section id="demo">
-    <div class="container stack">
-      <h2 class="center">Testa BotJahl</h2>
-      <p class="muted center">Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar. Demot är begränsat till 6 frågor per besökare.</p>
-      <div id="iframe-demo" class="narrow">
-        <div class="iframe-wrapper">
-          <iframe
-            id="botjahl-demo"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            sandbox="allow-scripts allow-forms allow-same-origin"
-            title="BotJahl demo-chatt"
-            aria-label="Inbäddad demo av BotJahl"
-          ></iframe>
+    <section id="demo">
+      <div class="container stack">
+        <h2 class="center">Testa BotJahl</h2>
+        <p class="muted center">
+          Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.
+          Demot är begränsat till 6 frågor per besökare.
+        </p>
+        <div id="iframe-demo" class="narrow">
+          <div class="iframe-wrapper">
+            <iframe
+              id="botjahl-demo"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              sandbox="allow-scripts allow-forms allow-same-origin"
+              title="BotJahl demo-chatt"
+              aria-label="Inbäddad demo av BotJahl"
+            ></iframe>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
+
+  <!-- Logik för att öppna/stänga chat-widgeten -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const launcher = document.getElementById('botjahl-launcher');
+      const widget   = document.getElementById('botjahl-widget');
+      if (!launcher || !widget) return;
+
+      function openWidget() {
+        widget.classList.add('botjahl-open');
+        widget.classList.remove('botjahl-hidden');
+        widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      function closeWidget() {
+        widget.classList.remove('botjahl-open');
+        widget.classList.add('botjahl-hidden');
+      }
+
+      function toggleWidget() {
+        const isOpen = widget.classList.contains('botjahl-open');
+        if (isOpen) closeWidget(); else openWidget();
+      }
+
+      // Klick på bubblan nere till höger
+      launcher.addEventListener('click', function (e) {
+        e.preventDefault();
+        toggleWidget();
+      });
+
+      // Gör global funktion som "Demo" i menyn kan anropa
+      window.botjahlOpenDemo = function () {
+        openWidget();
+      };
+    });
+  </script>
 
 </body>
 </html>
