@@ -665,6 +665,7 @@ section {
   font-size: 0.95rem;
   font-weight: 600;
   z-index: 9999;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 #botjahl-launcher .bj-icon {
@@ -682,6 +683,18 @@ section {
   white-space: nowrap;
 }
 
+/* Hover/active-effekt – lite “glow” och lyft */
+#botjahl-launcher:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(34, 197, 94, 0.55);
+  filter: brightness(1.05);
+}
+
+#botjahl-launcher:active {
+  transform: translateY(0);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.65);
+}
+
 /* Själva widget-lådan */
 #botjahl-widget {
   position: fixed;
@@ -690,12 +703,40 @@ section {
   width: min(400px, 92vw);
   max-height: min(520px, 80vh);
   border-radius: 1.25rem;
-  overflow: hidden;
+  /* Viktigt: tillåt scroll om innehållet blir högre än rutan */
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 20px 50px rgba(15,23,42,0.7);
   background: #020617;
   z-index: 9998;
 }
 
+/* Stäng-kryss uppe i hörnet */
+.botjahl-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15,23,42,0.85);
+  color: #e5e7eb;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.botjahl-close:hover {
+  background: rgba(248,250,252,0.14);
+  transform: rotate(5deg);
+}
+
+/* Visa/dölj states */
 .botjahl-hidden { display: none; }
 .botjahl-open   { display: block; }
 

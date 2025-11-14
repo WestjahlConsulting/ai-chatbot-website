@@ -475,66 +475,87 @@
   </button>
 
   <!-- Chat-widget (nuvarande demo-chatt) -->
-  <div id="botjahl-widget" class="botjahl-hidden">
-    <!-- DEMO -->
-    <section id="demo">
-      <div class="container stack">
-        <h2 class="center">Testa BotJahl</h2>
-        <p class="muted center">
-          Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.
-          Demot är begränsat till 6 frågor per besökare.
-        </p>
-        <div id="iframe-demo" class="narrow">
-          <div class="iframe-wrapper">
-            <iframe
-              id="botjahl-demo"
-              loading="lazy"
-              referrerpolicy="no-referrer"
-              sandbox="allow-scripts allow-forms allow-same-origin"
-              title="BotJahl demo-chatt"
-              aria-label="Inbäddad demo av BotJahl"
-            ></iframe>
-          </div>
+  <!-- Chat-widget (nuvarande demo-chatt) -->
+<div id="botjahl-widget" class="botjahl-hidden">
+  <button id="botjahl-close" type="button" class="botjahl-close" aria-label="Stäng chatten">×</button>
+
+   <!-- DEMO -->
+  <section id="demo">
+    <div class="container stack">
+      <h2 class="center">Testa BotJahl</h2>
+      <p class="muted center">
+        Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.
+        Demot är begränsat till 6 frågor per besökare.
+      </p>
+      <div id="iframe-demo" class="narrow">
+        <div class="iframe-wrapper">
+          <iframe
+            id="botjahl-demo"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-forms allow-same-origin"
+            title="BotJahl demo-chatt"
+            aria-label="Inbäddad demo av BotJahl"
+          ></iframe>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
+</div>
 
-  <!-- Logik för att öppna/stänga chat-widgeten -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const launcher = document.getElementById('botjahl-launcher');
-      const widget   = document.getElementById('botjahl-widget');
-      if (!launcher || !widget) return;
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const launcher = document.getElementById('botjahl-launcher');
+    const widget   = document.getElementById('botjahl-widget');
+    const closeBtn = document.getElementById('botjahl-close');
 
-      function openWidget() {
-        widget.classList.add('botjahl-open');
-        widget.classList.remove('botjahl-hidden');
-        widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    if (!launcher || !widget) return;
 
-      function closeWidget() {
-        widget.classList.remove('botjahl-open');
-        widget.classList.add('botjahl-hidden');
-      }
+    function openWidget() {
+      widget.classList.add('botjahl-open');
+      widget.classList.remove('botjahl-hidden');
+      // se till att hela widgeten hamnar i bild
+      widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-      function toggleWidget() {
-        const isOpen = widget.classList.contains('botjahl-open');
-        if (isOpen) closeWidget(); else openWidget();
-      }
+    function closeWidget() {
+      widget.classList.remove('botjahl-open');
+      widget.classList.add('botjahl-hidden');
+    }
 
-      // Klick på bubblan nere till höger
-      launcher.addEventListener('click', function (e) {
-        e.preventDefault();
-        toggleWidget();
-      });
+    function toggleWidget() {
+      const isOpen = widget.classList.contains('botjahl-open');
+      if (isOpen) closeWidget(); else openWidget();
+    }
 
-      // Gör global funktion som "Demo" i menyn kan anropa
-      window.botjahlOpenDemo = function () {
-        openWidget();
-      };
+    // Klick på bubblan nere till höger
+    launcher.addEventListener('click', function (e) {
+      e.preventDefault();
+      toggleWidget();
     });
-  </script>
+
+    // Klick på krysset stänger
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        closeWidget();
+      });
+    }
+
+    // ESC-tangent stänger widgeten
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeWidget();
+      }
+    });
+
+    // Gör global funktion som "Demo" i menyn kan anropa
+    window.botjahlOpenDemo = function () {
+      openWidget();
+    };
+  });
+</script>
+
 
 </body>
 </html>
