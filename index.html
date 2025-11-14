@@ -29,7 +29,7 @@
       </a>
 
       <div class="nav-links">
-        <a href="#demo">Demo</a>
+        <a href="#demo" onclick="window.botjahlOpenDemo?.(); return false;">Demo</a>
         <a href="#pricing">Priser</a>
         <a href="#starta">Starta gratis</a>
         <a class="btn secondary" href="admin.html" aria-label="Öppna adminportalen">Logga in</a>
@@ -474,5 +474,16 @@
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   </script>
+
+  <!-- Launcher-knapp nere till höger -->
+<button id="botjahl-launcher" aria-label="Öppna demo-chat">
+  💬
+</button>
+
+<!-- Chat-widget (nuvarande demo-chatt) -->
+<div id="botjahl-widget" class="botjahl-hidden">
+  <!-- här inne ligger din befintliga #chat, form, input osv -->
+</div>
+
 </body>
 </html>
