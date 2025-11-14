@@ -135,18 +135,21 @@
         <ul id="log"></ul>
 
 
-      <div class="glass">
+        <div class="glass">
         <h2>Dina dokument</h2>
-        <ul id="files"></ul>
-      </div>
 
-      <div class="glass">
-        <h2>Session</h2>
-        <p class="muted" id="who"></p>
-        <div class="actions">
-          <a class="btn secondary" href="index.html">Till startsidan</a>
-          <a class="btn secondary" href="success.html?cid=" id="successLink">Visa min kodsnutt</a>
+        <!-- Sök + sortering -->
+        <div class="actions" style="margin:4px 0 10px; flex-wrap:wrap; gap:8px; align-items:flex-end;">
+          <div style="flex:1; min-width:200px;">
+            <label for="fileSearch" class="small muted">Sök bland dina dokument</label>
+            <input id="fileSearch" type="text" placeholder="Sök på filnamn eller filtyp…" />
+          </div>
+          <button id="sortByNameBtn" type="button" class="btn secondary small">
+            Sortera A–Ö
+          </button>
         </div>
+
+        <ul id="files"></ul>
       </div>
 
       <!-- Quota card -->
@@ -204,6 +207,11 @@
     const filesUl     = document.getElementById("files");
     const logUl       = document.getElementById("log");
     const successLink = document.getElementById("successLink");
+    // Nytt: sök + sortering för dokument
+    const fileSearchInput = document.getElementById("fileSearch");
+    const sortByNameBtn   = document.getElementById("sortByNameBtn");
+    let filesCache        = [];  // senast hämtade dokument
+    let sortAscending     = true; // A–Ö som default
 
     const loading     = document.getElementById("loading");
     const loadingText = document.getElementById("loadingText");
@@ -324,42 +332,59 @@
       }
     }
 
-    async function refreshStatus(){
-      filesUl.innerHTML = "<li class='muted'>Laddar…</li>";
-      const { res, data } = await api("/api/uploads/status");
+     // Rendera dokumentlistan baserat på cache + sök + sortering
+    function renderFiles(){
       filesUl.innerHTML = "";
 
-      if (res.status === 401) {
-        filesUl.innerHTML = "<li class='banner err'>Sessionen har gått ut. Logga in igen.</li>";
-        logout();
-        return;
-      }
-      if (!res.ok) {
-        const errText = (typeof data === "string" ? data : "Kunde inte hämta status.");
-        filesUl.innerHTML = `<li class='banner err'>${esc(errText)}</li>`;
-        return;
-      }
-
-      if (!Array.isArray(data) || data.length === 0) {
+      if (!Array.isArray(filesCache) || filesCache.length === 0) {
         filesUl.innerHTML = "<li class='muted'>Inga filer ännu.</li>";
         return;
       }
 
-      for (const it of data){
-        const li = document.createElement("li");
+      const q = (fileSearchInput?.value || "").trim().toLowerCase();
+
+      // 1) utgå från hela listan
+      let list = filesCache.slice();
+
+      // 2) filtrera på söksträng om den finns
+      if (q) {
+        list = list.filter(it => {
+          const name = (it.displayName || it.objectName || "").toLowerCase();
+          const kind = (it.contentType || "").toLowerCase();
+          return name.includes(q) || kind.includes(q);
+        });
+      }
+
+      // 3) sortera på namn (A–Ö eller Ö–A)
+      list.sort((a, b) => {
+        const na = (a.displayName || a.objectName || "").toLowerCase();
+        const nb = (b.displayName || b.objectName || "").toLowerCase();
+        if (na < nb) return sortAscending ? -1 : 1;
+        if (na > nb) return sortAscending ? 1 : -1;
+        return 0;
+      });
+
+      if (list.length === 0) {
+        filesUl.innerHTML = "<li class='muted'>Inga dokument matchade din sökning.</li>";
+        return;
+      }
+
+      // 4) bygg upp DOM enligt befintlig layout
+      for (const it of list){
+        const li   = document.createElement("li");
         const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
 
         const indexedHtml = it.indexed
-          ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
+          ? ' • <span class="status-pill ok">indexerad' +
+              (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') +
+            '</span>'
           : ' • <span class="status-pill pending">ej indexerad</span>';
 
-        // displayName/originalName → filnamn
+        // Filnamn – använd DisplayName om den finns
         const rawName =
           (it.displayName && it.displayName.trim())
             ? it.displayName
-            : (it.originalName && it.originalName.trim())
-              ? it.originalName
-              : (it.objectName || "").split('/').pop();
+            : (it.objectName || "").split('/').pop();
 
         const safeName       = esc(rawName);
         const safeContent    = esc(it.contentType || "okänd");
@@ -370,7 +395,7 @@
             <div class="doc-meta">
                <strong>${safeName}</strong>
               <div class="meta-line">
-                ${safeContent} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
+                ${safeContent} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2) + " MB" : "-"} • Uppdaterad ${when}
                 ${indexedHtml}
               </div>
             </div>
@@ -382,8 +407,39 @@
         filesUl.appendChild(li);
       }
 
-      filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => b.onclick = () => reindexOne(b.dataset.name));
-      filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => b.onclick = () => deleteOne(b.dataset.name));
+      // koppla knapparna i listan
+      filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => {
+        b.onclick = () => reindexOne(b.dataset.name);
+      });
+      filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => {
+        b.onclick = () => deleteOne(b.dataset.name);
+      });
+    }
+
+    // Hämtar status från API och uppdaterar cache + UI
+    async function refreshStatus(){
+      filesUl.innerHTML = "<li class='muted'>Laddar…</li>";
+      const { res, data } = await api("/api/uploads/status");
+
+      if (res.status === 401) {
+        filesUl.innerHTML = "<li class='banner err'>Sessionen har gått ut. Logga in igen.</li>";
+        logout();
+        return;
+      }
+
+      if (!res.ok) {
+        const errText = (typeof data === "string" ? data : "Kunde inte hämta status.");
+        filesUl.innerHTML = `<li class='banner err'>${esc(errText)}</li>`;
+        return;
+      }
+
+      if (!Array.isArray(data)) {
+        filesCache = [];
+      } else {
+        filesCache = data;
+      }
+
+      renderFiles();
     }
 
         async function reindexWebsite(){
@@ -519,7 +575,22 @@ document.getElementById("refreshBtn").onclick    = refreshStatus;
 document.getElementById("uploadBtn").onclick     = upload;
 document.getElementById("reindexAllBtn").onclick = reindexAll;
 document.getElementById("reindexSiteBtn").onclick = reindexWebsite;
-    document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
+document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
+
+   // Sök + sort
+    if (fileSearchInput) {
+      fileSearchInput.addEventListener("input", () => {
+        renderFiles();
+      });
+    }
+
+    if (sortByNameBtn) {
+      sortByNameBtn.addEventListener("click", () => {
+        sortAscending = !sortAscending;
+        sortByNameBtn.textContent = sortAscending ? "Sortera A–Ö" : "Sortera Ö–A";
+        renderFiles();
+      });
+    }
 
     (async function boot(){
       const token = getToken();
