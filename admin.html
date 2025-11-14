@@ -44,6 +44,24 @@
     .status-pill.pending{ background:rgba(234,179,8,.16); color:#facc15; }
 
     .small{ font-size:12px; }
+     /* Sökfältet i "Dina dokument" – samma stil som övriga inputs */
+    #fileSearch{
+      width:100%;
+      padding:12px 14px;
+      border:1px solid rgba(255,255,255,.15);
+      background:#0f172a;
+      color:#e5e7eb;
+      border-radius:12px;
+      font-size:16px;
+    }
+    #fileSearch::placeholder{
+      color:#8ea0b5;
+    }
+    #fileSearch:focus{
+      outline:0;
+      border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
   </style>
 </head>
 <body>
@@ -101,6 +119,15 @@
 
     <!-- APP -->
     <div id="app" class="hidden">
+            <!-- Info-rad: inloggad kund + länk till kodsnutt -->
+      <div class="glass" style="margin-bottom:16px;">
+        <div class="actions" style="justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <p id="who" class="muted" style="margin:0;"></p>
+          <a id="successLink" class="btn secondary" href="success.html">
+            Visa kodsnutt &amp; embed
+          </a>
+        </div>
+      </div>
       <div class="glass">
 <div class="actions" style="justify-content:space-between">
   <div>
