@@ -711,30 +711,33 @@ section {
   z-index: 9998;
 }
 
-/* Stäng-kryss uppe i hörnet */
 .botjahl-close {
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
   border: none;
-  background: rgba(15,23,42,0.85);
-  color: #e5e7eb;
-  font-size: 18px;
+  background: rgba(15,23,42,0.9);
+  color: #f9fafb;
+  font-size: 20px;
   line-height: 1;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.6);
+  z-index: 2; /* säkerställ att den ligger över innehållet */
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .botjahl-close:hover {
-  background: rgba(248,250,252,0.14);
-  transform: rotate(5deg);
+  background: rgba(248,250,252,0.18);
+  transform: rotate(5deg) translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15,23,42,0.7);
 }
+
 
 /* Visa/dölj states */
 .botjahl-hidden { display: none; }
@@ -760,6 +763,13 @@ section {
     bottom: 4.8rem;
     width: min(360px, 96vw);
     max-height: min(500px, 78vh);
+  }
+    .botjahl-close {
+    top: 0.4rem;
+    right: 0.4rem;
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
   }
 }
 
