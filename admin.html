@@ -198,6 +198,32 @@
     </div>
   </main>
 
+        <!-- Chat-frågor / statistik -->
+      <section id="chat-usage-card" class="card" style="margin-top:16px; display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0 0 6px">Frågeanvändning</h3>
+            <p id="chat-usage-sub" class="muted" style="margin:0">Laddar…</p>
+          </div>
+          <span id="chat-usage-pill" class="status-pill ok">0%</span>
+        </div>
+
+        <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
+          <div id="chat-usage-bar"
+               style="height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:999px;">
+          </div>
+        </div>
+
+        <div id="chat-usage-foot" class="small muted" style="margin-top:8px"></div>
+
+        <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+          <button id="buyQuestionsBtn" type="button" class="btn primary small">
+            Köp fler frågor
+          </button>
+        </div>
+      </section>
+
+
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
   <!-- Loader overlay -->
@@ -735,6 +761,125 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
     setInterval(tick, 60000);
   })();
   </script>
+
+    <!-- Chat usage card driver -->
+  <script>
+  (function(){
+    const API_BASE = (window.API_BASE || window.API || "https://botjahl-api-dev.azurewebsites.net").replace(/\/+$/,"");
+
+    function readCookie(name){
+      const parts = document.cookie.split(";");
+      for (let p of parts){
+        p = p.trim();
+        if (!p) continue;
+        if (p.startsWith(name + "=")){
+          return decodeURIComponent(p.substring(name.length + 1));
+        }
+      }
+      return null;
+    }
+
+    function getToken(){
+      const qs = new URLSearchParams(location.search);
+      const fromUrl = qs.get("token") || qs.get("jwt");
+      if (fromUrl) return fromUrl;
+
+      const keys = [ "botjahl.portal.token", "bj_jwt", "jwt", "token", "auth_token" ];
+      for (const k of keys){
+        const v = localStorage.getItem(k) || readCookie(k);
+        if (v) return v;
+      }
+      return null;
+    }
+
+    async function fetchChatUsage(token){
+      const res = await fetch(`${API_BASE}/api/usage/chat`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok){
+        const t = await res.text().catch(()=> "");
+        throw new Error(`HTTP ${res.status} ${t || ""}`);
+      }
+      return res.json();
+    }
+
+    const card = document.getElementById("chat-usage-card");
+    const sub  = document.getElementById("chat-usage-sub");
+    const pill = document.getElementById("chat-usage-pill");
+    const bar  = document.getElementById("chat-usage-bar");
+    const foot = document.getElementById("chat-usage-foot");
+    const buyBtn = document.getElementById("buyQuestionsBtn");
+
+    function render(u){
+      card.style.display = "";
+      sub.textContent = `Plan: ${u.plan ?? "okänd"} • ${u.used} av ${u.limit} frågor förbrukade`;
+      bar.style.width = `${u.percent}%`;
+      pill.textContent = `${u.percent}%`;
+      pill.className = "status-pill " + (u.percent >= 100 ? "pending" : "ok");
+      foot.textContent = `${u.remaining} frågor kvar i din kvot (${u.extraCredits} extra i potten).`;
+    }
+
+    function renderLoggedOut(){
+      card.style.display = "";
+      sub.textContent = "Logga in för att se frågeanvändning.";
+      pill.textContent = "—";
+      bar.style.width = "0%";
+      foot.textContent = "";
+    }
+
+    async function tick(){
+      const token = getToken();
+      if (!token){ renderLoggedOut(); return; }
+      try{
+        const u = await fetchChatUsage(token);
+        render(u);
+      }catch(err){
+        card.style.display = "";
+        sub.textContent = "Kunde inte läsa frågeanvändning.";
+        pill.textContent = "—";
+        bar.style.width = "0%";
+        foot.textContent = "";
+        console.error(err);
+      }
+    }
+
+    if (card){
+      tick();                 // första hämtningen
+      setInterval(tick, 60000); // uppdatera varje minut
+    }
+
+    if (buyBtn){
+      buyBtn.addEventListener("click", async ()=>{
+        const token = getToken();
+        if (!token){
+          alert("Logga in igen för att kunna köpa fler frågor.");
+          return;
+        }
+
+        try{
+          const res = await fetch(`${API_BASE}/api/billing/topup-questions`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ pack: "small" }) // börja med en standard-pack
+          });
+          const data = await res.json();
+          if (!res.ok || !data.url){
+            alert(data.error || "Kunde inte starta köp av frågor.");
+            return;
+          }
+          location.href = data.url; // vidare till Stripe Checkout
+        }catch(err){
+          console.error(err);
+          alert("Något gick fel när köpet skulle startas.");
+        }
+      });
+    }
+  })();
+  </script>
+
 
   <footer>
     <div class="container">
