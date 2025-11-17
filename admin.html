@@ -101,6 +101,8 @@
   </header>
 
   <main class="container stack">
+    <!-- Banner för köp av extra frågor -->
+    <p id="topupBanner" class="banner ok hidden" style="margin-bottom:0;"></p>
     <!-- LOGIN -->
     <div id="login-card" class="glass">
       <h2>Logga in</h2>
@@ -255,6 +257,39 @@
   if (presetCid) document.getElementById("cid").value = presetCid;
     const tokenKey    = "botjahl.portal.token";
     const customerKey = "botjahl.portal.customer";
+      // ---- Topup-banner (efter köp av extra frågor) ----
+  const topupBanner = document.getElementById("topupBanner");
+  const topup       = qs.get("topup");
+  const topupQStr   = qs.get("questions");
+  const topupQ      = topupQStr ? parseInt(topupQStr, 10) : NaN;
+
+  if (topupBanner && topup === "ok") {
+    const qText =
+      !isNaN(topupQ) && topupQ > 0
+        ? ` Du har köpt ${topupQ.toLocaleString("sv-SE")} extra frågor.`
+        : " Du har köpt fler frågor.";
+
+    topupBanner.classList.remove("hidden");
+    topupBanner.classList.remove("err");
+    topupBanner.classList.add("ok");
+    topupBanner.innerHTML = `🎉 <strong>Klart!</strong>${qText}`;
+  } else if (topupBanner && topup === "cancel") {
+    topupBanner.classList.remove("hidden");
+    topupBanner.classList.remove("ok");
+    topupBanner.classList.add("err");
+    topupBanner.innerHTML =
+      "Köp av extra frågor avbröts. Du kan försöka igen när du vill.";
+  }
+
+  // Rensa bort topup-parametrar ur adressen efter visning
+  if (topup) {
+    qs.delete("topup");
+    qs.delete("questions");
+    const url = new URL(location.href);
+    url.search = qs.toString();
+    window.history.replaceState({}, "", url.toString());
+  }
+
 
     const loginCard   = document.getElementById("login-card");
     const app         = document.getElementById("app");
