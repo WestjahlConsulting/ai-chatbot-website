@@ -257,7 +257,7 @@
   if (presetCid) document.getElementById("cid").value = presetCid;
     const tokenKey    = "botjahl.portal.token";
     const customerKey = "botjahl.portal.customer";
-      // ---- Topup-banner (efter köp av extra frågor) ----
+   // ---- Topup-banner (efter köp av extra frågor) ----
   const topupBanner = document.getElementById("topupBanner");
   const topup       = qs.get("topup");
   const topupQStr   = qs.get("questions");
@@ -385,7 +385,7 @@
       return false;
     }
 
-    async function login(){
+     async function login(){
       const customerId = document.getElementById("cid").value.trim();
       const email = document.getElementById("email").value.trim();
       const msg = document.getElementById("loginMsg");
@@ -393,7 +393,7 @@
       msg.classList.add("hidden");
 
       try{
-        showLoading("Loggar in…");
+        showLoading("Skickar inloggningslänk…");
         const res = await fetch(API + "/api/portal/login", {
           method: "POST",
           headers: { "Content-Type":"application/json" },
@@ -407,20 +407,17 @@
             (typeof data === "string" ? data : "Felaktiga uppgifter.");
           throw new Error(errText);
         }
-        if (!data || !data.token) throw new Error("Servern returnerade ingen token.");
 
-        setAuth(data.token, customerId);
-
-        const url = new URL(location.href);
-        url.searchParams.set("cid", customerId);
-        url.searchParams.set("logged", "1");
-        location.replace(url.toString());
+        hideLoading();
+        msg.textContent = "Om uppgifterna stämmer har vi skickat en inloggningslänk till din e-post.";
+        msg.classList.remove("hidden");
       }catch(e){
         hideLoading();
-        msg.textContent = e.message || "Kunde inte logga in.";
+        msg.textContent = e.message || "Kunde inte skicka inloggningslänk.";
         msg.classList.remove("hidden");
       }
     }
+
 
      // Rendera dokumentlistan baserat på cache + sök + sortering
     function renderFiles(){
@@ -682,23 +679,38 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
       });
     }
 
-    (async function boot(){
+        (async function boot(){
+      // 1) Plocka ev. token + cid från URL:en (magic-link)
+      const url         = new URL(location.href);
+      const tokenFromUrl = url.searchParams.get("token") || url.searchParams.get("jwt");
+      const cidFromUrl   = url.searchParams.get("cid");
+
+      if (tokenFromUrl) {
+        // Spara auth-info i localStorage + trigga bj:auth-event
+        setAuth(tokenFromUrl, cidFromUrl || null);
+
+        // Rensa känsliga parametrar ur adressfältet
+        url.searchParams.delete("token");
+        url.searchParams.delete("jwt");
+        if (cidFromUrl) {
+          url.searchParams.set("cid", cidFromUrl);
+        }
+        history.replaceState({}, "", url.toString());
+      }
+
+      // 2) Läs ev. befintlig auth från storage/cookies
       const token = getToken();
       const cid   = getCid();
+
       if (token && cid){
         loginCard.classList.add("hidden");
         app.classList.remove("hidden");
         who.textContent = `Inloggad (${cid})`;
         successLink.href = "success.html?cid=" + encodeURIComponent(cid);
         await refreshStatus();
-
-        const url = new URL(location.href);
-        if (url.searchParams.has("logged")) {
-          url.searchParams.delete("logged");
-          history.replaceState({}, "", url.toString());
-        }
       }
     })();
+
   </script>
 
   <!-- Quota card driver -->
