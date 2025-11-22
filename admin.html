@@ -121,16 +121,27 @@
 
     <!-- APP -->
     <div id="app" class="hidden">
-            <!-- Info-rad: inloggad kund + länk till kodsnutt -->
+      <!-- Info-rad: inloggad kund + domän + länkar -->
       <div class="glass" style="margin-bottom:16px;">
-        <div class="actions" style="justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-          <p id="who" class="muted" style="margin:0;"></p>
-          <button id="logoutBtn" class="btn ghost">Logga ut</button>
-          <a id="successLink" class="btn secondary" href="success.html">
-            Visa kodsnutt &amp; och hantera betalning
-          </a>
+        <div class="actions"
+             style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          
+          <!-- Vänster: kundinfo -->
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+            <p id="who" class="muted" style="margin:0;font-weight:500;"></p>
+            <p id="whoDomain" class="muted small" style="margin:0;"></p>
+          </div>
+
+          <!-- Höger: knappar -->
+          <div class="actions" style="gap:8px;flex-wrap:wrap;">
+            <button id="logoutBtn" class="btn ghost small">Logga ut</button>
+            <a id="successLink" class="btn secondary" href="success.html">
+              Visa kodsnutt &amp; hantera betalning
+            </a>
+          </div>
         </div>
       </div>
+
       <div class="glass">
 <div class="actions" style="justify-content:space-between">
   <div>
@@ -344,6 +355,47 @@
       who.textContent = "";
       filesUl.innerHTML = "";
     }
+
+        async function loadMeAndRenderWho() {
+      const who       = document.getElementById("who");
+      const whoDomain = document.getElementById("whoDomain");
+      const cid       = getCid();
+
+      // fallback-text om me-anropet skulle fallera
+      const fallback = cid ? `Inloggad (kund-ID ${cid})` : "Inloggad kund";
+
+      try {
+        const { res, data } = await api("/api/portal/me");
+        if (!res.ok || !data || typeof data !== "object") {
+          who.textContent = fallback;
+          if (whoDomain) whoDomain.textContent = "";
+          return;
+        }
+
+        const company =
+          data.companyName || data.name || data.friendlyName || "";
+        const domain =
+          data.website || data.websiteUrl || data.domain || data.siteDomain || "";
+
+        const parts = [];
+        if (company) parts.push(company);
+        if (cid)     parts.push("kund-ID " + cid);
+
+        who.textContent = parts.length
+          ? "Inloggad: " + parts.join(" • ")
+          : fallback;
+
+        if (whoDomain) {
+          whoDomain.textContent = domain
+            ? "Domän: " + domain
+            : "";
+        }
+      } catch (e) {
+        who.textContent = fallback;
+        if (whoDomain) whoDomain.textContent = "";
+      }
+    }
+
 
     async function readBody(res){
       const text = await res.text();
@@ -702,11 +754,12 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
       const token = getToken();
       const cid   = getCid();
 
-      if (token && cid){
+            if (token && cid){
         loginCard.classList.add("hidden");
         app.classList.remove("hidden");
-        who.textContent = `Inloggad (${cid})`;
         successLink.href = "success.html?cid=" + encodeURIComponent(cid);
+
+        await loadMeAndRenderWho();  // <-- NYTT: visa namn + domän
         await refreshStatus();
       }
     })();
