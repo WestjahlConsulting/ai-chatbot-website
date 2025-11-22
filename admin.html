@@ -198,6 +198,7 @@
           <div>
             <h3 style="margin:0 0 6px">Lagringsanvändning</h3>
             <p id="quota-sub" class="muted" style="margin:0">Laddar…</p>
+            <p class="small muted" id="quota-domain" style="display:none;"></p>
           </div>
           <span id="quota-pill" class="status-pill ok">0%</span>
         </div>
@@ -766,180 +767,164 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
 
   </script>
 
-   <!-- Quota card driver -->
-  <script>
-  (function(){
-    const API_BASE = (window.API_BASE || window.API || "https://botjahl-api-dev.azurewebsites.net").replace(/\/+$/,"");
+  <!-- Quota + me card driver (lagring + domän) -->
+<script>
+  (function () {
+    // Bas-url för API:t (samma logik som tidigare)
+    const API_BASE = (window.API_BASE || "https://botjahl-api-dev.azurewebsites.net")
+      .toString()
+      .replace(/\/+$/, "");
 
-    // ---- Hjälpare: cookies + token ----
-    function readCookie(name){
-      const parts = document.cookie.split(";");
-      for (let p of parts){
-        p = p.trim();
-        if (!p) continue;
-        if (p.startsWith(name + "=")){
-          return decodeURIComponent(p.substring(name.length + 1));
-        }
-      }
-      return null;
+    // --- Token-hantering: plocka bästa JWT vi hittar ---
+    function readCookie(name) {
+      const m = document.cookie.match(
+        new RegExp("(^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)")
+      );
+      return m ? decodeURIComponent(m[2]) : "";
     }
 
-    function getToken(){
-      const qs = new URLSearchParams(location.search);
-      const fromUrl = qs.get("token") || qs.get("jwt");
-      if (fromUrl) return fromUrl;
-
-      const keys = [
-        "botjahl.portal.token",
-        "bj_jwt", "jwt", "token", "auth_token"
-      ];
-      for (const k of keys){
+    function getBestToken() {
+      // 1) localStorage / sessionStorage (huvudvägen – samma som login)
+      const storageKeys = ["bj_jwt", "jwt", "token", "botjahl.portal.token"];
+      for (const k of storageKeys) {
         const v = localStorage.getItem(k) || sessionStorage.getItem(k);
-        if (v) return v;
+        if (v) return v; // rå JWT, utan "Bearer "
       }
 
+      // 2) ev. global variabel
       if (window.JWT) return window.JWT;
 
-      const cookieKeys = ["bj_jwt","jwt","token","botjahl.portal.token"];
-      for (const ck of cookieKeys){
+      // 3) cookies (fallback)
+      const cookieKeys = ["bj_jwt", "jwt", "token", "botjahl.portal.token"];
+      for (const ck of cookieKeys) {
         const v = readCookie(ck);
         if (v) return v;
       }
       return "";
     }
 
-    // ---- API-anrop ----
-    async function fetchUsage(token){
-      const res = await fetch(`${API_BASE}/api/uploads/usage`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (!res.ok){
-        const t = await res.text().catch(()=> "");
-        throw new Error(`HTTP ${res.status} ${t || ""}`);
+    async function fetchJson(path) {
+      const token = getBestToken();
+      if (!token) {
+        throw new Error("no_token");
       }
-      return res.json();
+
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        }
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        /* ignore parse error */
+      }
+
+      if (res.status === 401) {
+        // ogiltig token -> låt admin-sidan hantera utloggning vid nästa refresh
+        throw new Error("unauthorized");
+      }
+      if (!res.ok) {
+        throw new Error((data && data.error) || `HTTP ${res.status}`);
+      }
+
+      return data;
     }
 
-    async function fetchMe(token){
-      const res = await fetch(`${API_BASE}/api/portal/me`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (!res.ok){
-        const t = await res.text().catch(()=> "");
-        throw new Error(`HTTP ${res.status} ${t || ""}`);
-      }
-      return res.json();
-    }
+    // --- DOM-element för kortet ---
+    const card   = document.getElementById("quota-card");
+    const sub    = document.getElementById("quota-sub");
+    const pill   = document.getElementById("quota-pill");
+    const bar    = document.getElementById("quota-bar");
+    const foot   = document.getElementById("quota-foot");
+    const domain = document.getElementById("quota-domain");
 
-    // ---- DOM-element ----
-    const card = document.getElementById("quota-card");
-    const sub  = document.getElementById("quota-sub");
-    const pill = document.getElementById("quota-pill");
-    const bar  = document.getElementById("quota-bar");
-    const foot = document.getElementById("quota-foot");
-    const who  = document.getElementById("who");
-
-    // ---- Rendering ----
-    function renderUsage(u){
-      if (!card) return;
+    function renderUsage(u) {
       card.style.display = "";
-      sub.textContent = `Plan: ${u.plan} • ${u.files} fil(er)`;
-      bar.style.width = `${u.percent}%`;
-      pill.textContent = `${u.percent}%`;
-      pill.className = "status-pill " + (u.percent >= 100 ? "pending" : "ok");
-      foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt`;
+
+      const percent = Math.max(0, Math.min(100, Math.round(u.percent ?? 0)));
+      sub.textContent = `Plan: ${u.plan} • ${u.usedMB} av ${u.limitMB} MB`;
+
+      bar.style.width = `${percent}%`;
+      pill.textContent = `${percent}%`;
+      pill.className = "status-pill " + (percent >= 90 ? "pending" : "ok");
+
+      const left = Math.max(0, (u.limitMB ?? 0) - (u.usedMB ?? 0));
+      foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt · ${left} MB kvar i din kvot.`;
     }
 
-    function renderLoggedOut(){
-      if (card){
-        card.style.display = "";
-        sub.textContent = "Logga in för att se användning.";
-        pill.textContent = "—";
-        bar.style.width = "0%";
-        foot.textContent = "";
-      }
-      if (who){
-        who.textContent = "Inte inloggad.";
-      }
-    }
+    function renderDomain(info) {
+      if (!domain) return;
 
-    function renderSession(me){
-      if (!who) return;
-
-      if (!me){
-        who.textContent = "Inloggad";
-        return;
-      }
-
-      const cid    = me.id || me.customerId || "";
-      const rawUrl = me.websiteUrl || "";
-
-      let host = "";
-      if (rawUrl){
+      if (info && info.websiteUrl) {
         try {
-          host = new URL(rawUrl).host;
+          const host = new URL(info.websiteUrl).host;
+          if (host) {
+            domain.textContent = `Domän: ${host}`;
+            domain.style.display = "";
+            return;
+          }
         } catch {
-          host = rawUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+          // om URL inte går att parsa, göm raden
         }
       }
 
-      if (cid && host){
-        who.textContent = `Inloggad (kund-ID ${cid} • domän ${host})`;
-      } else if (cid){
-        who.textContent = `Inloggad (kund-ID ${cid})`;
-      } else if (host){
-        who.textContent = `Inloggad (domän ${host})`;
-      } else {
-        who.textContent = "Inloggad";
+      domain.textContent = "";
+      domain.style.display = "none";
+    }
+
+    function renderLoggedOut() {
+      card.style.display = "";
+      sub.textContent = "Logga in för att se användning.";
+      pill.textContent = "—";
+      pill.className = "status-pill ok";
+      bar.style.width = "0%";
+      foot.textContent = "";
+      if (domain) {
+        domain.textContent = "";
+        domain.style.display = "none";
       }
     }
 
-    // ---- Pollning ----
-    let lastToken = null;
-    let cachedMe  = null;
-
-    async function tick(){
-      const token = getToken();
-      if (!token){
-        lastToken = null;
-        cachedMe  = null;
+    async function tick() {
+      const rawToken = getBestToken();
+      if (!rawToken) {
         renderLoggedOut();
         return;
       }
 
-      try{
+      try {
         const [usage, me] = await Promise.all([
-          fetchUsage(token),
-          (token !== lastToken || !cachedMe)
-            ? fetchMe(token).then(m => (cachedMe = m, m))
-            : Promise.resolve(cachedMe)
+          fetchJson("/api/uploads/usage"),
+          fetchJson("/api/portal/me")
         ]);
 
-        lastToken = token;
         renderUsage(usage);
-        renderSession(me);
-      }catch(err){
+        renderDomain(me);
+      } catch (err) {
         console.error("usage / me error:", err);
-        if (card){
-          card.style.display = "";
-          sub.textContent = "Kunde inte läsa användning.";
-          pill.textContent = "—";
-          bar.style.width = "0%";
-          foot.textContent = "";
-        }
+        // vid t.ex. 401 eller nätverksfel visar vi en snäll text i stället för att spamma konsolen
+        renderLoggedOut();
       }
     }
 
-    // Reagera på ändrad auth
+    // Lyssna på att token ändras (t.ex. när man loggar in/loggar ut)
     window.addEventListener("storage", (e) => {
-      if (["botjahl.portal.token","bj_jwt","jwt","token","auth_token"].includes(e.key)) tick();
+      if (["botjahl.portal.token", "bj_jwt", "jwt", "token", "auth_token"].includes(e.key)) {
+        tick();
+      }
     });
     window.addEventListener("bj:auth", () => tick());
 
+    // Första körningen + polling
     tick();
     setInterval(tick, 60000);
   })();
-  </script>
+</script>
+
 
     <!-- Chat usage card driver -->
   <script>
