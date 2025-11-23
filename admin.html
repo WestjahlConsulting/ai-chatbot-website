@@ -1068,5 +1068,88 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
     </div>
   </footer>
 
+<script>
+(function() {
+
+  const TOKEN_KEYS = [
+    "botjahl.portal.token",
+    "bj_jwt",
+    "jwt",
+    "token",
+    "auth_token"
+  ];
+
+  // Rensar alla tokens i localStorage + sessionStorage + cookies
+  function clearAllTokens() {
+    try {
+      for (const key of TOKEN_KEYS) {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+        document.cookie = key + "=; Max-Age=0; path=/;";
+      }
+    } catch (e) {
+      console.warn("Token cleanup failed:", e);
+    }
+  }
+
+  // Hämtar bästa token från storage/cookies
+  function getStoredToken() {
+    for (const key of TOKEN_KEYS) {
+      const v =
+        localStorage.getItem(key) ||
+        sessionStorage.getItem(key);
+      if (v) return v;
+    }
+    return null;
+  }
+
+  // Lyssna på bj:auth-event när token skapas (vid magic-link)
+  window.addEventListener("bj:auth", () => {
+    const token = getStoredToken();
+    if (!token) return;
+    // Token finns – OK
+    console.log("Auth stored:", token.substring(0, 20) + "...");
+  });
+
+  // Global fetch override som fångar 401 överallt
+  const origFetch = window.fetch;
+  window.fetch = async function(url, opts = {}) {
+    const resp = await origFetch(url, opts);
+
+    if (resp.status === 401) {
+      console.warn("401 detected – clearing tokens automatically…");
+      
+      clearAllTokens();
+
+      // Visa login-kortet igen om admin är laddad
+      const app = document.getElementById("app");
+      const login = document.getElementById("login-card");
+      if (app && login) {
+        app.classList.add("hidden");
+        login.classList.remove("hidden");
+      }
+    }
+
+    return resp;
+  };
+
+  // Direkt vid sidstart: om token saknas → logga ut användaren
+  document.addEventListener("DOMContentLoaded", () => {
+    const token = getStoredToken();
+    if (!token) {
+      console.log("No valid token found on load — showing login");
+      const app = document.getElementById("app");
+      const login = document.getElementById("login-card");
+      if (app && login) {
+        app.classList.add("hidden");
+        login.classList.remove("hidden");
+      }
+    }
+  });
+
+})();
+</script>
+
+
 </body>
 </html>
