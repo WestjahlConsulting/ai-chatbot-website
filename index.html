@@ -361,21 +361,18 @@
         });
         const data = await res.json().catch(() => ({}));
 
-        if (res.status === 409 && data.customerId) {
+       if (res.status === 409) {
   out.innerHTML = errBanner(`
-    <p><strong>Det finns redan en bot registrerad för den här e-postadressen och webbplatsen.</strong></p>
-    <p>
-      Om det är din bot kan du logga in i adminportalen genom att klicka på
-      <strong>”Redan kund? Logga in”</strong> ovan och begära en inloggningslänk
-      till samma e-postadress.
-    </p>
+    <p><strong>Det finns redan en bot registrerad med denna e-post och webbplats.</strong></p>
     <p class="small muted">
-      Om du inte känner igen detta, kontakta oss så hjälper vi dig att reda ut det.
+      Om det är ditt företag, använd knappen <strong>"Redan kund? Logga in"</strong> ovan
+      för att logga in i adminportalen. Kontakta supporten om du behöver hjälp.
     </p>
   `);
   out.scrollIntoView({ behavior: "smooth", block: "start" });
   return;
 }
+
 
 
         if (!res.ok) {

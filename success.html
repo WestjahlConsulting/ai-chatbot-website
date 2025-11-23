@@ -158,16 +158,24 @@
     }
 
     const portalBtn = document.getElementById("portal");
-    if (portalBtn){
-      portalBtn.onclick = async () => {
-        const r = await getJson(`/api/billing/portal-link?customerId=${encodeURIComponent(cid)}`);
-        if (r.ok && r.data.url) {
-          location.href = r.data.url;
-        } else {
-          alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
-        }
-      };
+if (portalBtn){
+  portalBtn.onclick = async () => {
+    // Ingen customerId i URL längre – backend läser den från JWT
+    const r = await getJson(`/api/billing/portal-link`);
+
+    if (r.status === 401) {
+      alert("För att öppna kundportalen behöver du först logga in via inloggningslänken som skickats till din e-post (Adminportalen).");
+      return;
     }
+
+    if (r.ok && r.data && r.data.url) {
+      location.href = r.data.url;
+    } else {
+      alert((r.data && (r.data.error || r.data.message)) || "Kunde inte öppna kundportalen.");
+    }
+  };
+}
+
 
     // Preview-iframe (preview=1 + sessionId)
     document.getElementById("previewCard").classList.remove("hidden");
