@@ -803,36 +803,45 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
       return "";
     }
 
-    async function fetchJson(path) {
-      const token = getBestToken();
-      if (!token) {
-        throw new Error("no_token");
-      }
+   async function fetchJson(path) {
+  const token = getBestToken();
+  if (!token) {
+    throw new Error("no_token");
+  }
 
-      const res = await fetch(`${API_BASE}${path}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/json"
-        }
-      });
-
-      let data = null;
-      try {
-        data = await res.json();
-      } catch {
-        /* ignore parse error */
-      }
-
-      if (res.status === 401) {
-        // ogiltig token -> låt admin-sidan hantera utloggning vid nästa refresh
-        throw new Error("unauthorized");
-      }
-      if (!res.ok) {
-        throw new Error((data && data.error) || `HTTP ${res.status}`);
-      }
-
-      return data;
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json"
     }
+  });
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    /* ignore parse error */
+  }
+
+  if (res.status === 401) {
+    // städa bort ogiltig token så vi inte spammar 401
+    try {
+      localStorage.removeItem("botjahl.portal.token");
+      localStorage.removeItem("bj_jwt");
+      localStorage.removeItem("jwt");
+      localStorage.removeItem("token");
+    } catch {}
+
+    throw new Error("unauthorized");
+  }
+
+  if (!res.ok) {
+    throw new Error((data && data.error) || `HTTP ${res.status}`);
+  }
+
+  return data;
+}
+
 
     // --- DOM-element för kortet ---
     const card   = document.getElementById("quota-card");
@@ -904,11 +913,16 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
 
         renderUsage(usage);
         renderDomain(me);
-      } catch (err) {
-        console.error("usage / me error:", err);
-        // vid t.ex. 401 eller nätverksfel visar vi en snäll text i stället för att spamma konsolen
-        renderLoggedOut();
-      }
+  } catch (err) {
+    // vid no_token/unauthorized → bara visa utloggat läge, spamma inte konsolen
+    if (err && (err.message === "no_token" || err.message === "unauthorized")) {
+      renderLoggedOut();
+      return;
+    }
+
+    console.error("usage / me error:", err);
+    renderLoggedOut();
+  }
     }
 
     // Lyssna på att token ändras (t.ex. när man loggar in/loggar ut)
