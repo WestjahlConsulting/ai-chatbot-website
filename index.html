@@ -362,17 +362,21 @@
         const data = await res.json().catch(() => ({}));
 
         if (res.status === 409 && data.customerId) {
-          out.innerHTML = okBanner(`
-          <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
-          ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
-          <div class="actions">
-            <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
-            <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
-          </div>
-        `);
-          out.scrollIntoView({ behavior: "smooth", block: "start" });
-          return;
-        }
+  out.innerHTML = errBanner(`
+    <p><strong>Det finns redan en bot registrerad för den här e-postadressen och webbplatsen.</strong></p>
+    <p>
+      Om det är din bot kan du logga in i adminportalen genom att klicka på
+      <strong>”Redan kund? Logga in”</strong> ovan och begära en inloggningslänk
+      till samma e-postadress.
+    </p>
+    <p class="small muted">
+      Om du inte känner igen detta, kontakta oss så hjälper vi dig att reda ut det.
+    </p>
+  `);
+  out.scrollIntoView({ behavior: "smooth", block: "start" });
+  return;
+}
+
 
         if (!res.ok) {
           const msg = (data && data.message) || "Något gick fel. Försök igen om en stund.";
