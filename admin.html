@@ -93,11 +93,7 @@
   <header class="page container">
     <span class="badge">Adminportal</span>
     <h1>Träna och hantera din bot</h1>
-    <p class="muted">
-      Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
-      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
-      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
-    </p>
+    <p id="introText" class="muted"></p>
   </header>
 
   <main class="container stack">
@@ -766,6 +762,49 @@ document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key ==
     })();
 
   </script>
+
+  <script>
+(function() {
+  const intro = document.getElementById("introText");
+
+  function setLoggedOutText() {
+    if (!intro) return;
+    intro.innerHTML = `
+      Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
+      Du får en inloggningslänk skickad till din e-post.
+      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+    `;
+  }
+
+  function setLoggedInText() {
+    if (!intro) return;
+    intro.innerHTML = `
+      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+      Får du slut på frågor kan du alltid köpa fler enkelt genom att klicka på knappen
+      <strong>"Köp fler frågor"</strong>.
+    `;
+  }
+
+  // Lyssna på login-eventet
+  window.addEventListener("bj:auth", () => {
+    setLoggedInText();
+  });
+
+  // Körs vid sidstart
+  const token = localStorage.getItem("botjahl.portal.token") ||
+                localStorage.getItem("bj_jwt");
+
+  if (token) {
+    setLoggedInText();
+  } else {
+    setLoggedOutText();
+  }
+
+})();
+</script>
+
 
   <!-- Quota + me card driver (lagring + domän) -->
 <script>
