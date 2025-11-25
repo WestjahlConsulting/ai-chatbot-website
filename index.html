@@ -225,14 +225,6 @@
             <input id="mail" name="email" maxlength="200" type="email" placeholder="E-post" autocomplete="email" required />
           </div>
 
-          <div>
-            <label for="orgnr">
-              Organisationsnummer
-              <span class="small muted">(valfritt)</span>
-            </label>
-            <input id="orgnr" name="orgNumber" placeholder="Ex: 559123-4567" autocomplete="on" />
-          </div>
-
           <div class="terms-row">
             <label for="terms" class="terms-label">
               <input type="checkbox" id="terms" name="terms" required />
@@ -342,13 +334,13 @@
       let url = f.websiteUrl.value.trim();
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-      const body = {
-        name: f.name.value.trim(),
-        websiteUrl: url,
-        email: f.email.value.trim(),
-        orgNumber: (f.orgNumber && f.orgNumber.value.trim()) || null,
-        termsAccepted: !!f.terms.checked
-      };
+const body = {
+  name: f.name.value.trim(),
+  websiteUrl: url,
+  email: f.email.value.trim(),
+  termsAccepted: !!f.terms.checked
+};
+
 
       out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
 
