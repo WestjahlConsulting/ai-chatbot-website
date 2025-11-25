@@ -225,9 +225,11 @@ header.hero .wrap > .card:hover {
 .grid{display:grid;gap:14px}
 .grid-2{grid-template-columns:1fr 1fr}
 
-/* --- forms (signup & login) --- */
+/* --- forms (signup & login & kontoinställningar) --- */
+/* Gemensam input-stil (signup, login + konto-inställningar) */
 form input,
 #login-card input,
+#account-card input,
 #panel input[type="file"]{
   width:100%;
   padding:12px 14px;
@@ -237,8 +239,20 @@ form input,
   border-radius:12px;
   font-size:16px;
 }
-form input::placeholder{color:#8ea0b5}
-form input:focus{outline:0;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+
+/* Placeholder-färg */
+form input::placeholder,
+#account-card input::placeholder{
+  color:#8ea0b5;
+}
+
+/* Focus-stil (blå kant + glow) */
+form input:focus,
+#account-card input:focus{
+  outline:0;
+  border-color:#3b82f6;
+  box-shadow:0 0 0 3px rgba(59,130,246,.25);
+}
 
 /* submit i signup fullbredd (men inte andra knappar) */
 #signup button[type="submit"]{width:100%}
