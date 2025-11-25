@@ -538,38 +538,66 @@
       return false;
     }
 
-     async function login(){
-      const customerId = document.getElementById("cid").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const msg = document.getElementById("loginMsg");
-      msg.textContent = "";
-      msg.classList.add("hidden");
+    async function login(){
+  const customerId = document.getElementById("cid").value.trim();
+  const email      = document.getElementById("email").value.trim();
+  const msg        = document.getElementById("loginMsg");
 
-      try{
-        showLoading("Skickar inloggningslänk…");
-        const res = await fetch(API + "/api/portal/login", {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({ customerId, email })
-        });
-        const data = await readBody(res);
+  msg.textContent = "";
+  msg.classList.add("hidden");
 
-        if (!res.ok) {
-          const errText =
-            (data && typeof data === "object" && (data.error || data.message)) ||
-            (typeof data === "string" ? data : "Felaktiga uppgifter.");
-          throw new Error(errText);
-        }
+  try{
+    showLoading("Loggar in…");
+    const res  = await fetch(API + "/api/portal/login", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ customerId, email })
+    });
+    const data = await readBody(res);
 
-        hideLoading();
-        msg.textContent = "Om uppgifterna stämmer har vi skickat en inloggningslänk till din e-post.";
-        msg.classList.remove("hidden");
-      }catch(e){
-        hideLoading();
-        msg.textContent = e.message || "Kunde inte skicka inloggningslänk.";
-        msg.classList.remove("hidden");
-      }
+    if (!res.ok) {
+      const errText =
+        (data && typeof data === "object" && (data.error || data.message)) ||
+        (typeof data === "string" ? data : "Felaktiga uppgifter.");
+      throw new Error(errText);
     }
+
+    // 🔹 DEMO-KUND: token returneras direkt → logga in omedelbart
+    if (data && data.demo && data.token && data.customerId) {
+      setAuth(data.token, data.customerId);
+
+      hideLoading();
+      loginCard.classList.add("hidden");
+      app.classList.remove("hidden");
+      successLink.href = "success.html?cid=" + encodeURIComponent(data.customerId);
+
+      // uppdatera rubrik + konto-fält
+      await loadMeAndRenderWho();
+      await refreshStatus();
+
+      // litet info-meddelande om att man är inne som demo
+      msg.textContent = "Du är nu inloggad som demo-kund.";
+      msg.classList.remove("hidden");
+      msg.classList.remove("err");
+      return;
+    }
+
+    // 🔹 Vanlig kund → samma text som tidigare (magic-link via mejl)
+    hideLoading();
+    msg.textContent =
+      (data && data.message) ||
+      "Om uppgifterna stämmer har vi skickat en inloggningslänk till din e-post.";
+    msg.classList.remove("hidden");
+    msg.classList.remove("err");
+
+  }catch(e){
+    hideLoading();
+    msg.textContent = e.message || "Kunde inte skicka inloggningslänk.";
+    msg.classList.remove("hidden");
+    msg.classList.add("err");
+  }
+}
+
 
 
      // Rendera dokumentlistan baserat på cache + sök + sortering
