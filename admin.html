@@ -123,27 +123,26 @@
         <div>
           <h2>Konto-inställningar</h2>
           <p class="muted small">
-            Uppdatera företagsnamn, e-post och domän. Domänen styr var chatten får köras
-            och vilken webbplats som indexeras.
+            Här har du möjlighet att uppdatera företagsnamn, e-post och domän. Domänen styr var chatten får köras
+            och vilken webbplats som indexeras. Glöm inte att klicka på "Spara ändringar" efter uppdatering.
           </p>
 
           <div class="form-row-2" style="margin-top:10px;">
             <div>
               <label for="accName">Företagsnamn</label>
-              <input id="accName" placeholder="Företag AB" />
+              <input id="accName" maxlength="80" placeholder="Företag AB" />
             </div>
             <div>
               <label for="accEmail">E-post för kontot</label>
-              <input id="accEmail" type="email" placeholder="du@företag.se" />
+              <input id="accEmail" type="email" maxlength="200" placeholder="du@företag.se" />
             </div>
           </div>
 
           <div style="margin-top:10px;">
             <label for="accDomain">Domän</label>
-            <input id="accDomain" placeholder="https://www.dittföretag.se" />
+            <input id="accDomain" maxlength="255" placeholder="https://www.dittföretag.se" />
             <p class="small muted">
-              Exempel: <code>https://www.dittföretag.se</code>. Vi tillåter bara riktiga domännamn – inga IP-adresser
-              eller localhost.
+              Exempel: <code>https://www.dittföretag.se</code>. Vi tillåter bara riktiga domännamn
             </p>
           </div>
 

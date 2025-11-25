@@ -212,17 +212,17 @@
         <form id="signup" autocomplete="on" class="stack">
           <div>
             <label for="org">Företagsnamn</label>
-            <input id="org" name="name" placeholder="Företagsnamn" autocomplete="organization" required />
+            <input id="org" name="name" maxlength="80" placeholder="Företagsnamn" autocomplete="organization" required />
           </div>
 
           <div>
             <label for="site">Webbplats</label>
-            <input id="site" name="websiteUrl" placeholder="https://… eller www.dittföretag.se" inputmode="url" required />
+            <input id="site" name="websiteUrl" maxlength="255" placeholder="https://… eller www.dittföretag.se" inputmode="url" required />
           </div>
 
           <div>
             <label for="mail">E-post</label>
-            <input id="mail" name="email" type="email" placeholder="E-post" autocomplete="email" required />
+            <input id="mail" name="email" maxlength="200" type="email" placeholder="E-post" autocomplete="email" required />
           </div>
 
           <div>
