@@ -117,45 +117,45 @@
 
     <!-- APP -->
     <div id="app" class="hidden">
-      <!-- Info-rad: inloggad kund + domän + länkar -->
-      <div class="glass" style="margin-bottom:16px;">
-              <!-- Konto-inställningar -->
-      <div class="glass" style="margin-bottom:16px;">
-        <h2>Konto-inställningar</h2>
-        <p class="muted small">
-          Uppdatera företagsnamn, e-post och domän. Domänen styr var chatten får köras
-          och vilken webbplats som indexeras.
-        </p>
-
-        <div class="form-row-2" style="margin-top:10px;">
-          <div>
-            <label for="accName">Företagsnamn</label>
-            <input id="accName" placeholder="Företag AB" />
-          </div>
-          <div>
-            <label for="accEmail">E-post för kontot</label>
-            <input id="accEmail" type="email" placeholder="du@företag.se" />
-          </div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <label for="accDomain">Domän</label>
-          <input id="accDomain" placeholder="https://www.dittföretag.se" />
-          <p class="small muted">
-            Exempel: <code>https://www.dittföretag.se</code>. Vi tillåter bara riktiga domännamn – inga IP-adresser eller localhost.
+      
+      <!-- Konto-inställningar + inloggningsrad -->
+      <section id="account-card" class="card stack" style="margin-bottom:16px;">
+        <div>
+          <h2>Konto-inställningar</h2>
+          <p class="muted small">
+            Uppdatera företagsnamn, e-post och domän. Domänen styr var chatten får köras
+            och vilken webbplats som indexeras.
           </p>
-        </div>
 
-        <div class="actions" style="margin-top:12px;">
-          <button id="saveAccountBtn" class="btn secondary">Spara ändringar</button>
-        </div>
+          <div class="form-row-2" style="margin-top:10px;">
+            <div>
+              <label for="accName">Företagsnamn</label>
+              <input id="accName" placeholder="Företag AB" />
+            </div>
+            <div>
+              <label for="accEmail">E-post för kontot</label>
+              <input id="accEmail" type="email" placeholder="du@företag.se" />
+            </div>
+          </div>
 
-        <p id="accountMsg" class="small muted"></p>
-      </div>
+          <div style="margin-top:10px;">
+            <label for="accDomain">Domän</label>
+            <input id="accDomain" placeholder="https://www.dittföretag.se" />
+            <p class="small muted">
+              Exempel: <code>https://www.dittföretag.se</code>. Vi tillåter bara riktiga domännamn – inga IP-adresser
+              eller localhost.
+            </p>
+          </div>
+
+          <div class="actions" style="margin-top:12px;">
+            <button id="saveAccountBtn" class="btn secondary">Spara ändringar</button>
+          </div>
+
+          <p id="accountMsg" class="small muted"></p>
+        </div>
 
         <div class="actions"
              style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-          
           <!-- Vänster: kundinfo -->
           <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
             <p id="who" class="muted" style="margin:0;font-weight:500;"></p>
@@ -170,7 +170,8 @@
             </a>
           </div>
         </div>
-      </div>
+      </section>
+      
 
       <div class="glass">
 <div class="actions" style="justify-content:space-between">
