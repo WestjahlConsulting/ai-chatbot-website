@@ -119,6 +119,40 @@
     <div id="app" class="hidden">
       <!-- Info-rad: inloggad kund + domän + länkar -->
       <div class="glass" style="margin-bottom:16px;">
+              <!-- Konto-inställningar -->
+      <div class="glass" style="margin-bottom:16px;">
+        <h2>Konto-inställningar</h2>
+        <p class="muted small">
+          Uppdatera företagsnamn, e-post och domän. Domänen styr var chatten får köras
+          och vilken webbplats som indexeras.
+        </p>
+
+        <div class="form-row-2" style="margin-top:10px;">
+          <div>
+            <label for="accName">Företagsnamn</label>
+            <input id="accName" placeholder="Företag AB" />
+          </div>
+          <div>
+            <label for="accEmail">E-post för kontot</label>
+            <input id="accEmail" type="email" placeholder="du@företag.se" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label for="accDomain">Domän</label>
+          <input id="accDomain" placeholder="https://www.dittföretag.se" />
+          <p class="small muted">
+            Exempel: <code>https://www.dittföretag.se</code>. Vi tillåter bara riktiga domännamn – inga IP-adresser eller localhost.
+          </p>
+        </div>
+
+        <div class="actions" style="margin-top:12px;">
+          <button id="saveAccountBtn" class="btn secondary">Spara ändringar</button>
+        </div>
+
+        <p id="accountMsg" class="small muted"></p>
+      </div>
+
         <div class="actions"
              style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
           
@@ -311,6 +345,15 @@
     let filesCache        = [];  // senast hämtade dokument
     let sortAscending     = true; // A–Ö som default
 
+    const whoDomain   = document.getElementById("whoDomain");
+
+    // Konto-inställningar
+    const accNameInput   = document.getElementById("accName");
+    const accEmailInput  = document.getElementById("accEmail");
+    const accDomainInput = document.getElementById("accDomain");
+    const accountMsg     = document.getElementById("accountMsg");
+
+
     const loading     = document.getElementById("loading");
     const loadingText = document.getElementById("loadingText");
     function showLoading(text){ if(text) loadingText.textContent = text; loading.classList.add("show"); }
@@ -353,12 +396,57 @@
       filesUl.innerHTML = "";
     }
 
-        async function loadMeAndRenderWho() {
+        async function saveAccount() {
+      if (!accNameInput || !accEmailInput || !accDomainInput) return;
+
+      accountMsg.textContent = "";
+      accountMsg.classList.remove("err");
+
+      const body = {
+        name: accNameInput.value.trim() || null,
+        email: accEmailInput.value.trim() || null,
+        websiteUrl: accDomainInput.value.trim() || null
+      };
+
+      try {
+        const { res, data } = await api("/api/portal/account", {
+          method: "PATCH",
+          body: JSON.stringify(body)
+        });
+
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+
+        if (!res.ok) {
+          const msg =
+            (data && typeof data === "object" && (data.error || data.message)) ||
+            (typeof data === "string" ? data : "Kunde inte spara ändringarna.");
+          accountMsg.textContent = msg;
+          accountMsg.classList.add("err");
+          return;
+        }
+
+        accountMsg.textContent = "Ändringarna är sparade.";
+        accountMsg.classList.remove("err");
+
+        // Hämta om info-raden + fälten (ifall backend normaliserar domän)
+        await loadMeAndRenderWho();
+
+      } catch (e) {
+        console.error(e);
+        accountMsg.textContent = "Något gick fel när ändringarna skulle sparas.";
+        accountMsg.classList.add("err");
+      }
+    }
+
+
+          async function loadMeAndRenderWho() {
       const who       = document.getElementById("who");
       const whoDomain = document.getElementById("whoDomain");
       const cid       = getCid();
 
-      // fallback-text om me-anropet skulle fallera
       const fallback = cid ? `Inloggad (kund-ID ${cid})` : "Inloggad kund";
 
       try {
@@ -370,9 +458,18 @@
         }
 
         const company =
-          data.companyName || data.name || data.friendlyName || "";
-        const domain =
-          data.website || data.websiteUrl || data.domain || data.siteDomain || "";
+          data.companyName || data.name || data.friendlyName || data.organizationName || "";
+        const domainRaw =
+          data.websiteUrl || data.website || data.domain || data.siteDomain || "";
+        let domainText = domainRaw;
+
+        try {
+          if (domainRaw) {
+            domainText = new URL(domainRaw).host || domainRaw;
+          }
+        } catch {
+          // om parse failar, använd rå text
+        }
 
         const parts = [];
         if (company) parts.push(company);
@@ -383,15 +480,22 @@
           : fallback;
 
         if (whoDomain) {
-          whoDomain.textContent = domain
-            ? "Domän: " + domain
+          whoDomain.textContent = domainText
+            ? "Domän: " + domainText
             : "";
         }
+
+        // Fyll konto-fälten
+        if (accNameInput)   accNameInput.value   = company || "";
+        if (accEmailInput)  accEmailInput.value  = data.email || "";
+        if (accDomainInput) accDomainInput.value = domainRaw || "";
+
       } catch (e) {
         who.textContent = fallback;
         if (whoDomain) whoDomain.textContent = "";
       }
     }
+
 
 
     async function readBody(res){
@@ -712,6 +816,8 @@ document.getElementById("uploadBtn").onclick     = upload;
 document.getElementById("reindexAllBtn").onclick = reindexAll;
 document.getElementById("reindexSiteBtn").onclick = reindexWebsite;
 document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
+document.getElementById("saveAccountBtn").onclick = saveAccount;
+
 
    // Sök + sort
     if (fileSearchInput) {
