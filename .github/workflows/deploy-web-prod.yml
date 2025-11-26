@@ -1,0 +1,41 @@
+name: Deploy website (PROD)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ev. npm build om det finns – annars kan du skippa
+      # - name: Install deps
+      #   run: npm ci
+      # - name: Build
+      #   run: npm run build
+
+      - name: Write config.json
+        run: |
+          echo "{\"apiBase\":\"${{ vars.API_BASE }}\"}" > ./config.json
+          echo "Wrote config.json:"
+          cat ./config.json
+
+      - name: Deploy to Azure Static Web Apps (PROD)
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD }}
+          action: upload
+          app_location: "/"
+          output_location: "/"
+          app_build_command: ""
+          api_build_command: ""
