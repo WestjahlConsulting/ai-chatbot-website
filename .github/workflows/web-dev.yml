@@ -1,0 +1,31 @@
+name: WEB DEV – deploy Static Web App
+
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - "**/*.html"
+      - "**/*.css"
+      - "**/*.js"
+      - ".github/workflows/web-dev.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Lägg till npm-build här om du i framtiden har en build (t.ex. React/Vite)
+
+      - name: Deploy to Azure Static Web Apps (DEV)
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"   # ändra om sidan ligger i en undermapp
+          api_location: ""
