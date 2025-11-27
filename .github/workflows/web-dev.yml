@@ -2,7 +2,7 @@ name: WEB DEV – deploy Static Web App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ develop ]
     paths:
       - "**/*.html"
       - "**/*.css"
