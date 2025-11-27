@@ -15,9 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
 
+    env:
+      API_BASE: ${{ vars.API_BASE }}
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Inject API_BASE into HTML files
+        run: |
+          find . -name '*.html' -print0 | xargs -0 sed -i "s|__API_BASE__|${API_BASE}|g"
 
       - name: Deploy to Azure Static Web Apps (PROD)
         uses: Azure/static-web-apps-deploy@v1
@@ -26,4 +32,3 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/"
-          api_location: ""

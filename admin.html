@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
+  <script>
+    window.API_BASE = "__API_BASE__"; // inject vid deployment
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>BotJahl – Adminportal</title>
@@ -281,18 +284,23 @@
     </div>
   </div>
 
-  
-
   <!-- Huvudscript (login + uppladdning + status) -->
   <script>
         // och ev. snippet använder samma src
 
-   const API = (
-    new URLSearchParams(location.search).get("api")
-    || window.API_BASE
-    || window.API
-    || "https://botjahl-api-dev.azurewebsites.net"
-  ).replace(/\/+$/, "");
+const rawApi = (
+  new URLSearchParams(location.search).get("api") ||
+  window.API_BASE ||
+  window.API ||
+  ""
+).trim();
+
+if (!rawApi) {
+  console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
+}
+
+const API = rawApi.replace(/\/+$/, "");
+
 
   const qs = new URLSearchParams(location.search);
   const presetCid = qs.get("cid");
@@ -944,9 +952,14 @@ document.getElementById("saveAccountBtn").onclick = saveAccount;
 <script>
   (function () {
     // Bas-url för API:t (samma logik som tidigare)
-    const API_BASE = (window.API_BASE || "https://botjahl-api-dev.azurewebsites.net")
-      .toString()
-      .replace(/\/+$/, "");
+    const rawBase2 = (window.API_BASE || window.API || "").trim();
+
+if (!rawBase2) {
+  console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
+}
+
+const API_BASE = rawBase2.replace(/\/+$/, "");
+
 
     // --- Token-hantering: plocka bästa JWT vi hittar ---
     function readCookie(name) {
@@ -1116,9 +1129,15 @@ document.getElementById("saveAccountBtn").onclick = saveAccount;
     <!-- Chat usage card driver -->
   <script>
   (function(){
-    const API_BASE = (window.API_BASE || window.API || "https://botjahl-api-dev.azurewebsites.net").replace(/\/+$/,"");
+  const rawBase3 = (window.API_BASE || window.API || "").trim();
 
-    function readCookie(name){
+  if (!rawBase3) {
+    console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats av GitHub Actions.");
+  }
+
+  const API_BASE = rawBase3.replace(/\/+$/,"");
+
+  function readCookie(name){
       const parts = document.cookie.split(";");
       for (let p of parts){
         p = p.trim();
