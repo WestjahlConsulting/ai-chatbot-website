@@ -273,29 +273,24 @@
 
   <!-- JS -->
   <script>
-    // ===== API-resolver: ?api=… → window.BOTJAHL_API_BASE → config.json =====
-    async function resolveApiBase(){
-      const qs = new URLSearchParams(location.search);
-      const fromQuery = qs.get("api");
-      if (fromQuery) return fromQuery.replace(/\/+$/,"");
+    // Enkel API-resolver: ?api=… → window.BOTJAHL_API_BASE
+    async function resolveApiBase() {
+      const qs         = new URLSearchParams(location.search);
+      const fromQuery  = qs.get("api");
+      const fromWindow = (window.BOTJAHL_API_BASE || "").trim();
 
-      if (window.BOTJAHL_API_BASE) {
-        return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
+      const raw = (fromQuery || fromWindow || "").trim();
+      if (!raw) {
+        throw new Error("API-bas saknas. Kontrollera att __API_BASE__ har ersatts vid deploy.");
       }
 
-      try{
-        const r = await fetch("./config.json", { cache:"no-store" });
-        if (r.ok){
-          const j = await r.json();
-          if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/,"");
-        }
-      }catch {}
-
-      throw new Error("API-bas kunde inte bestämmas. Ange ?api=… eller lägg en config.json med {\"apiBase\":\"https://…\"}.");
+      return raw.replace(/\/+$/, "");
     }
-   const API_PROMISE      = resolveApiBase();
-  const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
-  const DEMO_CUSTOMER_ID = "ceb2df2";
+
+    const API_PROMISE      = resolveApiBase();
+    const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+    const DEMO_CUSTOMER_ID = "ceb2df2";
+
 
   // Stabil "session" per besökare (lagras i sessionStorage)
   function getOrCreateDemoSessionId(){

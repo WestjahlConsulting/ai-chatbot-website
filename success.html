@@ -22,6 +22,10 @@
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .actions .btn{ min-width:auto; }
   </style>
+    <script>
+    // Ersätts vid deploy (samma mekanism som på index.html)
+    window.BOTJAHL_API_BASE = "__API_BASE__";
+  </script>
 </head>
 <body>
   <nav>
@@ -95,21 +99,21 @@ Ingen konfigurering behövs – allt kopplas automatiskt till ditt konto.</p>
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
   <script>
-  async function resolveApiBase(){
-    const qs = new URLSearchParams(location.search);
-    const fromQuery = qs.get("api");
-    if (fromQuery) return fromQuery.replace(/\/+$/,"");
-    if (window.BOTJAHL_API_BASE) return String(window.BOTJAHL_API_BASE).replace(/\/+$/,"");
-    try{
-      const r = await fetch("./config.json",{cache:"no-store"});
-      if (r.ok){
-        const j = await r.json();
-        if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/,"");
-      }
-    }catch{}
-    throw new Error("API-bas saknas. Använd ?api=… eller config.json.");
+  async function resolveApiBase() {
+    const qs         = new URLSearchParams(location.search);
+    const fromQuery  = qs.get("api");
+    const fromWindow = (window.BOTJAHL_API_BASE || "").trim();
+
+    const raw = (fromQuery || fromWindow || "").trim();
+    if (!raw) {
+      throw new Error("API-bas saknas. Kontrollera att __API_BASE__ har ersatts vid deploy.");
+    }
+
+    return raw.replace(/\/+$/, "");
   }
+
   const API_PROMISE = resolveApiBase();
+
   const WIDGET_URL  = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
   const makeSid = () => (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
 
