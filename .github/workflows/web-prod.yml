@@ -15,15 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
 
-    env:
-      API_BASE: ${{ vars.API_BASE }}
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Inject API_BASE into HTML files
+      - name: Inject API_BASE placeholder
         run: |
-          find . -name '*.html' -print0 | xargs -0 sed -i "s|__API_BASE__|${API_BASE}|g"
+          API="${{ vars.API_BASE }}"
+          if [ -z "$API" ]; then
+            echo "ERROR: vars.API_BASE är inte satt i environment 'prod'."
+            exit 1
+          fi
+          echo "Injicerar API_BASE=$API i alla HTML-filer..."
+          find . -name "*.html" -print0 | xargs -0 sed -i "s|__API_BASE__|$API|g"
 
       - name: Deploy to Azure Static Web Apps (PROD)
         uses: Azure/static-web-apps-deploy@v1
@@ -32,3 +36,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/"
+          api_location: ""
