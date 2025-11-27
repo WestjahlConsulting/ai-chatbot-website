@@ -85,8 +85,6 @@
     </div>
   </header>
 
- 
-
   <!-- SÅ FUNKAR DET – MINI-TABELL -->
   <section id="how-it-works">
     <div class="container narrow stack">
@@ -253,76 +251,82 @@
     </div>
   </section>
 
-<!-- CONTACT -->
-<section>
-  <div class="container narrow stack center">
-    <h2>Vill du boka en demo eller introduktion?</h2>
-    <p class="muted">
-      Kontakta oss 
-      <a href="mailto:faijahl75@gmail.com" class="btn ghost small" style="margin-left:6px;">
-        här
-      </a>
-    </p>
-  </div>
-</section>
+  <!-- CONTACT -->
+  <section>
+    <div class="container narrow stack center">
+      <h2>Vill du boka en demo eller introduktion?</h2>
+      <p class="muted">
+        Kontakta oss 
+        <a href="mailto:faijahl75@gmail.com" class="btn ghost small" style="margin-left:6px;">
+          här
+        </a>
+      </p>
+    </div>
+  </section>
 
+  <!-- Denna ersätts av GitHub Actions vid deploy -->
   <script>
-  // Detta värde ersätts av GitHub Actions vid deploy
-  window.BOTJAHL_API_BASE = "__API_BASE__";
+    window.BOTJAHL_API_BASE = "__API_BASE__";
   </script>
 
-  <!-- JS -->
+  <!-- Huvud-JS (demo-iframe + signup + pricing) -->
   <script>
-    // Enkel API-resolver: ?api=… → window.BOTJAHL_API_BASE
+    // Robust API-resolver: ?api=… → window.BOTJAHL_API_BASE → ev. config.json
     async function resolveApiBase() {
-      const qs         = new URLSearchParams(location.search);
-      const fromQuery  = qs.get("api");
-      const fromWindow = (window.BOTJAHL_API_BASE || "").trim();
+      const qs = new URLSearchParams(location.search);
+      const fromQuery = qs.get("api");
+      if (fromQuery) return fromQuery.replace(/\/+$/, "");
 
-      const raw = (fromQuery || fromWindow || "").trim();
-      if (!raw) {
-        throw new Error("API-bas saknas. Kontrollera att __API_BASE__ har ersatts vid deploy.");
+      const fromWindow = (window.BOTJAHL_API_BASE || "").trim();
+      if (fromWindow && fromWindow !== "__API_BASE__") {
+        return fromWindow.replace(/\/+$/, "");
       }
 
-      return raw.replace(/\/+$/, "");
+      // Fallback för lokal test: config.json
+      try {
+        const r = await fetch("./config.json", { cache: "no-store" });
+        if (r.ok) {
+          const j = await r.json();
+          if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/, "");
+        }
+      } catch {}
+
+      throw new Error("API-bas saknas. Kontrollera att __API_BASE__ ersätts vid deploy eller använd ?api=…");
     }
 
     const API_PROMISE      = resolveApiBase();
     const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/widget.html";
     const DEMO_CUSTOMER_ID = "ceb2df2";
 
-
-  // Stabil "session" per besökare (lagras i sessionStorage)
-  function getOrCreateDemoSessionId(){
-    const k = "botjahl.demo.sid";
-    let v = sessionStorage.getItem(k);
-    if (!v){
-      // hyfsat unikt men stabilt under fliken
-      v = (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
-      sessionStorage.setItem(k, v);
-    }
-    return v;
-  }
-
-  // Sätt demo-iframe när API-basen är känd – med preview=1 + sessionId
-  (async () => {
-    try{
-      const API = await API_PROMISE;
-      const iframe = document.getElementById("botjahl-demo");
-      if (iframe){
-        const sid = getOrCreateDemoSessionId();
-        iframe.src =
-  `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}`
-  + `&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}`
-  + `&demo=1`;
+    // Stabil "session" per besökare (lagras i sessionStorage)
+    function getOrCreateDemoSessionId() {
+      const k = "botjahl.demo.sid";
+      let v = sessionStorage.getItem(k);
+      if (!v) {
+        v = (self.crypto?.randomUUID?.() || (Date.now().toString(36) + Math.random().toString(36).slice(2)));
+        sessionStorage.setItem(k, v);
       }
-    }catch(err){
-      console.warn("Kunde inte sätta demo-iframe:", err);
+      return v;
     }
-  })();
 
-    const out = document.getElementById('signup-result');
-    const okBanner  = (html) => `<div class="banner ok">${html}</div>`;
+    // Sätt demo-iframe när API-basen är känd – med preview=1 + sessionId + demo=1
+    (async () => {
+      try {
+        const API = await API_PROMISE;
+        const iframe = document.getElementById("botjahl-demo");
+        if (iframe) {
+          const sid = getOrCreateDemoSessionId();
+          iframe.src =
+            `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}` +
+            `&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}&demo=1`;
+        }
+      } catch (err) {
+        console.warn("Kunde inte sätta demo-iframe:", err);
+      }
+    })();
+
+    const out      = document.getElementById('signup-result');
+    const okBanner = (html) => `<div class="banner ok">${html}</div>`;
     const errBanner = (html) => `<div class="banner err">${html}</div>`;
 
     // Signup
@@ -339,17 +343,16 @@
       let url = f.websiteUrl.value.trim();
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-const body = {
-  name: f.name.value.trim(),
-  websiteUrl: url,
-  email: f.email.value.trim(),
-  termsAccepted: !!f.terms.checked
-};
-
+      const body = {
+        name:        f.name.value.trim(),
+        websiteUrl:  url,
+        email:       f.email.value.trim(),
+        termsAccepted: !!f.terms.checked
+      };
 
       out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
 
-      try{
+      try {
         const API = await API_PROMISE;
         const res = await fetch(API + "/api/public/signup", {
           method: "POST",
@@ -358,19 +361,17 @@ const body = {
         });
         const data = await res.json().catch(() => ({}));
 
-       if (res.status === 409) {
-  out.innerHTML = errBanner(`
-    <p><strong>Det finns redan en bot registrerad med denna e-post och webbplats.</strong></p>
-    <p class="small muted">
-      Om det är ditt företag, använd knappen <strong>"Redan kund? Logga in"</strong> ovan
-      för att logga in i adminportalen. Kontakta supporten om du behöver hjälp.
-    </p>
-  `);
-  out.scrollIntoView({ behavior: "smooth", block: "start" });
-  return;
-}
-
-
+        if (res.status === 409) {
+          out.innerHTML = errBanner(`
+            <p><strong>Det finns redan en bot registrerad med denna e-post och webbplats.</strong></p>
+            <p class="small muted">
+              Om det är ditt företag, använd knappen <strong>"Redan kund? Logga in"</strong> ovan
+              för att logga in i adminportalen. Kontakta supporten om du behöver hjälp.
+            </p>
+          `);
+          out.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
 
         if (!res.ok) {
           const msg = (data && data.message) || "Något gick fel. Försök igen om en stund.";
@@ -381,40 +382,40 @@ const body = {
 
         const cid = data.customerId;
         out.innerHTML = okBanner(`
-        <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
-        ${
-          data.checkoutUrl
-            ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
-            : `<p class="muted">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
-        }
-        <p class="small muted">
-          När betalmetod lagts in kan du hämta din kodsnutt här:
-          <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
-          eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
-        </p>
-      `);
+          <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
+          ${
+            data.checkoutUrl
+              ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Öppna Stripe Checkout</a></p>`
+              : `<p class="muted">Kunde inte skapa Checkout-länk just nu. Testa igen.</p>`
+          }
+          <p class="small muted">
+            När betalmetod lagts in kan du hämta din kodsnutt här:
+            <a href="success.html?cid=${encodeURIComponent(cid)}">success.html</a>
+            eller ladda upp dokument i <a href="admin.html?cid=${encodeURIComponent(cid)}">Admin</a>.
+          </p>
+        `);
         out.scrollIntoView({ behavior: "smooth", block: "start" });
-      }catch(err){
+      } catch (err) {
         out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
         out.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
 
     // Pris: Bas → checkout om kund är känd, annars scrolla till signup
-    (function hookPricing(){
+    (function hookPricing() {
       const buy = document.getElementById("buy-bas");
       if (!buy) return;
 
-      async function getJson(url){
+      async function getJson(url) {
         const r = await fetch(url, { cache: "no-store" });
         const t = await r.text();
-        try{ return { ok: r.ok, status: r.status, data: JSON.parse(t) }; }
-        catch{ return { ok: r.ok, status: r.status, data: {} }; }
+        try { return { ok: r.ok, status: r.status, data: JSON.parse(t) }; }
+        catch { return { ok: r.ok, status: r.status, data: {} }; }
       }
 
       buy.addEventListener("click", async () => {
         const cid = window.BOTJAHL_CUSTOMER_ID || "";
-        if (!cid){
+        if (!cid) {
           document.getElementById("starta").scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
@@ -443,7 +444,7 @@ const body = {
     </div>
   </footer>
 
-    <!-- Robust smooth scroll (bara om mål finns) -->
+  <!-- Robust smooth scroll (bara om mål finns) -->
   <script>
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a[href^="#"]');
@@ -473,88 +474,81 @@ const body = {
     <span class="bj-label">Testa demot</span>
   </button>
 
-  <!-- Chat-widget (nuvarande demo-chatt) -->
-  <!-- Chat-widget (nuvarande demo-chatt) -->
-<div id="botjahl-widget" class="botjahl-hidden">
-  <button id="botjahl-close" type="button" class="botjahl-close" aria-label="Stäng chatten">×</button>
+  <!-- Chat-widget (demo-chatt) -->
+  <div id="botjahl-widget" class="botjahl-hidden">
+    <button id="botjahl-close" type="button" class="botjahl-close" aria-label="Stäng chatten">×</button>
 
-   <!-- DEMO -->
-  <section id="demo">
-    <div class="container stack">
-      <h2 class="center">Testa BotJahl</h2>
-      <p class="muted center">
-        Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.
-        Demot är begränsat till 6 frågor per besökare.
-      </p>
-      <div id="iframe-demo" class="narrow">
-        <div class="iframe-wrapper">
-          <iframe
-            id="botjahl-demo"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            sandbox="allow-scripts allow-forms allow-same-origin"
-            title="BotJahl demo-chatt"
-            aria-label="Inbäddad demo av BotJahl"
-          ></iframe>
+    <!-- DEMO -->
+    <section id="demo">
+      <div class="container stack">
+        <h2 class="center">Testa BotJahl</h2>
+        <p class="muted center">
+          Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.
+          Demot är begränsat till 6 frågor per besökare.
+        </p>
+        <div id="iframe-demo" class="narrow">
+          <div class="iframe-wrapper">
+            <iframe
+              id="botjahl-demo"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              sandbox="allow-scripts allow-forms allow-same-origin"
+              title="BotJahl demo-chatt"
+              aria-label="Inbäddad demo av BotJahl"
+            ></iframe>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+  </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const launcher = document.getElementById('botjahl-launcher');
-    const widget   = document.getElementById('botjahl-widget');
-    const closeBtn = document.getElementById('botjahl-close');
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const launcher = document.getElementById('botjahl-launcher');
+      const widget   = document.getElementById('botjahl-widget');
+      const closeBtn = document.getElementById('botjahl-close');
 
-    if (!launcher || !widget) return;
+      if (!launcher || !widget) return;
 
-    function openWidget() {
-      widget.classList.add('botjahl-open');
-      widget.classList.remove('botjahl-hidden');
-      // se till att hela widgeten hamnar i bild
-      widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function closeWidget() {
-      widget.classList.remove('botjahl-open');
-      widget.classList.add('botjahl-hidden');
-    }
-
-    function toggleWidget() {
-      const isOpen = widget.classList.contains('botjahl-open');
-      if (isOpen) closeWidget(); else openWidget();
-    }
-
-    // Klick på bubblan nere till höger
-    launcher.addEventListener('click', function (e) {
-      e.preventDefault();
-      toggleWidget();
-    });
-
-    // Klick på krysset stänger
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        closeWidget();
-      });
-    }
-
-    // ESC-tangent stänger widgeten
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        closeWidget();
+      function openWidget() {
+        widget.classList.add('botjahl-open');
+        widget.classList.remove('botjahl-hidden');
+        widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+
+      function closeWidget() {
+        widget.classList.remove('botjahl-open');
+        widget.classList.add('botjahl-hidden');
+      }
+
+      function toggleWidget() {
+        const isOpen = widget.classList.contains('botjahl-open');
+        if (isOpen) closeWidget(); else openWidget();
+      }
+
+      launcher.addEventListener('click', function (e) {
+        e.preventDefault();
+        toggleWidget();
+      });
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          closeWidget();
+        });
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          closeWidget();
+        }
+      });
+
+      window.botjahlOpenDemo = function () {
+        openWidget();
+      };
     });
-
-    // Gör global funktion som "Demo" i menyn kan anropa
-    window.botjahlOpenDemo = function () {
-      openWidget();
-    };
-  });
-</script>
-
+  </script>
 
 </body>
 </html>
