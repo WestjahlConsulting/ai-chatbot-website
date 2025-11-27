@@ -91,7 +91,7 @@
     throw new Error("API-bas saknas. Använd ?api=… eller config.json.");
   }
   const API_PROMISE = resolveApiBase();
-  const WIDGET      = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+  const WIDGET      = "https://westjahlconsulting.github.io/ai-chatbot-frontend/widget.html";
   const makeSid = () => (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
 
   (async function () {

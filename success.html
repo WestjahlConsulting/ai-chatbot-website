@@ -114,7 +114,7 @@ Ingen konfigurering behövs – allt kopplas automatiskt till ditt konto.</p>
 
   const API_PROMISE = resolveApiBase();
 
-  const WIDGET_URL  = "https://westjahlconsulting.github.io/ai-chatbot-frontend/";
+  const WIDGET_URL  = "https://westjahlconsulting.github.io/ai-chatbot-frontend/widget.html";
   const makeSid = () => (self.crypto?.randomUUID?.() || (Date.now().toString(36)+Math.random().toString(36).slice(2)));
 
   function safeJson(t){ try { return t ? JSON.parse(t) : {}; } catch { return {}; } }
