@@ -19,6 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Steg 1: Ersätt __API_BASE__ i alla HTML-filer
       - name: Inject API_BASE placeholder
         run: |
           API="${{ vars.API_BASE }}"
@@ -29,6 +30,22 @@ jobs:
           echo "Injicerar API_BASE=$API i alla HTML-filer..."
           find . -name "*.html" -print0 | xargs -0 sed -i "s|__API_BASE__|$API|g"
 
+      # Steg 2: Skapa config.json dynamiskt i repo-root
+      - name: Create config.json
+        run: |
+          API="${{ vars.API_BASE }}"
+          if [ -z "$API" ]; then
+            echo "ERROR: vars.API_BASE är inte satt i environment 'prod'."
+            exit 1
+          fi
+          echo "Skapar config.json med apiBase=$API"
+          cat <<EOF > config.json
+          {"apiBase":"$API"}
+          EOF
+          echo "config.json innehåll:"
+          cat config.json
+
+      # Steg 3: Deploya allt till Static Web Apps
       - name: Deploy to Azure Static Web Apps (PROD)
         uses: Azure/static-web-apps-deploy@v1
         with:
