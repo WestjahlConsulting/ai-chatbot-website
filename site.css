@@ -661,6 +661,7 @@ header.hero .actions {
 section {
   scroll-margin-top: 80px; /* justera om din navbar är högre/lägre */
 }
+
 /* --- Chat launcher nere till höger --- */
 #botjahl-launcher {
   position: fixed;
@@ -697,7 +698,6 @@ section {
   white-space: nowrap;
 }
 
-/* Hover/active-effekt – lite “glow” och lyft */
 #botjahl-launcher:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 40px rgba(34, 197, 94, 0.55);
@@ -714,10 +714,9 @@ section {
   position: fixed;
   right: 1.5rem;
   bottom: 5.5rem;
-  width: min(400px, 92vw);
-  max-height: min(520px, 80vh);
+  width: min(430px, 96vw);           /* ⬅️ lite bredare än tidigare (400px) */
+  max-height: min(560px, 82vh);      /* något högre så hela boten syns snyggare */
   border-radius: 1.25rem;
-  /* Viktigt: tillåt scroll om innehållet blir högre än rutan */
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 0 20px 50px rgba(15,23,42,0.7);
@@ -725,6 +724,7 @@ section {
   z-index: 9998;
 }
 
+/* Stäng-knappen uppe i hörnet */
 .botjahl-close {
   position: absolute;
   top: 0.6rem;
@@ -742,7 +742,7 @@ section {
   align-items: center;
   justify-content: center;
   box-shadow: 0 6px 18px rgba(15,23,42,0.6);
-  z-index: 2; /* säkerställ att den ligger över innehållet */
+  z-index: 2;
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -752,10 +752,41 @@ section {
   box-shadow: 0 10px 24px rgba(15,23,42,0.7);
 }
 
-
 /* Visa/dölj states */
 .botjahl-hidden { display: none; }
 .botjahl-open   { display: block; }
+
+/* === Anpassningar bara för demo-widgeten i popupen === */
+
+/* Ta bort container-padding i popupen så iframen får full bredd */
+#botjahl-widget #demo .container.stack {
+  padding: 0 0 8px;
+}
+
+/* Rubrik och text får lite padding inuti widget-lådan */
+#botjahl-widget #demo h2,
+#botjahl-widget #demo p.muted {
+  padding: 12px 16px 0;
+}
+
+/* Inne i den flytande widgeten ska iframen fylla hela ytan,
+   utan extra kort-ram, border eller skugga. */
+#botjahl-widget #iframe-demo .iframe-wrapper {
+  max-width: 100%;
+  margin: 8px 0 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  height: min(520px, 78vh);
+}
+
+#botjahl-widget #iframe-demo .iframe-wrapper iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
 
 /* --- Responsivt för mobil --- */
 @media (max-width: 640px) {
@@ -775,38 +806,17 @@ section {
   #botjahl-widget {
     right: 0.75rem;
     bottom: 4.8rem;
-    width: min(360px, 96vw);
-    max-height: min(500px, 78vh);
+    width: min(380px, 96vw);        /* aningen smalare på mobil */
+    max-height: min(520px, 80vh);
   }
-    .botjahl-close {
+
+  .botjahl-close {
     top: 0.4rem;
     right: 0.4rem;
     width: 32px;
     height: 32px;
     font-size: 22px;
   }
-  /* === Demo-widget nere till höger: ta bort "kort i kort" === */
-  #botjahl-widget #demo .container.stack {
-    padding: 0 0 8px;
-  }
-
-/* Inne i den flytande widgeten ska iframen fylla hela ytan,
-   utan extra kort-ram, border eller skugga. */
-  #botjahl-widget #iframe-demo .iframe-wrapper {
-    max-width: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-  height: min(520px, 80vh); /* samma känsla som innan, men flush */
-}
-
-/* Säkerställ att själva iframen fyller rutan */
-#botjahl-widget #iframe-demo .iframe-wrapper iframe {
-  width: 100%;
-  height: 100%;
-}
 
 }
 
