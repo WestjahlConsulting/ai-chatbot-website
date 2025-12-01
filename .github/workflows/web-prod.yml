@@ -28,9 +28,26 @@ jobs:
             exit 1
           fi
           echo "Injicerar API_BASE=$API i alla HTML-filer..."
-          find . -name "*.html" -print0 | xargs -0 sed -i "s|__API_BASE__|$API|g"
+          find . -name "*.html" -print0 \
+            | xargs -0 sed -i "s|__API_BASE__|$API|g"
 
-      # Steg 2: Skapa config.json dynamiskt i repo-root
+      # Steg 2: analytics – här vill vi VANLIGEN kräva att snippet finns
+      # så att prod faktiskt mäts. Du kan ta bort if-blocket om du vill
+      # tillåta tomt värde även här.
+      - name: Inject analytics snippet (prod)
+        run: |
+          SNIPPET="${{ vars.ANALYTICS_SNIPPET }}"
+          if [ -z "$SNIPPET" ]; then
+            echo "ERROR: vars.ANALYTICS_SNIPPET är inte satt i environment 'prod'."
+            echo "Sätt den till ditt Cloudflare- eller Plausible-snippet eller ta bort denna check."
+            exit 1
+          fi
+
+          echo "Injicerar analytics-snippet i HTML..."
+          find . -name "*.html" -print0 \
+            | xargs -0 sed -i "s|__ANALYTICS_SNIPPET__|$SNIPPET|g"
+
+      # Steg 3: Skapa config.json dynamiskt i repo-root
       - name: Create config.json
         run: |
           API="${{ vars.API_BASE }}"
@@ -38,14 +55,16 @@ jobs:
             echo "ERROR: vars.API_BASE är inte satt i environment 'prod'."
             exit 1
           fi
+
           echo "Skapar config.json med apiBase=$API"
           cat <<EOF > config.json
           {"apiBase":"$API"}
           EOF
+
           echo "config.json innehåll:"
           cat config.json
 
-      # Steg 3: Deploya allt till Static Web Apps
+      # Steg 4: Deploya till Static Web Apps
       - name: Deploy to Azure Static Web Apps (PROD)
         uses: Azure/static-web-apps-deploy@v1
         with:
