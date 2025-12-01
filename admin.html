@@ -164,9 +164,16 @@
             <p id="whoDomain" class="muted small" style="margin:0;"></p>
           </div>
 
-          <!-- Höger: knappar -->
+                    <!-- Höger: knappar -->
           <div class="actions" style="gap:8px;flex-wrap:wrap;">
+            <button id="deleteAccountBtn"
+                    class="btn ghost small"
+                    style="border-color:#f97373;color:#fecaca;">
+              Radera konto
+            </button>
+
             <button id="logoutBtn" class="btn ghost small">Logga ut</button>
+
             <a id="successLink" class="btn secondary" href="success.html">
               Visa kodsnutt &amp; hantera betalning
             </a>
@@ -403,6 +410,50 @@ const API = rawApi.replace(/\/+$/, "");
       who.textContent = "";
       filesUl.innerHTML = "";
     }
+
+        async function deleteAccount() {
+      // Dubbel-confirm så man inte råkar klicka fel
+      if (!confirm("Är du säker på att du vill radera ditt konto och alla uppladdade filer?")) return;
+      if (!confirm("Detta går inte att ångra. Kvitton/fakturor ligger kvar i Stripe. Fortsätt?")) return;
+
+      try {
+        showLoading("Raderar konto…");
+
+        const { res, data } = await api("/api/portal/account", {
+          method: "DELETE",
+          body: JSON.stringify({
+            // matchar DeleteAccountReq (case-insensitiv i backend)
+            cancelStripeSubscriptions: true,
+            deleteStripeCustomer: false
+          })
+        });
+
+        hideLoading();
+
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+
+        if (!res.ok) {
+          const msg =
+            (data && typeof data === "object" && (data.error || data.message)) ||
+            (typeof data === "string" ? data : "Kunde inte radera kontot.");
+          alert(msg);
+          return;
+        }
+
+        alert("Ditt konto och dina uppladdade filer har nu raderats. Eventuella kvitton finns kvar i Stripe för bokföring.");
+        logout();
+        // Skicka användaren till startsidan efter radering
+        window.location.href = "index.html";
+      } catch (e) {
+        hideLoading();
+        console.error(e);
+        alert("Något gick fel när kontot skulle raderas. Försök igen eller kontakta support.");
+      }
+    }
+
 
         async function saveAccount() {
       if (!accNameInput || !accEmailInput || !accDomainInput) return;
@@ -853,6 +904,8 @@ document.getElementById("reindexAllBtn").onclick = reindexAll;
 document.getElementById("reindexSiteBtn").onclick = reindexWebsite;
 document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
 document.getElementById("saveAccountBtn").onclick = saveAccount;
+document.getElementById("deleteAccountBtn").onclick = deleteAccount;
+
 
 
    // Sök + sort
