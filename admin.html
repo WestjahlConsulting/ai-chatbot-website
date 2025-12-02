@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
+  <script>
+    window.API_BASE = "__API_BASE__"; // inject vid deployment
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>BotJahl – Adminportal</title>
@@ -8,11 +11,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css">
   <style>
-    /* Sid-specifik finputsning */
     body{ overflow-x:hidden; }
     .hidden{ display:none!important; }
 
-    /* Loader overlay */
     .loader-backdrop{ position:fixed; inset:0; z-index:60; background:rgba(15,23,42,.55); backdrop-filter: blur(3px); display:none; align-items:center; justify-content:center; }
     .loader-backdrop.show{ display:flex; }
     .loader-card{ background:linear-gradient(135deg, rgba(255,255,255,.92), rgba(250,253,255,.92)); border:1px solid rgba(2,6,23,.08); border-radius:16px; padding:22px 26px; min-width:280px; box-shadow:0 10px 30px rgba(2,6,23,.18); display:grid; gap:10px; justify-items:center; text-align:center; }
@@ -21,22 +22,49 @@
     .loader-text{ font-weight:600; color:#0b1220; }
     .loader-sub{ font-size:13px; color:#6b7280; }
 
-    /* Smidigare knapp-rader */
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .file{ width:100%; }
+    .upload-area{
+      margin-top:16px;     /* luft mellan reindex-knappar och "Välj filer" */
+      display:grid;
+      gap:12px;            /* avstånd mellan "Välj filer" och knapparna under */
+      align-items:flex-start;
+    }
 
-    /* Logg & filer */
     #log{ list-style:none; padding:0; margin:10px 0 0; display:grid; gap:6px; }
     #files{ list-style:none; padding:0; margin:0; display:grid; gap:12px; }
     #files li{ background:rgba(15,23,42,.65); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; }
     #files .row{ display:flex; gap:16px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; }
     #files .muted{ color:#a7b0c0; }
 
-    /* Kort-stil */
     .glass{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:18px; }
     .stack{ display:grid; gap:16px; }
 
     header.page .muted{ max-width:860px; }
+
+    .status-pill{ display:inline-flex; align-items:center; justify-content:center; min-width:62px; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:600; }
+    .status-pill.ok{ background:rgba(22,163,74,.16); color:#bbf7d0; }
+    .status-pill.pending{ background:rgba(234,179,8,.16); color:#facc15; }
+
+    .small{ font-size:12px; }
+     /* Sökfältet i "Dina dokument" – samma stil som övriga inputs */
+    #fileSearch{
+      width:100%;
+      padding:12px 14px;
+      border:1px solid rgba(255,255,255,.15);
+      background:#0f172a;
+      color:#e5e7eb;
+      border-radius:12px;
+      font-size:16px;
+    }
+    #fileSearch::placeholder{
+      color:#8ea0b5;
+    }
+    #fileSearch:focus{
+      outline:0;
+      border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
   </style>
 </head>
 <body>
@@ -68,14 +96,12 @@
   <header class="page container">
     <span class="badge">Adminportal</span>
     <h1>Träna och hantera din bot</h1>
-    <p class="muted">
-      Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
-      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
-      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
-    </p>
+    <p id="introText" class="muted"></p>
   </header>
 
   <main class="container stack">
+    <!-- Banner för köp av extra frågor -->
+    <p id="topupBanner" class="banner ok hidden" style="margin-bottom:0;"></p>
     <!-- LOGIN -->
     <div id="login-card" class="glass">
       <h2>Logga in</h2>
@@ -94,47 +120,125 @@
 
     <!-- APP -->
     <div id="app" class="hidden">
-      <div class="glass">
-        <div class="actions" style="justify-content:space-between">
-          <div>
-            <h2>Uppladdning</h2>
-            <p class="muted" style="margin:6px 0 0">Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.</p>
+      
+      <!-- Konto-inställningar + inloggningsrad -->
+      <section id="account-card" class="glass stack" style="margin-bottom:16px;">
+        <div>
+          <h2>Konto-inställningar</h2>
+          <p class="muted small">
+            Här har du möjlighet att uppdatera företagsnamn, e-post och domän. Domänen styr var chatten får köras
+            och vilken webbplats som indexeras. Glöm inte att klicka på "Spara ändringar" efter uppdatering.
+          </p>
+
+          <div class="form-row-2" style="margin-top:10px;">
+            <div>
+              <label for="accName">Företagsnamn</label>
+              <input id="accName" maxlength="80" placeholder="Företag AB" />
+            </div>
+            <div>
+              <label for="accEmail">E-post för kontot</label>
+              <input id="accEmail" type="email" maxlength="200" placeholder="du@företag.se" />
+            </div>
           </div>
+
+          <div style="margin-top:10px;">
+            <label for="accDomain">Domän</label>
+            <input id="accDomain" maxlength="255" placeholder="https://www.dittföretag.se" />
+            <p class="small muted">
+              Exempel: <code>https://www.dittföretag.se</code>. Vi tillåter bara riktiga domännamn
+            </p>
+          </div>
+
+          <div class="actions" style="margin-top:12px;">
+            <button id="saveAccountBtn" class="btn secondary">Spara ändringar</button>
+          </div>
+
+          <p id="accountMsg" class="banner small muted"></p>
+        </div>
+
+        <div class="actions"
+             style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <!-- Vänster: kundinfo -->
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+            <p id="who" class="muted" style="margin:0;font-weight:500;"></p>
+            <p id="whoDomain" class="muted small" style="margin:0;"></p>
+          </div>
+
+                    <!-- Höger: knappar -->
+          <div class="actions" style="gap:8px;flex-wrap:wrap;">
+            <button id="deleteAccountBtn"
+                    class="btn ghost small"
+                    style="border-color:#f97373;color:#fecaca;">
+              Radera konto
+            </button>
+
+            <button id="logoutBtn" class="btn ghost small">Logga ut</button>
+
+            <a id="successLink" class="btn secondary" href="success.html">
+              Visa kodsnutt &amp; hantera betalning
+            </a>
+          </div>
+        </div>
+      </section>
+      
+
+      <div class="glass">
+<div class="actions" style="justify-content:space-between">
+  <div>
+    <h2>Uppladdning</h2>
+    <p class="muted" style="margin:6px 0 4px">
+      Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.
+    </p>
+    <p class="small muted" style="margin:0">
+      <strong>Tips:</strong> Använd
+      <em>Reindexera webbplatsen</em> när du ändrat innehåll på din hemsida
+      och <em>Reindexera alla dokument</em> när du vill att boten ska läsa in dina uppladdade
+      filer på nytt.
+    </p>
+  </div>
+  <div class="actions">
+    <button id="reindexSiteBtn" class="btn secondary">Reindexera webbplatsen</button>
+    <button id="reindexAllBtn" class="btn secondary">Reindexera alla dokument</button>
+  </div>
+</div>
+
+
+        <div class="upload-area">
+          <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
+
           <div class="actions">
-            <button id="reindexAllBtn" class="btn secondary">Reindexera alla</button>
-            <button id="logoutBtn" class="btn ghost">Logga ut</button>
+            <button id="uploadBtn" class="btn primary">Ladda upp</button>
+            <button id="refreshBtn" class="btn secondary">Uppdatera status</button>
           </div>
         </div>
 
-        <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
-
-        <div class="actions">
-          <button id="uploadBtn" class="btn primary">Ladda upp</button>
-          <button id="refreshBtn" class="btn secondary">Uppdatera status</button>
-        </div>
         <ul id="log"></ul>
-      </div>
 
-      <div class="glass">
+
+        <div class="glass">
         <h2>Dina dokument</h2>
+
+        <!-- Sök + sortering -->
+        <div class="actions" style="margin:4px 0 10px; flex-wrap:wrap; gap:8px; align-items:flex-end;">
+          <div style="flex:1; min-width:200px;">
+            <label for="fileSearch" class="small muted">Sök bland dina dokument</label>
+            <input id="fileSearch" type="text" placeholder="Sök på filnamn eller filtyp…" />
+          </div>
+          <button id="sortByNameBtn" type="button" class="btn secondary small">
+            Sortera A–Ö
+          </button>
+        </div>
+
         <ul id="files"></ul>
       </div>
 
-      <div class="glass">
-        <h2>Session</h2>
-        <p class="muted" id="who"></p>
-        <div class="actions">
-          <a class="btn secondary" href="index.html">Till startsidan</a>
-          <a class="btn secondary" href="success.html?cid=" id="successLink">Visa min kodsnutt</a>
-        </div>
-      </div>
-
-      <!-- === Quota card (drop-in v2) === -->
+      <!-- Quota card -->
       <section id="quota-card" class="card" style="margin-top:16px; display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
           <div>
             <h3 style="margin:0 0 6px">Lagringsanvändning</h3>
             <p id="quota-sub" class="muted" style="margin:0">Laddar…</p>
+            <p class="small muted" id="quota-domain" style="display:none;"></p>
           </div>
           <span id="quota-pill" class="status-pill ok">0%</span>
         </div>
@@ -145,9 +249,36 @@
 
         <p class="small muted" id="quota-foot" style="margin-top:8px"></p>
       </section>
-      <!-- === /Quota card === -->
+
+      
+        <!-- Chat-frågor / statistik -->
+      <section id="chat-usage-card" class="card" style="margin-top:16px; display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0 0 6px">Frågeanvändning</h3>
+            <p id="chat-usage-sub" class="muted" style="margin:0">Laddar…</p>
+          </div>
+          <span id="chat-usage-pill" class="status-pill ok">0%</span>
+        </div>
+
+        <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
+          <div id="chat-usage-bar"
+               style="height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:999px;">
+          </div>
+        </div>
+
+        <div id="chat-usage-foot" class="small muted" style="margin-top:8px"></div>
+
+        <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+          <button id="buyQuestionsBtn" type="button" class="btn primary small">
+            Köp fler frågor
+          </button>
+        </div>
+      </section>
+
     </div>
   </main>
+
 
   <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
 
@@ -160,18 +291,62 @@
     </div>
   </div>
 
-  <!-- JS (oförändrad logik + små tillägg för JWT-event) -->
+  <!-- Huvudscript (login + uppladdning + status) -->
   <script>
-    // === Konfiguration ===
-    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+        // och ev. snippet använder samma src
 
-    // === Element & state ===
-    const qs = new URLSearchParams(location.search);
-    const presetCid = qs.get("cid");
-    if (presetCid) document.getElementById("cid").value = presetCid;
+const rawApi = (
+  new URLSearchParams(location.search).get("api") ||
+  window.API_BASE ||
+  window.API ||
+  ""
+).trim();
 
-    const tokenKey    = "botjahl.portal.token";       // befintlig nyckel
+if (!rawApi) {
+  console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
+}
+
+const API = rawApi.replace(/\/+$/, "");
+
+
+  const qs = new URLSearchParams(location.search);
+  const presetCid = qs.get("cid");
+  if (presetCid) document.getElementById("cid").value = presetCid;
+    const tokenKey    = "botjahl.portal.token";
     const customerKey = "botjahl.portal.customer";
+   // ---- Topup-banner (efter köp av extra frågor) ----
+  const topupBanner = document.getElementById("topupBanner");
+  const topup       = qs.get("topup");
+  const topupQStr   = qs.get("questions");
+  const topupQ      = topupQStr ? parseInt(topupQStr, 10) : NaN;
+
+  if (topupBanner && topup === "ok") {
+    const qText =
+      !isNaN(topupQ) && topupQ > 0
+        ? ` Du har köpt ${topupQ.toLocaleString("sv-SE")} extra frågor.`
+        : " Du har köpt fler frågor.";
+
+    topupBanner.classList.remove("hidden");
+    topupBanner.classList.remove("err");
+    topupBanner.classList.add("ok");
+    topupBanner.innerHTML = `🎉 <strong>Klart!</strong>${qText}`;
+  } else if (topupBanner && topup === "cancel") {
+    topupBanner.classList.remove("hidden");
+    topupBanner.classList.remove("ok");
+    topupBanner.classList.add("err");
+    topupBanner.innerHTML =
+      "Köp av extra frågor avbröts. Du kan försöka igen när du vill.";
+  }
+
+  // Rensa bort topup-parametrar ur adressen efter visning
+  if (topup) {
+    qs.delete("topup");
+    qs.delete("questions");
+    const url = new URL(location.href);
+    url.search = qs.toString();
+    window.history.replaceState({}, "", url.toString());
+  }
+
 
     const loginCard   = document.getElementById("login-card");
     const app         = document.getElementById("app");
@@ -179,18 +354,44 @@
     const filesUl     = document.getElementById("files");
     const logUl       = document.getElementById("log");
     const successLink = document.getElementById("successLink");
+    // Nytt: sök + sortering för dokument
+    const fileSearchInput = document.getElementById("fileSearch");
+    const sortByNameBtn   = document.getElementById("sortByNameBtn");
+    let filesCache        = [];  // senast hämtade dokument
+    let sortAscending     = true; // A–Ö som default
+
+    const whoDomain   = document.getElementById("whoDomain");
+
+    // Konto-inställningar
+    const accNameInput   = document.getElementById("accName");
+    const accEmailInput  = document.getElementById("accEmail");
+    const accDomainInput = document.getElementById("accDomain");
+    const accountMsg     = document.getElementById("accountMsg");
+
 
     const loading     = document.getElementById("loading");
     const loadingText = document.getElementById("loadingText");
     function showLoading(text){ if(text) loadingText.textContent = text; loading.classList.add("show"); }
     function hideLoading(){ loading.classList.remove("show"); }
 
+    // HTML-escape för värden som läggs i innerHTML / attribut
+    function esc(value){
+      return (value ?? "").toString().replace(/[&<>"']/g, c => {
+        switch (c) {
+          case "&": return "&amp;";
+          case "<": return "&lt;";
+          case ">": return "&gt;";
+          case '"': return "&quot;";
+          default:  return "&#39;"; // '
+        }
+      });
+    }
+
     function setAuth(token, cid){
       if (token) {
-        localStorage.setItem(tokenKey, token); // din befintliga
-        localStorage.setItem('bj_jwt', token); // NY: kvot-kort letar även här
-        // signalera till andra komponenter att auth finns
-        window.dispatchEvent(new CustomEvent('bj:auth', { detail: { token } }));
+        localStorage.setItem(tokenKey, token);
+        localStorage.setItem("bj_jwt", token); // för quota-scriptet
+        window.dispatchEvent(new CustomEvent("bj:auth", { detail: { token } }));
       }
       if (cid) localStorage.setItem(customerKey, cid);
     }
@@ -199,7 +400,7 @@
     function clearAuth(){
       localStorage.removeItem(tokenKey);
       localStorage.removeItem(customerKey);
-      localStorage.removeItem('bj_jwt'); // rensa även denna
+      localStorage.removeItem("bj_jwt");
     }
 
     function logout(){
@@ -210,18 +411,162 @@
       filesUl.innerHTML = "";
     }
 
-    // === Hjälpare: läs JSON om möjligt, annars text ===
+        async function deleteAccount() {
+      // Dubbel-confirm så man inte råkar klicka fel
+      if (!confirm("Är du säker på att du vill radera ditt konto och alla uppladdade filer?")) return;
+      if (!confirm("Detta går inte att ångra. Kvitton/fakturor ligger kvar i Stripe. Fortsätt?")) return;
+
+      try {
+        showLoading("Raderar konto…");
+
+        const { res, data } = await api("/api/portal/account", {
+          method: "DELETE",
+          body: JSON.stringify({
+            // matchar DeleteAccountReq (case-insensitiv i backend)
+            cancelStripeSubscriptions: true,
+            deleteStripeCustomer: false
+          })
+        });
+
+        hideLoading();
+
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+
+        if (!res.ok) {
+          const msg =
+            (data && typeof data === "object" && (data.error || data.message)) ||
+            (typeof data === "string" ? data : "Kunde inte radera kontot.");
+          alert(msg);
+          return;
+        }
+
+        alert("Ditt konto och dina uppladdade filer har nu raderats. Eventuella kvitton finns kvar i Stripe för bokföring.");
+        logout();
+        // Skicka användaren till startsidan efter radering
+        window.location.href = "index.html";
+      } catch (e) {
+        hideLoading();
+        console.error(e);
+        alert("Något gick fel när kontot skulle raderas. Försök igen eller kontakta support.");
+      }
+    }
+
+
+        async function saveAccount() {
+      if (!accNameInput || !accEmailInput || !accDomainInput) return;
+
+      accountMsg.textContent = "";
+      accountMsg.classList.remove("err");
+
+      const body = {
+        name: accNameInput.value.trim() || null,
+        email: accEmailInput.value.trim() || null,
+        websiteUrl: accDomainInput.value.trim() || null
+      };
+
+      try {
+        const { res, data } = await api("/api/portal/account", {
+          method: "PATCH",
+          body: JSON.stringify(body)
+        });
+
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+
+        if (!res.ok) {
+          const msg =
+            (data && typeof data === "object" && (data.error || data.message)) ||
+            (typeof data === "string" ? data : "Kunde inte spara ändringarna.");
+          accountMsg.textContent = msg;
+          accountMsg.classList.add("err");
+          return;
+        }
+
+        accountMsg.textContent = "Ändringarna är sparade.";
+        accountMsg.classList.remove("err");
+
+        // Hämta om info-raden + fälten (ifall backend normaliserar domän)
+        await loadMeAndRenderWho();
+
+      } catch (e) {
+        console.error(e);
+        accountMsg.textContent = "Något gick fel när ändringarna skulle sparas.";
+        accountMsg.classList.add("err");
+      }
+    }
+
+
+          async function loadMeAndRenderWho() {
+      const who       = document.getElementById("who");
+      const whoDomain = document.getElementById("whoDomain");
+      const cid       = getCid();
+
+      const fallback = cid ? `Inloggad (kund-ID ${cid})` : "Inloggad kund";
+
+      try {
+        const { res, data } = await api("/api/portal/me");
+        if (!res.ok || !data || typeof data !== "object") {
+          who.textContent = fallback;
+          if (whoDomain) whoDomain.textContent = "";
+          return;
+        }
+
+        const company =
+          data.companyName || data.name || data.friendlyName || data.organizationName || "";
+        const domainRaw =
+          data.websiteUrl || data.website || data.domain || data.siteDomain || "";
+        let domainText = domainRaw;
+
+        try {
+          if (domainRaw) {
+            domainText = new URL(domainRaw).host || domainRaw;
+          }
+        } catch {
+          // om parse failar, använd rå text
+        }
+
+        const parts = [];
+        if (company) parts.push(company);
+        if (cid)     parts.push("kund-ID " + cid);
+
+        who.textContent = parts.length
+          ? "Inloggad: " + parts.join(" • ")
+          : fallback;
+
+        if (whoDomain) {
+          whoDomain.textContent = domainText
+            ? "Domän: " + domainText
+            : "";
+        }
+
+        // Fyll konto-fälten
+        if (accNameInput)   accNameInput.value   = company || "";
+        if (accEmailInput)  accEmailInput.value  = data.email || "";
+        if (accDomainInput) accDomainInput.value = domainRaw || "";
+
+      } catch (e) {
+        who.textContent = fallback;
+        if (whoDomain) whoDomain.textContent = "";
+      }
+    }
+
+
+
     async function readBody(res){
       const text = await res.text();
       if (!text) return null;
       const ct = (res.headers.get("content-type") || "").toLowerCase();
       if (ct.includes("application/json")) {
-        try { return JSON.parse(text); } catch { /* fall-through */ }
+        try { return JSON.parse(text); } catch { }
       }
-      return text; // plain text
+      return text;
     }
 
-    // === API-wrapper som alltid skickar Bearer vid behov ===
     async function api(path, opts = {}){
       const headers = Object.assign({}, opts.headers || {});
       const tok = getToken();
@@ -234,17 +579,16 @@
       return { res, data };
     }
 
-    // === Status-hjälpare + auto-poll ===
-    async function getStatus(){
+    async function getStatusRaw(){
       const { res, data } = await api("/api/uploads/status");
-      if (!res.ok) return [];
-      return Array.isArray(data) ? data : [];
+      if (!res.ok || !Array.isArray(data)) return [];
+      return data;
     }
 
     async function pollUntilIndexed(objectNames, timeout=20000, interval=1200){
       const deadline = Date.now() + timeout;
       while(Date.now() < deadline){
-        const list = await getStatus();
+        const list = await getStatusRaw();
         const done = objectNames.every(n => list.find(x => x.objectName === n)?.indexed);
         if (done) { await refreshStatus(); return true; }
         await new Promise(r => setTimeout(r, interval));
@@ -253,100 +597,199 @@
       return false;
     }
 
-    // === Login ===
     async function login(){
-      const customerId = document.getElementById("cid").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const msg = document.getElementById("loginMsg");
-      msg.textContent = "";
-      msg.classList.add("hidden");
+  const customerId = document.getElementById("cid").value.trim();
+  const email      = document.getElementById("email").value.trim();
+  const msg        = document.getElementById("loginMsg");
 
-      try{
-        showLoading("Loggar in…");
-        const res = await fetch(API + "/api/portal/login", {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({ customerId, email })
-        });
-        const data = await readBody(res);
+  msg.textContent = "";
+  msg.classList.add("hidden");
 
-        if (!res.ok) {
-          const errText =
-            (data && typeof data === "object" && (data.error || data.message)) ||
-            (typeof data === "string" ? data : "Felaktiga uppgifter.");
-          throw new Error(errText);
-        }
-        if (!data || !data.token) throw new Error("Servern returnerade ingen token.");
+  try{
+    showLoading("Loggar in…");
+    const res  = await fetch(API + "/api/portal/login", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ customerId, email })
+    });
+    const data = await readBody(res);
 
-        setAuth(data.token, customerId);
-
-        // Ren omladdning
-        const url = new URL(location.href);
-        url.searchParams.set("cid", customerId);
-        url.searchParams.set("logged", "1");
-        location.replace(url.toString());
-      }catch(e){
-        hideLoading();
-        msg.textContent = e.message || "Kunde inte logga in.";
-        msg.classList.remove("hidden");
-      }
+    if (!res.ok) {
+      const errText =
+        (data && typeof data === "object" && (data.error || data.message)) ||
+        (typeof data === "string" ? data : "Felaktiga uppgifter.");
+      throw new Error(errText);
     }
 
-    // === Lista status ===
+    // 🔹 DEMO-KUND: token returneras direkt → logga in omedelbart
+    if (data && data.demo && data.token && data.customerId) {
+      setAuth(data.token, data.customerId);
+
+      hideLoading();
+      loginCard.classList.add("hidden");
+      app.classList.remove("hidden");
+      successLink.href = "success.html?cid=" + encodeURIComponent(data.customerId);
+
+      // uppdatera rubrik + konto-fält
+      await loadMeAndRenderWho();
+      await refreshStatus();
+
+      // litet info-meddelande om att man är inne som demo
+      msg.textContent = "Du är nu inloggad som demo-kund.";
+      msg.classList.remove("hidden");
+      msg.classList.remove("err");
+      return;
+    }
+
+    // 🔹 Vanlig kund → samma text som tidigare (magic-link via mejl)
+    hideLoading();
+    msg.textContent =
+      (data && data.message) ||
+      "Om uppgifterna stämmer har vi skickat en inloggningslänk till din e-post.";
+    msg.classList.remove("hidden");
+    msg.classList.remove("err");
+
+  }catch(e){
+    hideLoading();
+    msg.textContent = e.message || "Kunde inte skicka inloggningslänk.";
+    msg.classList.remove("hidden");
+    msg.classList.add("err");
+  }
+}
+
+
+
+     // Rendera dokumentlistan baserat på cache + sök + sortering
+    function renderFiles(){
+      filesUl.innerHTML = "";
+
+      if (!Array.isArray(filesCache) || filesCache.length === 0) {
+        filesUl.innerHTML = "<li class='muted'>Inga filer ännu.</li>";
+        return;
+      }
+
+      const q = (fileSearchInput?.value || "").trim().toLowerCase();
+
+      // 1) utgå från hela listan
+      let list = filesCache.slice();
+
+      // 2) filtrera på söksträng om den finns
+      if (q) {
+        list = list.filter(it => {
+          const name = (it.displayName || it.objectName || "").toLowerCase();
+          const kind = (it.contentType || "").toLowerCase();
+          return name.includes(q) || kind.includes(q);
+        });
+      }
+
+      // 3) sortera på namn (A–Ö eller Ö–A)
+      list.sort((a, b) => {
+        const na = (a.displayName || a.objectName || "").toLowerCase();
+        const nb = (b.displayName || b.objectName || "").toLowerCase();
+        if (na < nb) return sortAscending ? -1 : 1;
+        if (na > nb) return sortAscending ? 1 : -1;
+        return 0;
+      });
+
+      if (list.length === 0) {
+        filesUl.innerHTML = "<li class='muted'>Inga dokument matchade din sökning.</li>";
+        return;
+      }
+
+      // 4) bygg upp DOM enligt befintlig layout
+      for (const it of list){
+        const li   = document.createElement("li");
+        const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
+
+        const indexedHtml = it.indexed
+          ? ' • <span class="status-pill ok">indexerad' +
+              (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') +
+            '</span>'
+          : ' • <span class="status-pill pending">ej indexerad</span>';
+
+        // Filnamn – använd DisplayName om den finns
+        const rawName =
+          (it.displayName && it.displayName.trim())
+            ? it.displayName
+            : (it.objectName || "").split('/').pop();
+
+        const safeName       = esc(rawName);
+        const safeContent    = esc(it.contentType || "okänd");
+        const safeObjectName = esc(it.objectName || "");
+
+        li.innerHTML = `
+          <div class="row">
+            <div class="doc-meta">
+               <strong>${safeName}</strong>
+              <div class="meta-line">
+                ${safeContent} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2) + " MB" : "-"} • Uppdaterad ${when}
+                ${indexedHtml}
+              </div>
+            </div>
+            <div class="doc-actions">
+              <button class="btn secondary" data-act="reindex" data-name="${safeObjectName}">Reindex</button>
+              <button class="btn ghost" data-act="delete" data-name="${safeObjectName}">Ta bort</button>
+            </div>
+          </div>`;
+        filesUl.appendChild(li);
+      }
+
+      // koppla knapparna i listan
+      filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => {
+        b.onclick = () => reindexOne(b.dataset.name);
+      });
+      filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => {
+        b.onclick = () => deleteOne(b.dataset.name);
+      });
+    }
+
+    // Hämtar status från API och uppdaterar cache + UI
     async function refreshStatus(){
       filesUl.innerHTML = "<li class='muted'>Laddar…</li>";
       const { res, data } = await api("/api/uploads/status");
-      filesUl.innerHTML = "";
 
       if (res.status === 401) {
         filesUl.innerHTML = "<li class='banner err'>Sessionen har gått ut. Logga in igen.</li>";
         logout();
         return;
       }
+
       if (!res.ok) {
         const errText = (typeof data === "string" ? data : "Kunde inte hämta status.");
-        filesUl.innerHTML = `<li class='banner err'>${errText}</li>`;
+        filesUl.innerHTML = `<li class='banner err'>${esc(errText)}</li>`;
         return;
       }
 
-      if (!Array.isArray(data) || data.length === 0) {
-        filesUl.innerHTML = "<li class='muted'>Inga filer ännu.</li>";
-        return;
+      if (!Array.isArray(data)) {
+        filesCache = [];
+      } else {
+        filesCache = data;
       }
 
-      for (const it of data){
-        const li = document.createElement("li");
-        const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
-
-        // Bygg den “känsliga” biten utan backticks-inuti-backticks
-        const indexedHtml = it.indexed
-          ? ' • <span class="status-pill ok">indexerad' + (it.indexedAtUtc ? ' (' + new Date(it.indexedAtUtc).toLocaleString() + ')' : '') + '</span>'
-          : ' • <span class="status-pill pending">ej indexerad</span>';
-
-        li.innerHTML = `
-          <div class="row">
-            <div class="doc-meta">
-              <strong>${(it.objectName || "").split('/').pop()}</strong>
-              <div class="meta-line">
-                ${(it.contentType || "okänd")} • ${it.sizeBytes ? (it.sizeBytes/1024/1024).toFixed(2)+" MB" : "-"} • Uppdaterad ${when}
-                ${indexedHtml}
-              </div>
-            </div>
-            <div class="doc-actions">
-              <button class="btn secondary" data-act="reindex" data-name="${it.objectName}">Reindex</button>
-              <button class="btn ghost" data-act="delete" data-name="${it.objectName}">Ta bort</button>
-            </div>
-          </div>`;
-        filesUl.appendChild(li);
-      }
-
-      filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => b.onclick = () => reindexOne(b.dataset.name));
-      filesUl.querySelectorAll('button[data-act="delete"]').forEach(b => b.onclick = () => deleteOne(b.dataset.name));
+      renderFiles();
     }
 
-    // === Reindex ===
+        async function reindexWebsite(){
+      const { res, data } = await api("/api/portal/reindex-website", {
+        method: "POST"
+      });
+
+      if (res.status === 401) return logout();
+
+      if (!res.ok) {
+        const msg =
+          (data && typeof data === "object" && (data.error || data.message)) ||
+          (typeof data === "string" ? data : "Kunde inte starta reindexering av webbplatsen.");
+        alert(msg);
+        return;
+      }
+
+      alert("Webbplatsen har köats för ny indexering. Det kan ta upp till någon minut innan svaren uppdateras.");
+    }
+
+
     async function reindexAll(){
-      const before = await getStatus();
+      const before = await getStatusRaw();
       const names = before.map(d => d.objectName);
 
       const { res, data } = await api("/api/uploads/reindex", {
@@ -369,7 +812,6 @@
       await pollUntilIndexed([name]);
     }
 
-    // === Delete ===
     async function deleteOne(name){
       if(!confirm("Ta bort filen?")) return;
       const { res, data } = await api("/api/uploads/file", {
@@ -381,19 +823,17 @@
       await refreshStatus();
     }
 
-    // === Upload ===
     async function upload(){
       const files = document.getElementById("file").files;
       if(!files || files.length===0) return;
 
-      const uploadedObjectNames = [];
+      const uploaded = [];
 
       for (const f of files){
         const li = document.createElement("li");
         li.textContent = `Laddar upp ${f.name}…`;
         logUl.appendChild(li);
 
-        // 1) Start
         let start;
         try{
           start = await api("/api/uploads/start", {
@@ -410,7 +850,6 @@
           continue;
         }
 
-        // 2) PUT till SAS
         try{
           const put = await fetch(start.data.uploadUrl, {
             method: "PUT",
@@ -426,16 +865,17 @@
           continue;
         }
 
-        // 3) Complete
         try{
           const comp = await api("/api/uploads/complete", {
-            method:"POST",
+            method: "POST",
             body: JSON.stringify({
               objectName: start.data.objectName,
-              sizeBytes: f.size,
-              contentType: f.type || "application/octet-stream"
+              sizeBytes:  f.size,
+              contentType: f.type || "text/plain",
+              originalName: f.name
             })
           });
+
           if (!comp.res.ok){
             li.textContent = `Fel vid complete: ${typeof comp.data === "string" ? comp.data : "okänt fel"}`;
             continue;
@@ -445,82 +885,338 @@
           continue;
         }
 
-        uploadedObjectNames.push(start.data.objectName);
-        li.innerHTML = `<span class="status-ok">✔</span> Klar: ${f.name}`;
+        uploaded.push(start.data.objectName);
+        li.innerHTML = `<span class="status-ok">✔</span> Klar: ${esc(f.name)}`;
       }
 
-      if (uploadedObjectNames.length){
-        await pollUntilIndexed(uploadedObjectNames);
+      if (uploaded.length){
+        await pollUntilIndexed(uploaded);
       }else{
         await refreshStatus();
       }
     }
 
-    // === Event hooks ===
-    document.getElementById("loginBtn").onclick   = login;
-    document.getElementById("logoutBtn").onclick  = logout;
-    document.getElementById("refreshBtn").onclick = refreshStatus;
-    document.getElementById("uploadBtn").onclick  = upload;
-    document.getElementById("reindexAllBtn").onclick = reindexAll;
+document.getElementById("loginBtn").onclick      = login;
+document.getElementById("logoutBtn").onclick     = logout;
+document.getElementById("refreshBtn").onclick    = refreshStatus;
+document.getElementById("uploadBtn").onclick     = upload;
+document.getElementById("reindexAllBtn").onclick = reindexAll;
+document.getElementById("reindexSiteBtn").onclick = reindexWebsite;
+document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
+document.getElementById("saveAccountBtn").onclick = saveAccount;
+document.getElementById("deleteAccountBtn").onclick = deleteAccount;
 
-    document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
 
-    // === Boot ===
-    (async function boot(){
+
+   // Sök + sort
+    if (fileSearchInput) {
+      fileSearchInput.addEventListener("input", () => {
+        renderFiles();
+      });
+    }
+
+    if (sortByNameBtn) {
+      sortByNameBtn.addEventListener("click", () => {
+        sortAscending = !sortAscending;
+        sortByNameBtn.textContent = sortAscending ? "Sortera A–Ö" : "Sortera Ö–A";
+        renderFiles();
+      });
+    }
+
+        (async function boot(){
+      // 1) Plocka ev. token + cid från URL:en (magic-link)
+      const url         = new URL(location.href);
+      const tokenFromUrl = url.searchParams.get("token") || url.searchParams.get("jwt");
+      const cidFromUrl   = url.searchParams.get("cid");
+
+      if (tokenFromUrl) {
+        // Spara auth-info i localStorage + trigga bj:auth-event
+        setAuth(tokenFromUrl, cidFromUrl || null);
+
+        // Rensa känsliga parametrar ur adressfältet
+        url.searchParams.delete("token");
+        url.searchParams.delete("jwt");
+        if (cidFromUrl) {
+          url.searchParams.set("cid", cidFromUrl);
+        }
+        history.replaceState({}, "", url.toString());
+      }
+
+      // 2) Läs ev. befintlig auth från storage/cookies
       const token = getToken();
       const cid   = getCid();
-      if (token && cid){
+
+            if (token && cid){
         loginCard.classList.add("hidden");
         app.classList.remove("hidden");
-        who.textContent = `Inloggad (${cid})`;
         successLink.href = "success.html?cid=" + encodeURIComponent(cid);
-        await refreshStatus();
 
-        const url = new URL(location.href);
-        if (url.searchParams.has("logged")) {
-          url.searchParams.delete("logged");
-          history.replaceState({}, "", url.toString());
-        }
+        await loadMeAndRenderWho();  // <-- NYTT: visa namn + domän
+        await refreshStatus();
       }
     })();
+
   </script>
 
-  <!-- === Quota card driver (robust token-hämtning + auto-refresh) === -->
+  <script>
+(function() {
+  const intro = document.getElementById("introText");
+
+  function setLoggedOutText() {
+    if (!intro) return;
+    intro.innerHTML = `
+      Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
+      Du får en inloggningslänk skickad till din e-post.
+      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+    `;
+  }
+
+  function setLoggedInText() {
+    if (!intro) return;
+    intro.innerHTML = `
+      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+      Får du slut på frågor kan du alltid köpa fler enkelt genom att klicka på knappen
+      <strong>"Köp fler frågor"</strong>.
+    `;
+  }
+
+  // Lyssna på login-eventet
+  window.addEventListener("bj:auth", () => {
+    setLoggedInText();
+  });
+
+  // Körs vid sidstart
+  const token = localStorage.getItem("botjahl.portal.token") ||
+                localStorage.getItem("bj_jwt");
+
+  if (token) {
+    setLoggedInText();
+  } else {
+    setLoggedOutText();
+  }
+
+})();
+</script>
+
+
+  <!-- Quota + me card driver (lagring + domän) -->
+<script>
+  (function () {
+    // Bas-url för API:t (samma logik som tidigare)
+    const rawBase2 = (window.API_BASE || window.API || "").trim();
+
+if (!rawBase2) {
+  console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
+}
+
+const API_BASE = rawBase2.replace(/\/+$/, "");
+
+
+    // --- Token-hantering: plocka bästa JWT vi hittar ---
+    function readCookie(name) {
+      const m = document.cookie.match(
+        new RegExp("(^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)")
+      );
+      return m ? decodeURIComponent(m[2]) : "";
+    }
+
+    function getBestToken() {
+      // 1) localStorage / sessionStorage (huvudvägen – samma som login)
+      const storageKeys = ["bj_jwt", "jwt", "token", "botjahl.portal.token"];
+      for (const k of storageKeys) {
+        const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (v) return v; // rå JWT, utan "Bearer "
+      }
+
+      // 2) ev. global variabel
+      if (window.JWT) return window.JWT;
+
+      // 3) cookies (fallback)
+      const cookieKeys = ["bj_jwt", "jwt", "token", "botjahl.portal.token"];
+      for (const ck of cookieKeys) {
+        const v = readCookie(ck);
+        if (v) return v;
+      }
+      return "";
+    }
+
+   async function fetchJson(path) {
+  const token = getBestToken();
+  if (!token) {
+    throw new Error("no_token");
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json"
+    }
+  });
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    /* ignore parse error */
+  }
+
+  if (res.status === 401) {
+    // städa bort ogiltig token så vi inte spammar 401
+    try {
+      localStorage.removeItem("botjahl.portal.token");
+      localStorage.removeItem("bj_jwt");
+      localStorage.removeItem("jwt");
+      localStorage.removeItem("token");
+    } catch {}
+
+    throw new Error("unauthorized");
+  }
+
+  if (!res.ok) {
+    throw new Error((data && data.error) || `HTTP ${res.status}`);
+  }
+
+  return data;
+}
+
+
+    // --- DOM-element för kortet ---
+    const card   = document.getElementById("quota-card");
+    const sub    = document.getElementById("quota-sub");
+    const pill   = document.getElementById("quota-pill");
+    const bar    = document.getElementById("quota-bar");
+    const foot   = document.getElementById("quota-foot");
+    const domain = document.getElementById("quota-domain");
+
+    function renderUsage(u) {
+      card.style.display = "";
+
+      const percent = Math.max(0, Math.min(100, Math.round(u.percent ?? 0)));
+      sub.textContent = `Plan: ${u.plan} • ${u.usedMB} av ${u.limitMB} MB`;
+
+      bar.style.width = `${percent}%`;
+      pill.textContent = `${percent}%`;
+      pill.className = "status-pill " + (percent >= 90 ? "pending" : "ok");
+
+      const left = Math.max(0, (u.limitMB ?? 0) - (u.usedMB ?? 0));
+      foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt · ${left} MB kvar i din kvot.`;
+    }
+
+    function renderDomain(info) {
+      if (!domain) return;
+
+      if (info && info.websiteUrl) {
+        try {
+          const host = new URL(info.websiteUrl).host;
+          if (host) {
+            domain.textContent = `Domän: ${host}`;
+            domain.style.display = "";
+            return;
+          }
+        } catch {
+          // om URL inte går att parsa, göm raden
+        }
+      }
+
+      domain.textContent = "";
+      domain.style.display = "none";
+    }
+
+    function renderLoggedOut() {
+      card.style.display = "";
+      sub.textContent = "Logga in för att se användning.";
+      pill.textContent = "—";
+      pill.className = "status-pill ok";
+      bar.style.width = "0%";
+      foot.textContent = "";
+      if (domain) {
+        domain.textContent = "";
+        domain.style.display = "none";
+      }
+    }
+
+    async function tick() {
+      const rawToken = getBestToken();
+      if (!rawToken) {
+        renderLoggedOut();
+        return;
+      }
+
+      try {
+        const [usage, me] = await Promise.all([
+          fetchJson("/api/uploads/usage"),
+          fetchJson("/api/portal/me")
+        ]);
+
+        renderUsage(usage);
+        renderDomain(me);
+  } catch (err) {
+    // vid no_token/unauthorized → bara visa utloggat läge, spamma inte konsolen
+    if (err && (err.message === "no_token" || err.message === "unauthorized")) {
+      renderLoggedOut();
+      return;
+    }
+
+    console.error("usage / me error:", err);
+    renderLoggedOut();
+  }
+    }
+
+    // Lyssna på att token ändras (t.ex. när man loggar in/loggar ut)
+    window.addEventListener("storage", (e) => {
+      if (["botjahl.portal.token", "bj_jwt", "jwt", "token", "auth_token"].includes(e.key)) {
+        tick();
+      }
+    });
+    window.addEventListener("bj:auth", () => tick());
+
+    // Första körningen + polling
+    tick();
+    setInterval(tick, 60000);
+  })();
+</script>
+
+
+    <!-- Chat usage card driver -->
   <script>
   (function(){
-    const API_BASE = (window.API_BASE || window.API || "").replace(/\/+$/,"") || "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
+  const rawBase3 = (window.API_BASE || window.API || "").trim();
 
-    function readCookie(name){
-      const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)'));
-      return m ? decodeURIComponent(m[1]) : null;
+  if (!rawBase3) {
+    console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats av GitHub Actions.");
+  }
+
+  const API_BASE = rawBase3.replace(/\/+$/,"");
+
+  function readCookie(name){
+      const parts = document.cookie.split(";");
+      for (let p of parts){
+        p = p.trim();
+        if (!p) continue;
+        if (p.startsWith(name + "=")){
+          return decodeURIComponent(p.substring(name.length + 1));
+        }
+      }
+      return null;
     }
 
     function getToken(){
       const qs = new URLSearchParams(location.search);
-      const fromUrl = qs.get('token') || qs.get('jwt');
+      const fromUrl = qs.get("token") || qs.get("jwt");
       if (fromUrl) return fromUrl;
 
-      const keys = [
-        'botjahl.portal.token',  // din befintliga
-        'bj_jwt', 'jwt', 'token', 'auth_token'
-      ];
+      const keys = [ "botjahl.portal.token", "bj_jwt", "jwt", "token", "auth_token" ];
       for (const k of keys){
-        const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+        const v = localStorage.getItem(k) || readCookie(k);
         if (v) return v;
       }
-
-      if (window.JWT) return window.JWT;
-
-      const cookieKeys = ['bj_jwt','jwt','token','botjahl.portal.token'];
-      for (const ck of cookieKeys){
-        const v = readCookie(ck);
-        if (v) return v;
-      }
-      return '';
+      return null;
     }
 
-    async function fetchUsage(token){
-      const res = await fetch(`${API_BASE}/api/uploads/usage`, {
+    async function fetchChatUsage(token){
+      const res = await fetch(`${API_BASE}/api/usage/chat`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok){
@@ -530,24 +1226,25 @@
       return res.json();
     }
 
-    const card = document.getElementById("quota-card");
-    const sub  = document.getElementById("quota-sub");
-    const pill = document.getElementById("quota-pill");
-    const bar  = document.getElementById("quota-bar");
-    const foot = document.getElementById("quota-foot");
+    const card = document.getElementById("chat-usage-card");
+    const sub  = document.getElementById("chat-usage-sub");
+    const pill = document.getElementById("chat-usage-pill");
+    const bar  = document.getElementById("chat-usage-bar");
+    const foot = document.getElementById("chat-usage-foot");
+    const buyBtn = document.getElementById("buyQuestionsBtn");
 
     function render(u){
       card.style.display = "";
-      sub.textContent = `Plan: ${u.plan} • ${u.files} fil(er)`;
+      sub.textContent = `Plan: ${u.plan ?? "okänd"} • ${u.used} av ${u.limit} frågor förbrukade`;
       bar.style.width = `${u.percent}%`;
       pill.textContent = `${u.percent}%`;
       pill.className = "status-pill " + (u.percent >= 100 ? "pending" : "ok");
-      foot.textContent = `${u.usedMB} MB av ${u.limitMB} MB använt`;
+      foot.textContent = `${u.remaining} frågor kvar i din kvot (${u.extraCredits} extra i potten).`;
     }
 
     function renderLoggedOut(){
       card.style.display = "";
-      sub.textContent = "Logga in för att se användning.";
+      sub.textContent = "Logga in för att se frågeanvändning.";
       pill.textContent = "—";
       bar.style.width = "0%";
       foot.textContent = "";
@@ -557,26 +1254,147 @@
       const token = getToken();
       if (!token){ renderLoggedOut(); return; }
       try{
-        const u = await fetchUsage(token);
+        const u = await fetchChatUsage(token);
         render(u);
       }catch(err){
-        // Visa kortet tyst (ingen konsol-spam i prod)
         card.style.display = "";
-        sub.textContent = "Kunde inte läsa användning.";
+        sub.textContent = "Kunde inte läsa frågeanvändning.";
         pill.textContent = "—";
+        bar.style.width = "0%";
+        foot.textContent = "";
+        console.error(err);
       }
     }
 
-    // Uppdatera när auth sker efter sidladdning
-    window.addEventListener('storage', (e) => {
-      if (['botjahl.portal.token','bj_jwt','jwt','token','auth_token'].includes(e.key)) tick();
-    });
-    window.addEventListener('bj:auth', () => tick());
+    if (card){
+      tick();                 // första hämtningen
+      setInterval(tick, 60000); // uppdatera varje minut
+    }
 
-    tick();
-    setInterval(tick, 15000);
+    if (buyBtn){
+      buyBtn.addEventListener("click", async ()=>{
+        const token = getToken();
+        if (!token){
+          alert("Logga in igen för att kunna köpa fler frågor.");
+          return;
+        }
+
+        try{
+          const res = await fetch(`${API_BASE}/api/billing/topup-questions`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ pack: "small" }) // börja med en standard-pack
+          });
+          const data = await res.json();
+          if (!res.ok || !data.url){
+            alert(data.error || "Kunde inte starta köp av frågor.");
+            return;
+          }
+          location.href = data.url; // vidare till Stripe Checkout
+        }catch(err){
+          console.error(err);
+          alert("Något gick fel när köpet skulle startas.");
+        }
+      });
+    }
   })();
   </script>
-  <!-- === /Quota card driver === -->
+
+
+  <footer>
+    <div class="container">
+      © 2025 BotJahl – Enkelt. Smart. Anpassat.
+      · <a href="terms.html">Användarvillkor</a>
+      · <a href="privacy.html">Integritetspolicy</a>
+      · <a href="dpa.html">Personuppgiftsbiträdesavtalet (DPA)</a>
+    </div>
+  </footer>
+
+<script>
+(function() {
+
+  const TOKEN_KEYS = [
+    "botjahl.portal.token",
+    "bj_jwt",
+    "jwt",
+    "token",
+    "auth_token"
+  ];
+
+  // Rensar alla tokens i localStorage + sessionStorage + cookies
+  function clearAllTokens() {
+    try {
+      for (const key of TOKEN_KEYS) {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+        document.cookie = key + "=; Max-Age=0; path=/;";
+      }
+    } catch (e) {
+      console.warn("Token cleanup failed:", e);
+    }
+  }
+
+  // Hämtar bästa token från storage/cookies
+  function getStoredToken() {
+    for (const key of TOKEN_KEYS) {
+      const v =
+        localStorage.getItem(key) ||
+        sessionStorage.getItem(key);
+      if (v) return v;
+    }
+    return null;
+  }
+
+  // Lyssna på bj:auth-event när token skapas (vid magic-link)
+  window.addEventListener("bj:auth", () => {
+    const token = getStoredToken();
+    if (!token) return;
+    // Token finns – OK
+    console.log("Auth stored:", token.substring(0, 20) + "...");
+  });
+
+  // Global fetch override som fångar 401 överallt
+  const origFetch = window.fetch;
+  window.fetch = async function(url, opts = {}) {
+    const resp = await origFetch(url, opts);
+
+    if (resp.status === 401) {
+      console.warn("401 detected – clearing tokens automatically…");
+      
+      clearAllTokens();
+
+      // Visa login-kortet igen om admin är laddad
+      const app = document.getElementById("app");
+      const login = document.getElementById("login-card");
+      if (app && login) {
+        app.classList.add("hidden");
+        login.classList.remove("hidden");
+      }
+    }
+
+    return resp;
+  };
+
+  // Direkt vid sidstart: om token saknas → logga ut användaren
+  document.addEventListener("DOMContentLoaded", () => {
+    const token = getStoredToken();
+    if (!token) {
+      console.log("No valid token found on load — showing login");
+      const app = document.getElementById("app");
+      const login = document.getElementById("login-card");
+      if (app && login) {
+        app.classList.add("hidden");
+        login.classList.remove("hidden");
+      }
+    }
+  });
+
+})();
+</script>
+
+
 </body>
 </html>

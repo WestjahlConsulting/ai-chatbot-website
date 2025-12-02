@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>BotJahl – Personuppgiftsbiträdesavtal (DPA)</title>
+  <meta name="description" content="Personuppgiftsbiträdesavtal mellan Westjahl Creative AB och Kund.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <a href="index.html" class="brand">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" width="28" height="28">
+          <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
+          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
+          <circle cx="29" cy="20" r="2.4" fill="#0a0f1f"/>
+          <path d="M30 38l-6-4-6 4 2.5-6.5" fill="url(#g2)" opacity=".9"/>
+          <defs>
+            <linearGradient id="g1" x1="4" y1="6" x2="46" y2="36"><stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+            <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
+          </defs>
+        </svg>
+        <span>BotJahl</span>
+      </a>
+      <div class="nav-links">
+        <a href="terms.html">Användarvillkor</a>
+        <a href="privacy.html">Integritetspolicy</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="page">
+    <div class="container narrow stack">
+      <h1>Personuppgiftsbiträdesavtal (DPA)</h1>
+      <p class="muted">
+        Detta personuppgiftsbiträdesavtal (”Avtalet”) reglerar Westjahl Creative AB:s behandling av personuppgifter för Kundens räkning
+        inom ramen för tjänsten BotJahl (”Tjänsten”). Avtalet utgör en bilaga till våra <a href="terms.html">Användarvillkor</a> och
+        gäller automatiskt för alla kunder som använder BotJahl.
+      </p>
+      <!--<div class="banner err"><strong>Utkast – ej juridisk rådgivning.</strong> Texten bör granskas av jurist innan produktion.</div> -->
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="container narrow stack">
+
+    <section class="card glass">
+      <h2>1. Parter</h2>
+      <p>
+        Detta Avtal har ingåtts mellan:
+      </p>
+      <ul>
+        <li><strong>Personuppgiftsansvarig:</strong> Kunden som registrerat ett konto i BotJahl.</li>
+        <li><strong>Personuppgiftsbiträde:</strong> Westjahl Creative AB 559548-7249.</li>
+      </ul>
+    </section>
+
+    <section class="card glass">
+      <h2>2. Syfte och omfattning</h2>
+      <p>
+        Biträdet behandlar personuppgifter endast i syfte att leverera, drifta och supportera Tjänsten BotJahl enligt
+        Kundens instruktioner. Biträdet får inte behandla personuppgifterna för egna ändamål.
+      </p>
+      <p>
+        Behandlingen kan omfatta lagring, indexering, analys och tillhandahållande av AI-genererade svar via OpenAI:s
+        API baserat på Kundens uppladdade material och användarfrågor.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>3. Personuppgifter som kan behandlas</h2>
+      <p>
+        Typen av personuppgifter varierar beroende på vad Kunden laddar upp eller indexerar. Exempel:
+      </p>
+      <ul>
+        <li>namn, e-postadress, kontaktuppgifter i dokument,</li>
+        <li>personuppgifter som kan ingå i kundregister, intern information eller kommunikation,</li>
+        <li>metadata kopplad till filer (t.ex. filnamn, användarnamn, tidsstämplar).</li>
+      </ul>
+      <p>
+        Kategorier av registrerade kan omfatta Kundens anställda, kunder, leverantörer eller andra personer som nämns i
+        Kundens material.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>4. Biträdets skyldigheter</h2>
+      <p>Westjahl Creative AB åtar sig att:</p>
+      <ul>
+        <li>behandla personuppgifter endast enligt Kundens dokumenterade instruktioner,</li>
+        <li>säkra att personal med åtkomst omfattas av sekretess,</li>
+        <li>vidta lämpliga tekniska och organisatoriska säkerhetsåtgärder,</li>
+        <li>utan dröjsmål informera Kunden om upptäckt personuppgiftsincident,</li>
+        <li>bistå Kunden med information för att uppfylla skyldigheter enligt GDPR (artiklar 32–36),</li>
+        <li>radera eller återlämna personuppgifter efter avslutat uppdrag, om inte lag kräver fortsatt lagring.</li>
+      </ul>
+    </section>
+
+    <section class="card glass">
+      <h2>5. Underbiträden</h2>
+      <p>
+        För att kunna tillhandahålla Tjänsten använder Biträdet följande underbiträden:
+      </p>
+      <ul>
+        <li><strong>Microsoft Azure</strong> – lagring av data (EU-region, t.ex. ”westeurope”).</li>
+        <li><strong>OpenAI, LLC</strong> – bearbetning av text och generering av AI-svar (USA, via API med SCC-skydd).</li>
+        <li><strong>Stripe, Inc.</strong> – betalningshantering (EU/USA, självständig personuppgiftsansvarig för betalningar).</li>
+        <li><strong>Resend, Inc.</strong> – utskick av e-post (USA).</li>
+      </ul>
+      <p>
+        Kunden godkänner användningen av dessa underbiträden. Biträdet ansvarar för att alla underbiträden omfattas av
+        skriftliga avtal som säkerställer samma skyddsnivå för personuppgifter som detta Avtal.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>6. Säkerhet</h2>
+      <p>
+        Biträdet implementerar lämpliga tekniska och organisatoriska säkerhetsåtgärder enligt artikel 32 GDPR, såsom:
+      </p>
+      <ul>
+        <li>åtkomstkontroll och autentisering (JWT, API-nycklar),</li>
+        <li>kryptering av kommunikation (HTTPS/TLS),</li>
+        <li>lagring i skyddade Azure-resurser,</li>
+        <li>loggning och övervakning av åtkomst,</li>
+        <li>begränsning av personuppgiftsmängd vid OpenAI-anrop.</li>
+      </ul>
+    </section>
+
+    <section class="card glass">
+      <h2>7. Incidenthantering</h2>
+      <p>
+        Vid misstänkt eller konstaterad personuppgiftsincident ska Biträdet utan onödigt dröjsmål meddela Kunden med
+        relevant information så att Kunden kan uppfylla sina skyldigheter gentemot tillsynsmyndighet och registrerade.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>8. Radering av data</h2>
+      <p>
+        Efter avslutat kundkonto raderas eller anonymiseras alla uppladdade dokument och indexeringsdata inom 30 dagar,
+        såvida inte lag kräver längre bevarande (t.ex. bokföringsdata).
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>9. Revision och tillsyn</h2>
+      <p>
+        Kunden har rätt att, efter rimlig föranmälan, begära information om Biträdets säkerhetsåtgärder eller revisioner
+        utförda av oberoende part. Direkt fysisk inspektion kan ske endast om det krävs enligt lag eller särskilt avtalats.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>10. Giltighet och upphörande</h2>
+      <p>
+        Detta Avtal gäller så länge Biträdet behandlar personuppgifter för Kundens räkning.  
+        Vid upphörande ska Biträdet radera eller återlämna alla personuppgifter enligt punkt 8.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>11. Tillämplig lag</h2>
+      <p>
+        Svensk lag gäller. Tvister avgörs av svensk domstol, med Stockholm tingsrätt som första instans.
+      </p>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2025 BotJahl – Enkelt. Smart. Anpassat. · <a href="terms.html">Villkor</a> · <a href="privacy.html">Integritetspolicy</a>
+    </div>
+  </footer>
+
+</body>
+</html>

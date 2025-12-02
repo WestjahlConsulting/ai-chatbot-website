@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>BotJahl – Användarvillkor</title>
+  <meta name="description" content="Användarvillkor för BotJahl – AI-chattbot för företag.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <a href="index.html" class="brand" aria-label="BotJahl startsida">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" width="28" height="28">
+          <rect x="4" y="6" width="40" height="30" rx="10" fill="url(#g1)"/>
+          <path d="M16 28c6 4 10 4 16 0" stroke="rgba(10,15,31,.7)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="20" r="2.4" fill="#0a0f1f"/>
+          <circle cx="29" cy="20" r="2.4" fill="#0a0f1f"/>
+          <path d="M30 38l-6-4-6 4 2.5-6.5" fill="url(#g2)" opacity=".9"/>
+          <defs>
+            <linearGradient id="g1" x1="4" y1="6" x2="46" y2="36"><stop stop-color="#60a5fa"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+            <linearGradient id="g2" x1="18" y1="32" x2="30" y2="38"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
+          </defs>
+        </svg>
+        <span>BotJahl</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="index.html#demo">Demo</a>
+        <a href="index.html#starta">Starta gratis</a>
+        <a class="btn secondary" href="admin.html">Logga in</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="page">
+    <div class="container narrow stack">
+      <h1>Användarvillkor</h1>
+      <p class="muted">
+        Dessa användarvillkor (”Villkoren”) reglerar användningen av BotJahl – en AI-chattbotlösning som
+        tillhandahålls av Westjahl Creative AB (”Leverantören”, ”vi”, ”oss”). Genom att registrera ett konto,
+        starta provperiod, betala för abonnemang eller på annat sätt använda tjänsten godkänner du dessa Villkor.
+        Dessa villkor inkluderar personuppgiftsbiträdesavtalet (DPA) som finns på <a href="dpa.html">denna sida</a>.
+      </p>
+
+      <!-- <div class="banner err">
+        <strong>Utkast – ej juridisk rådgivning.</strong><br>
+        Denna text är endast ett förslag och måste granskas och eventuellt anpassas av juridiskt ombud
+        innan den används skarpt.
+      </div> -->
+
+      <p class="small muted">
+        Senast uppdaterad: 2025-11-20
+      </p>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="container narrow stack">
+
+    <section class="card glass">
+      <h2>1. Om tjänsten</h2>
+      <p>
+        BotJahl är en molnbaserad SaaS-tjänst där företagskunder (”Kunden”) kan skapa en AI-chattbot som bäddas in på
+        Kundens egen webbplats. Tjänsten gör det möjligt att:
+      </p>
+      <ul>
+        <li>registrera ett företagskonto med kund-ID,</li>
+        <li>ladda upp material (t.ex. PDF, DOCX, TXT, MD) eller indexera befintliga webbsidor,</li>
+        <li>låta en AI-chattbot besvara frågor baserat på Kundens material samt allmän/domänspecifik kunskap.</li>
+      </ul>
+      <p>
+        Tjänsten drivs tekniskt med hjälp av OpenAI:s API (AI-modeller), Microsoft Azure (molninfrastruktur) och Stripe
+        (betalningar), samt en extern e-posttjänst för kommunikation.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>2. Konto, registrering och åtkomst</h2>
+      <p>
+        För att använda tjänsten måste Kunden registrera ett konto. Vid registrering behöver följande uppgifter lämnas:
+      </p>
+      <ul>
+        <li>företagsnamn,</li>
+        <li>e-postadress,</li>
+        <li>webbplats-URL,</li>
+      </ul>
+      <p>
+        Kunden ansvarar för att de uppgifter som lämnas är korrekta och uppdaterade. Inloggning till adminportalen sker
+        med kund-ID och den e-postadress som angavs vid registrering. Kunden ansvarar för att hålla inloggningsuppgifter
+        hemliga och för alla aktiviteter som sker via Kontot.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>3. Licens till kundinnehåll</h2>
+      <p>
+        Kunden behåller äganderätten till allt innehåll som laddas upp eller indexeras via tjänsten (”Kundinnehåll”),
+        t.ex. dokument, texter och webbsidor.
+      </p>
+      <p>
+        Kunden ger Leverantören en begränsad, icke-exklusiv, icke överlåtbar licens att lagra, bearbeta och använda
+        kundinnehåll endast i följande syften:
+      </p>
+      <ul>
+        <li>att extrahera text ur filer och webbsidor,</li>
+        <li>att skapa vektorrepresentationer (”embeddings”) av innehållet,</li>
+        <li>att använda dessa embeddings för att generera svar i kundens AI-chattbot,</li>
+        <li>att tillhandahålla, drifta och förbättra funktionen inom Kundens eget konto.</li>
+      </ul>
+      <p>
+        Kundinnehåll används endast för kundens egen bot och delas inte med andra kunder. Leverantören har inte rätt
+        att sälja, publicera eller använda kundinnehåll för andra ändamål än att leverera tjänsten.
+      </p>
+      <p>
+        Kunden ansvarar för att denne har nödvändiga rättigheter (t.ex. upphovsrätt, licenser och tillstånd) till allt
+        kundinnehåll som laddas upp eller indexeras via tjänsten.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>4. Acceptabel användning och kundens ansvar</h2>
+      <p>
+        Kunden ansvarar för all användning av tjänsten som sker genom Kundens konto samt för allt kundinnehåll.
+        Kunden förbinder sig att inte använda tjänsten för att:
+      </p>
+      <ul>
+        <li>bryta mot gällande lagstiftning, inklusive men inte begränsat till upphovsrätt, marknadsförings- och dataskyddslagstiftning,</li>
+        <li>sprida olagligt, kränkande, diskriminerande, rasistiskt, pornografiskt eller på annat sätt olämpligt material,</li>
+        <li>uppmana till eller främja våldsbrott, bedrägeri, trakasserier eller annan brottslighet,</li>
+        <li>innehålla skadlig kod, spam eller annan skadlig aktivitet.</li>
+      </ul>
+      <p>
+        Kundens besökare/slutanvändare interagerar med AI-chattboten via Kundens webbplats. Kunden ansvarar för:
+      </p>
+      <ul>
+        <li>hur chattbotens svar presenteras och används,</li>
+        <li>att informera sina besökare om eventuella begränsningar i svarens riktighet,</li>
+        <li>att tillhandahålla egna villkor och integritetspolicy för sin webbplats.</li>
+      </ul>
+      <p>
+        Leverantören förbehåller sig rätten att tillfälligt stänga av eller avsluta konton som misstänks bryta mot dessa
+        Villkor eller gällande lag.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>5. Betalning, provperiod och abonnemang</h2>
+      <p>
+        Tjänsten kan erbjudas med en kostnadsfri provperiod under begränsad tid, enligt vad som framgår vid
+        registreringen. Efter provperiodens slut övergår tjänsten till ett betalt abonnemang om kunden lägger in
+        betalmetod och slutför betalning via Stripe.
+      </p>
+      <p>
+        Betalningar hanteras av Stripe, och genom att ange betalningsuppgifter godkänner Kunden Stripes egna villkor
+        och integritetspolicy. Leverantören lagrar inte kundens fullständiga kortuppgifter.
+      </p>
+      <p>
+        Abonnemanget löper normalt månadsvis (eller enligt annan angiven period) och förnyas automatiskt fram till dess
+        att det sägs upp av Kunden. Kunden kan säga upp abonnemanget när som helst via kundportalen. Uppsägning gäller
+        från nästa faktureringsperiod och ingen återbetalning ges för redan betald period om inget annat uttryckligen
+        avtalats.
+      </p>
+      <p>
+        Vid utebliven betalning kan Leverantören begränsa tillgången till tjänsten eller stänga av kontot.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>6. AI-svar, upphovsrätt och ansvarsbegränsning</h2>
+      <p>
+        AI-chattbotens svar genereras automatiskt med hjälp av OpenAI:s modeller och kundens eget material. Svaren kan
+        innehålla felaktigheter, föråldrad information eller tolkningar. Leverantören lämnar inga garantier för
+        riktighet, fullständighet eller lämplighet för ett visst ändamål.
+      </p>
+      <p>
+        Kunden ansvarar för att granska och, vid behov, korrigera innehåll som presenteras för slutanvändare. Kunden
+        bör inte använda chattboten som enda källa för juridiska, medicinska, finansiella eller andra kritiska beslut.
+      </p>
+      <p>
+        I den mån det är tillåtet enligt tvingande lag ansvarar leverantören inte för:
+      </p>
+      <ul>
+        <li>indirekta skador, följdskador eller utebliven vinst,</li>
+        <li>förlust av data eller affärsmöjligheter,</li>
+        <li>skador orsakade av fel eller driftstörningar i tredjeparts-tjänster (t.ex. OpenAI, Azure, Stripe, e-posttjänster).</li>
+      </ul>
+      <p>
+        Leverantörens sammanlagda ansvar under en rullande tremånadersperiod är begränsat till det totala belopp som
+        kunden betalat till leverantören för tjänsten under samma period, om inte annat följer av tvingande lag.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>7. Uppsägning och radering av data</h2>
+      <p>
+        Kunden kan när som helst avsluta sitt konto genom att säga upp abonnemanget i kundportalen eller kontakta
+        Leverantören. Leverantören kan säga upp avtalet med skälig uppsägningstid, eller om Kunden väsentligen bryter
+        mot dessa Villkor.
+      </p>
+      <p>
+        Vid uppsägning:
+      </p>
+      <ul>
+        <li>stängs åtkomst till adminportalen när abonnemangsperioden löpt ut,</li>
+        <li>tas chattboten ur funktion på Kundens webbplats (API-anrop nekas),</li>
+        <li>raderas uppladdade dokument och embeddings normalt inom 30 dagar,</li>
+        <li>kan viss information (t.ex. fakturaunderlag och loggar) sparas längre om det krävs enligt lag eller
+          berättigat intresse (t.ex. för bokföring och säkerhet).</li>
+      </ul>
+    </section>
+
+    <section class="card glass">
+      <h2>8. Ändringar av tjänsten och villkoren</h2>
+      <p>
+        Leverantören kan när som helst uppdatera tjänsten, t.ex. genom att lägga till eller ta bort funktioner, byta
+        teknisk infrastruktur eller justera prissättning. Väsentliga ändringar med negativ påverkan för kunden
+        kommuniceras i förväg, om möjligt.
+      </p>
+      <p>
+        Leverantören kan även uppdatera dessa Villkor. Den senaste versionen hålls tillgänglig på webbplatsen. Vid
+        väsentliga ändringar informeras Kunden via e-post eller i samband med inloggning. Fortsatt användning av
+        tjänsten efter att ändrade villkor trätt i kraft innebär att Kunden accepterar dessa.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>9. Tillämplig lag och tvistlösning</h2>
+      <p>
+        Detta avtal regleras av svensk lag. Tvister som uppstår i anledning av dessa Villkor eller användningen av
+        tjänsten ska i första hand lösas genom dialog mellan parterna.
+      </p>
+      <p>
+        Om tvisten inte kan lösas genom förhandling ska den avgöras av svensk allmän domstol med Stockholm tingsrätt
+        som första instans, om inte annat följer av tvingande lag.
+      </p>
+    </section>
+
+    <section class="card glass">
+      <h2>10. Kontakt</h2>
+      <p>
+        Har du frågor om dessa Villkor eller om tjänsten, kontakta:
+      </p>
+      <p class="muted">
+        Westjahl Creative AB<br>
+        E-post: <a href="mailto:faijahl75@gmail.com" style="color:#cde2ff">faijahl75@gmail.com</a>
+      </p>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div>
+  </footer>
+
+</body>
+</html>

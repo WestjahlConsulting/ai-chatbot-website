@@ -1,0 +1,71 @@
+name: WEB DEV – deploy Static Web App
+
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - "**/*.html"
+      - "**/*.css"
+      - "**/*.js"
+      - ".github/workflows/web-dev.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Steg 1: Ersätt __API_BASE__ i alla HTML-filer
+      - name: Inject API_BASE placeholder
+        run: |
+          API="${{ vars.API_BASE }}"
+          if [ -z "$API" ]; then
+            echo "ERROR: vars.API_BASE är inte satt i environment 'dev'."
+            exit 1
+          fi
+          echo "Injicerar API_BASE=$API i alla HTML-filer..."
+          find . -name "*.html" -print0 \
+            | xargs -0 sed -i "s|__API_BASE__|$API|g"
+
+      # Steg 2 (valfri): ersätt __ANALYTICS_SNIPPET__ med ev. snippet
+      # Om ANALYTICS_SNIPPET är tomt tas bara placeholdern bort.
+      - name: Inject analytics snippet (dev)
+        run: |
+          SNIPPET="${{ vars.ANALYTICS_SNIPPET }}"
+          if [ -z "$SNIPPET" ]; then
+            echo "Ingen ANALYTICS_SNIPPET satt för dev – placeholder tas bort."
+          fi
+
+          find . -name "*.html" -print0 \
+            | xargs -0 sed -i "s|__ANALYTICS_SNIPPET__|$SNIPPET|g"
+
+      # Steg 3: Skapa config.json dynamiskt i repo-root
+      - name: Create config.json
+        run: |
+          API="${{ vars.API_BASE }}"
+          if [ -z "$API" ]; then
+            echo "ERROR: vars.API_BASE är inte satt i environment 'dev'."
+            exit 1
+          fi
+
+          echo "Skapar config.json med apiBase=$API"
+          cat <<EOF > config.json
+          {"apiBase":"$API"}
+          EOF
+
+          echo "config.json innehåll:"
+          cat config.json
+
+      # Steg 4: Deploya allt (inkl. config.json) till Static Web Apps
+      - name: Deploy to Azure Static Web Apps (DEV)
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          api_location: ""

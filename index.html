@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
@@ -7,6 +7,8 @@
   <meta name="description" content="BotJahl är en AI-chattbot som du bäddar in på din webbplats. Starta gratis i 14 dagar – laddas med dina dokument.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="site.css?v=2025-09-13a">
+  <!-- Huvud-JS (demo-iframe + signup + pricing) -->
+  __ANALYTICS_SNIPPET__
 </head>
 <body>
 
@@ -29,7 +31,7 @@
       </a>
 
       <div class="nav-links">
-        <a href="#demo">Demo</a>
+        <a href="#demo" onclick="window.botjahlOpenDemo?.(); return false;">Demo</a>
         <a href="#pricing">Priser</a>
         <a href="#starta">Starta gratis</a>
         <a class="btn secondary" href="admin.html" aria-label="Öppna adminportalen">Logga in</a>
@@ -39,92 +41,99 @@
 
   <!-- HERO -->
   <header class="hero">
-    <div class="container hero">
-      <div class="wrap">
-        <div class="card glass stack">
-          <span class="badge">Plug-in & run</span>
-          <h1>AI-chattbot som svarar med ditt innehåll</h1>
-          <p class="muted">Bädda in på din webbplats på några minuter. Ladda upp PDF/DOCX/TXT/MD eller indexera dina webbsidor. Starta gratis i 14 dagar.</p>
-          <div class="actions">
-            <a class="btn primary" href="#starta">Starta gratis</a>
-            <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
+    <div class="container wrap">
+      <div class="card">
+        <div class="badge">Plug-in & run</div>
+        <h1>AI-chattbot som svarar med ditt innehåll</h1>
+        <p class="lead">
+          BotJahl gör det enkelt för företag att skapa en smart chattbot som
+          svarar utifrån ditt eget material – utan teknisk kunskap.
+        </p>
+        <p class="muted">
+          Ladda upp dokument eller låt oss läsa in din webbplats. Du får en färdig
+          chatt som kan bäddas in direkt på din sida.
+        </p>
+
+        <div class="actions">
+          <a href="#signup" class="btn primary">Starta gratis</a>
+          <a href="admin.html" class="btn ghost">Redan kund? Logga in</a>
+          <a href="#how-it-works" class="btn secondary">Så fungerar det</a>
+        </div>
+      </div>
+
+      <div class="card stack">
+        <div class="feature">
+          <div class="dot"></div>
+          <div>
+            <strong>Enkel installation</strong><br />
+            Kopiera en färdig <code>&lt;iframe&gt;</code>-kod.
           </div>
         </div>
-
-        <div class="card stack">
-          <div class="feature"><span class="dot"></span><div><strong>Enkel installation</strong><div class="muted">Kopiera en färdig &lt;iframe&gt;-kod.</div></div></div>
-          <div class="feature"><span class="dot"></span><div><strong>Tränas på ditt material</strong><div class="muted">Uppladdning → indexering → klart.</div></div></div>
-          <div class="feature"><span class="dot"></span><div><strong>Byggd för företag</strong><div class="muted">Kortbetalning via Stripe. Avsluta när som helst.</div></div></div>
+        <div class="feature">
+          <div class="dot"></div>
+          <div>
+            <strong>Tränas på ditt material</strong><br />
+            Ladda upp dokument eller indexera din webbplats.
+          </div>
+        </div>
+        <div class="feature">
+          <div class="dot"></div>
+          <div>
+            <strong>Byggd för företag</strong><br />
+            Betalning via Stripe. GDPR-vänlig. Inga bindningstider.
+          </div>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- DEMO -->
-  <section id="demo">
-    <div class="container stack">
-      <h2 class="center">Testa BotJahl</h2>
-      <p class="muted center">Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.</p>
-      <div id="iframe-demo" class="narrow">
-        <div class="iframe-wrapper">
-          <iframe
-            id="botjahl-demo"
-            src="https://westjahlconsulting.github.io/ai-chatbot-frontend/?customerId=ceb2df2&api=https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            sandbox="allow-scripts allow-forms allow-same-origin"
-            title="BotJahl demo-chatt"
-            aria-label="Inbäddad demo av BotJahl"
-          ></iframe>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- SÅ FUNKAR DET -->
-  <section>
+  <section id="how-it-works">
     <div class="container narrow stack">
       <h2 class="center">Så fungerar det</h2>
-      <div class="grid grid-2">
-        <div class="step">
-          <div class="num">1</div>
+      <div class="card glass stack">
+        <p class="muted">
+          BotJahl är en AI-chattbot som ni bäddar in på er befintliga webbplats.
+          Den svarar på frågor från besökare med utgångspunkt i <strong>ert eget innehåll</strong> – till exempel informationssidor, PDF:er och interna dokument.
+        </p>
+
+        <div class="grid grid-2">
           <div>
-            <strong>Registrera dig</strong>
-            <div class="muted">Fyll i företagsnamn, webbplats och e-post. Du får kund-ID och länk till betalning.</div>
+            <h3>Vad ni gör</h3>
+            <ol class="muted" style="padding-left:18px; margin:0;">
+              <li><strong>Registrerar er</strong> – fyll i företagsnamn, webbplats och e-post.</li>
+              <li><strong>Lägger in betalmetod</strong> via Stripe (kortbetalning). Ni kan avsluta när som helst.</li>
+              <li><strong>Klistrar in kodsnutten</strong> på den sida där chatten ska synas.</li>
+              <li><strong>Laddar upp material</strong> i adminportalen: PDF/DOCX/TXT/MD eller befintliga webbsidor.</li>
+            </ol>
+          </div>
+
+          <div>
+            <h3>Vad BotJahl gör</h3>
+            <ol class="muted" style="padding-left:18px; margin:0;">
+              <li><strong>Skapar en unik bot</strong> kopplad till ert kund-ID och er webbplats.</li>
+              <li><strong>Genererar en färdig kodsnutt</strong> som fungerar direkt på er sida.</li>
+              <li><strong>Läser och indexerar</strong> ert innehåll automatiskt i bakgrunden.</li>
+              <li><strong>Svarar på frågor dygnet runt</strong> och använder ert material som faktabank.</li>
+            </ol>
           </div>
         </div>
-        <div class="step">
-          <div class="num">2</div>
-          <div>
-            <strong>Bädda in</strong>
-            <div class="muted">Klistra in din kodsnutt (iframe) på valfri sida. Klart på minuter.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">3</div>
-          <div>
-            <strong>Ladda upp dokument</strong>
-            <div class="muted">PDF/DOCX/TXT/MD – vi indexerar automatiskt. Boten svarar med ditt innehåll.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">4</div>
-          <div>
-            <strong>Hantera i portalen</strong>
-            <div class="muted">Se status, reindexera, ta bort filer och uppdatera betalmetod.</div>
-          </div>
-        </div>
+
+        <p class="muted">
+          Resultatet blir en <strong>digital medarbetare</strong> som avlastar kundtjänst, minskar antalet återkommande frågor
+          och gör det enklare för besökare att hitta vad de söker – utan att ni behöver någon egen IT-kompetens.
+        </p>
       </div>
     </div>
   </section>
 
-  <!-- PRISER (mellan Demo och Admin/Starta) -->
+  <!-- PRISER -->
   <section id="pricing" class="container">
     <h2 class="center">Priser</h2>
     <p class="muted center">Välj en nivå som passar – du kan alltid uppgradera senare.</p>
 
     <div class="pricing-grid">
-      <!-- Bas (aktiv) -->
+      <!-- Bas -->
       <article class="plan plan--active" aria-label="Bas">
         <header class="plan__header">
           <h3>Bas</h3>
@@ -134,11 +143,11 @@
           <span class="plan__amount">399</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
         </div>
         <ul class="plan__features">
-          <li>1 domän/website</li>
+          <li>1 domän/webbplats</li>
           <li>Upp till ~1 000 frågor/mån*</li>
-          <li>Dokument: 500 MB</li>
+          <li>Dokument upp till 50 MB</li>
           <li>Inbäddad chat-widget</li>
-          <li>Grundläggande support (e-post)</li>
+          <li>Grundläggande support via e-post</li>
           <li>GDPR-vänlig drift</li>
         </ul>
         <div class="plan__cta">
@@ -147,7 +156,7 @@
         </div>
       </article>
 
-      <!-- Plus (kommer snart) -->
+      <!-- Plus -->
       <article class="plan plan--soon" aria-label="Plus">
         <header class="plan__header">
           <h3>Plus</h3>
@@ -158,24 +167,24 @@
           <span class="plan__amount">999</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
         </div>
         <ul class="plan__features">
-          <li>3 domäner/websites</li>
+          <li>Upp till 3 domäner/webbplatser</li>
           <li>Upp till ~10 000 frågor/mån</li>
-          <li>Dokument: 5 GB</li>
-          <li>Förbättrad RAG (Azure AI Search)</li>
+          <li>Större dokumentmängd (upp till 250 MB)</li>
+          <li>Förbättrad sök och träffsäkerhet</li>
           <li>Prioriterad support</li>
-          <li>Grundläggande analys</li>
+          <li>Grundläggande rapportering</li>
         </ul>
         <div class="plan__cta">
           <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
         </div>
       </article>
 
-      <!-- Premium (kommer snart) -->
+      <!-- Premium -->
       <article class="plan plan--soon" aria-label="Premium">
         <header class="plan__header">
           <h3>Premium</h3>
           <span class="badge soon">Kommer snart</span>
-          <p class="plan__tagline">För team & hög trafik</p>
+          <p class="plan__tagline">För kommuner & större organisationer</p>
         </header>
         <div class="plan__price">
           <span class="plan__amount">2 499</span><span class="plan__currency">kr</span><span class="plan__period">/mån</span>
@@ -183,10 +192,10 @@
         <ul class="plan__features">
           <li>Upp till 5 domäner</li>
           <li>Upp till ~50 000 frågor/mån</li>
-          <li>Dokument: 20 GB</li>
-          <li>Avancerad RAG & sök</li>
+          <li>Stora dokumentvolymer (upp till 1000 MB)</li>
+          <li>Avancerad sökteknik och anpassningar</li>
           <li>SLA & prioriterad support</li>
-          <li>Integrationer & SSO</li>
+          <li>Möjlighet till integrationer & SSO</li>
         </ul>
         <div class="plan__cta">
           <button class="btn secondary" disabled aria-disabled="true">Kommer snart</button>
@@ -203,23 +212,41 @@
         <form id="signup" autocomplete="on" class="stack">
           <div>
             <label for="org">Företagsnamn</label>
-            <input id="org" name="name" placeholder="Företagsnamn" autocomplete="organization" required />
+            <input id="org" name="name" maxlength="80" placeholder="Företagsnamn" autocomplete="organization" required />
           </div>
+
           <div>
             <label for="site">Webbplats</label>
-            <input id="site" name="websiteUrl" placeholder="https://… eller www.dittföretag.se" inputmode="url" required />
+            <input id="site" name="websiteUrl" maxlength="255" placeholder="https://… eller www.dittföretag.se" inputmode="url" required />
           </div>
+
           <div>
             <label for="mail">E-post</label>
-            <input id="mail" name="email" type="email" placeholder="E-post" autocomplete="email" required />
+            <input id="mail" name="email" maxlength="200" type="email" placeholder="E-post" autocomplete="email" required />
+          </div>
+
+          <div class="terms-row">
+            <label for="terms" class="terms-label">
+              <input type="checkbox" id="terms" name="terms" required />
+              <span>
+                Jag accepterar
+                <a href="/terms.html" target="_blank" rel="noopener">användarvillkor</a>
+                och
+                <a href="/privacy.html" target="_blank" rel="noopener">integritetspolicy</a>
+                och 
+                <a href="/dpa.html">personuppgiftsbiträdesavtalet (DPA)</a>.
+              </span>
+            </label>
           </div>
 
           <div class="actions">
             <button class="btn primary" type="submit">Skapa min bot</button>
           </div>
-          <a class="btn ghost" href="admin.html">Redan kund? Logga in</a>
+          <a href="admin.html" class="btn ghost">Redan kund? Logga in</a>
 
-          <p class="small muted">Du får ett kund-ID och en betalningslänk. Kodsnutten visas efter att betalmetod lagts in.</p>
+          <p class="small muted">
+            Du får ett kund-ID och en betalningslänk. Kodsnutten visas efter att betalmetod lagts in.
+          </p>
         </form>
         <div id="signup-result"></div>
       </div>
@@ -229,21 +256,78 @@
   <!-- CONTACT -->
   <section>
     <div class="container narrow stack center">
-      <h2>Frågor?</h2>
-      <p class="muted">Maila: <a href="mailto:faijahl75@gmail.com" style="color:#cde2ff">faijahl75@gmail.com</a></p>
+      <h2>Vill du boka en demo eller introduktion?</h2>
+      <p class="muted">
+        Kontakta oss 
+        <a href="mailto:faijahl75@gmail.com" class="btn ghost small" style="margin-left:6px;">
+          här
+        </a>
+      </p>
     </div>
   </section>
 
-  <footer>
-    <div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div>
-  </footer>
-
-  <!-- JS -->
+  <!-- Denna ersätts av GitHub Actions vid deploy -->
   <script>
-    const API = "https://chatbot-api-jahl-bdeqfbb5amfjfabe.westeurope-01.azurewebsites.net";
-    const out = document.getElementById('signup-result');
+    window.BOTJAHL_API_BASE = "__API_BASE__";
+  </script>
 
-    const okBanner = (html) => `<div class="banner ok">${html}</div>`;
+  <script>
+    // Robust API-resolver: ?api=… → window.BOTJAHL_API_BASE → ev. config.json
+    async function resolveApiBase() {
+      const qs        = new URLSearchParams(location.search);
+      const fromQuery = qs.get("api");
+      if (fromQuery) return fromQuery.replace(/\/+$/, "");
+
+      const fromWindow = (window.BOTJAHL_API_BASE || "").trim();
+      if (fromWindow && fromWindow !== "__API_BASE__") {
+        return fromWindow.replace(/\/+$/, "");
+      }
+
+      // Fallback för lokal test: config.json
+      try {
+        const r = await fetch("./config.json", { cache: "no-store" });
+        if (r.ok) {
+          const j = await r.json();
+          if (j && j.apiBase) return String(j.apiBase).replace(/\/+$/, "");
+        }
+      } catch {}
+
+      throw new Error("API-bas saknas. Kontrollera att __API_BASE__ ersätts vid deploy eller använd ?api=…");
+    }
+
+    const API_PROMISE      = resolveApiBase();
+    const DEMO_WIDGET_BASE = "https://westjahlconsulting.github.io/ai-chatbot-frontend/widget.html";
+    const DEMO_CUSTOMER_ID = "ceb2df2";
+
+    // Stabil "session" per besökare (lagras i sessionStorage)
+    function getOrCreateDemoSessionId() {
+      const k = "botjahl.demo.sid";
+      let v = sessionStorage.getItem(k);
+      if (!v) {
+        v = (self.crypto?.randomUUID?.() || (Date.now().toString(36) + Math.random().toString(36).slice(2)));
+        sessionStorage.setItem(k, v);
+      }
+      return v;
+    }
+
+    // Sätt demo-iframe när API-basen är känd – med preview=1 + sessionId + demo=1
+    (async () => {
+      try {
+        const API = await API_PROMISE;
+        const iframe = document.getElementById("botjahl-demo");
+        if (iframe) {
+          const sid = getOrCreateDemoSessionId();
+          iframe.src =
+            `${DEMO_WIDGET_BASE}?customerId=${encodeURIComponent(DEMO_CUSTOMER_ID)}` +
+            `&api=${encodeURIComponent(API)}&preview=1&sessionId=${encodeURIComponent(sid)}&demo=1`;
+        }
+      } catch (err) {
+        console.warn("Kunde inte sätta demo-iframe:", err);
+      }
+    })();
+
+    const out       = document.getElementById('signup-result');
+    const okBanner  = (html) => `<div class="banner ok">${html}</div>`;
     const errBanner = (html) => `<div class="banner err">${html}</div>`;
 
     // Signup
@@ -251,19 +335,26 @@
       e.preventDefault();
       const f = e.target;
 
-      // Normalisera websiteUrl
+      if (!f.terms.checked) {
+        out.innerHTML = errBanner("Du måste acceptera användarvillkoren.");
+        out.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
       let url = f.websiteUrl.value.trim();
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
       const body = {
-        name: f.name.value.trim(),
-        websiteUrl: url,
-        email: f.email.value.trim()
+        name:          f.name.value.trim(),
+        websiteUrl:    url,
+        email:         f.email.value.trim(),
+        termsAccepted: !!f.terms.checked
       };
 
       out.innerHTML = `<span class="small muted">Skapar bot…</span>`;
 
-      try{
+      try {
+        const API = await API_PROMISE;
         const res = await fetch(API + "/api/public/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -271,27 +362,25 @@
         });
         const data = await res.json().catch(() => ({}));
 
-        // 409 = redan finns
-        if (res.status === 409 && data.customerId) {
-          out.innerHTML = okBanner(`
-            <p><strong>Du verkar redan ha en bot.</strong> Kund-ID: <code>${data.customerId}</code></p>
-            ${data.checkoutUrl ? `<p><a class="btn primary" href="${data.checkoutUrl}" target="_blank" rel="noopener">Fortsätt till Checkout</a></p>` : ""}
-            <div class="actions">
-              <a class="btn secondary" href="success.html?cid=${encodeURIComponent(data.customerId)}">Hämta kodsnutt (efter betalning)</a>
-              <a class="btn ghost" href="admin.html?cid=${encodeURIComponent(data.customerId)}">Öppna Admin</a>
-            </div>
+        if (res.status === 409) {
+          out.innerHTML = errBanner(`
+            <p><strong>Det finns redan en bot registrerad med denna e-post och webbplats.</strong></p>
+            <p class="small muted">
+              Om det är ditt företag, använd knappen <strong>"Redan kund? Logga in"</strong> ovan
+              för att logga in i adminportalen. Kontakta supporten om du behöver hjälp.
+            </p>
           `);
           out.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
 
         if (!res.ok) {
-          out.innerHTML = errBanner(`Något gick fel. Försök igen om en stund.`);
+          const msg = (data && data.message) || "Något gick fel. Försök igen om en stund.";
+          out.innerHTML = errBanner(msg);
           out.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
 
-        // 200 OK – ny kund
         const cid = data.customerId;
         out.innerHTML = okBanner(`
           <p><strong>Klart!</strong> Ditt kund-ID är <code>${cid}</code>.</p>
@@ -307,33 +396,33 @@
           </p>
         `);
         out.scrollIntoView({ behavior: "smooth", block: "start" });
-      }catch(err){
+      } catch (err) {
         out.innerHTML = errBanner(`Nätverksfel: ${err.message || "okänt fel"}`);
         out.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
 
     // Pris: Bas → checkout om kund är känd, annars scrolla till signup
-    (function hookPricing(){
+    (function hookPricing() {
       const buy = document.getElementById("buy-bas");
       if (!buy) return;
 
-      async function getJson(url){
+      async function getJson(url) {
         const r = await fetch(url, { cache: "no-store" });
         const t = await r.text();
-        try{ return { ok: r.ok, status: r.status, data: JSON.parse(t) }; }
-        catch{ return { ok: r.ok, status: r.status, data: {} }; }
+        try { return { ok: r.ok, status: r.status, data: JSON.parse(t) }; }
+        catch { return { ok: r.ok, status: r.status, data: {} }; }
       }
 
       buy.addEventListener("click", async () => {
-        const cid = window.BOTJAHL_CUSTOMER_ID || ""; // sätts vid login/session om du har det
-        if (!cid){
-          // Ingen känd kund – guida till signup
+        const cid = window.BOTJAHL_CUSTOMER_ID || "";
+        if (!cid) {
           document.getElementById("starta").scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
 
         buy.disabled = true;
+        const API = await API_PROMISE;
         const url = `${API}/api/public/checkout-link?customerId=${encodeURIComponent(cid)}`;
         const r = await getJson(url);
         buy.disabled = false;
@@ -346,5 +435,121 @@
       });
     })();
   </script>
+
+  <footer>
+    <div class="container">
+      © 2025 BotJahl – Enkelt. Smart. Anpassat.
+      · <a href="terms.html">Användarvillkor</a>
+      · <a href="privacy.html">Integritetspolicy</a>
+      · <a href="dpa.html">Personuppgiftsbiträdesavtal (DPA)</a>
+    </div>
+  </footer>
+
+  <!-- Robust smooth scroll (bara om mål finns) -->
+  <script>
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+
+      const sel = a.getAttribute('href');
+
+      // Låt "Demo"-länken skötas av JS-funktionen botjahlOpenDemo i stället
+      if (sel === '#demo') {
+        if (window.botjahlOpenDemo) {
+          e.preventDefault();
+          window.botjahlOpenDemo();
+        }
+        return;
+      }
+
+      const target = document.querySelector(sel);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  </script>
+
+  <!-- Chat launcher nere till höger -->
+  <button id="botjahl-launcher" type="button" aria-label="Öppna demo-chat">
+    <span class="bj-icon">💬</span>
+    <span class="bj-label">Testa demot</span>
+  </button>
+
+  <!-- Chat-widget (nuvarande demo-chatt) -->
+  <div id="botjahl-widget" class="botjahl-hidden">
+    <button id="botjahl-close" type="button" class="botjahl-close" aria-label="Stäng chatten">×</button>
+
+    <!-- DEMO -->
+    <section id="demo">
+      <div class="container stack">
+        <h2 class="center">Testa BotJahl</h2>
+        <p class="muted center">
+          Demot är kopplat till vår testkund. Fråga om produkten och hur den fungerar.
+          Demot är begränsat till 6 frågor per besökare.
+        </p>
+        <div id="iframe-demo" class="narrow">
+          <div class="iframe-wrapper">
+            <iframe
+              id="botjahl-demo"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              sandbox="allow-scripts allow-forms allow-same-origin"
+              title="BotJahl demo-chatt"
+              aria-label="Inbäddad demo av BotJahl"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const launcher = document.getElementById('botjahl-launcher');
+      const widget   = document.getElementById('botjahl-widget');
+      const closeBtn = document.getElementById('botjahl-close');
+
+      if (!launcher || !widget) return;
+
+      function openWidget() {
+        widget.classList.add('botjahl-open');
+        widget.classList.remove('botjahl-hidden');
+        widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      function closeWidget() {
+        widget.classList.remove('botjahl-open');
+        widget.classList.add('botjahl-hidden');
+      }
+
+      function toggleWidget() {
+        const isOpen = widget.classList.contains('botjahl-open');
+        if (isOpen) closeWidget(); else openWidget();
+      }
+
+      launcher.addEventListener('click', function (e) {
+        e.preventDefault();
+        toggleWidget();
+      });
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          closeWidget();
+        });
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          closeWidget();
+        }
+      });
+
+      window.botjahlOpenDemo = function () {
+        openWidget();
+      };
+    });
+  </script>
+
 </body>
 </html>
