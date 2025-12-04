@@ -165,7 +165,7 @@ Ingen konfigurering behövs – allt kopplas automatiskt till ditt konto.</p>
     const portalBtn = document.getElementById("portal");
 if (portalBtn){
   portalBtn.onclick = async () => {
-    // Ingen customerId i URL längre – backend läser den från JWT
+
     const r = await getJson(`/api/billing/portal-link`);
 
     if (r.status === 401) {
