@@ -253,34 +253,36 @@
     </div>
   </section>
 
-    <!-- Feedback-widget -->
-  <div id="feedback-widget" class="feedback-widget" aria-label="Skicka feedback om BotJahl">
-    <button
-      id="feedback-toggle"
-      type="button"
-      class="botjahl-launcher feedback-launcher-blue"
-      aria-expanded="false">
-      Feedback
-    </button>
+<!-- Feedback-widget -->
+<div id="feedback-widget" class="feedback-widget" aria-label="Skicka feedback om BotJahl">
+  <button
+    id="feedback-toggle"
+    type="button"
+    class="feedback-toggle"
+    aria-expanded="false"
+    aria-label="Öppna feedback-formulär">
+    <span class="bj-icon">💬</span>
+    <span class="bj-label">Feedback</span>
+  </button>
 
-    <form id="feedback-form" class="feedback-panel" autocomplete="off" novalidate>
-      <label for="feedback-message">Har du feedback på BotJahl?</label>
-      <textarea
-        id="feedback-message"
-        name="message"
-        maxlength="200"
-        rows="3"
-        placeholder="Skriv max 200 tecken..."
-        required></textarea>
+  <form id="feedback-form" class="feedback-panel" autocomplete="off" novalidate>
+    <label for="feedback-message">Har du feedback på BotJahl?</label>
+    <textarea
+      id="feedback-message"
+      name="message"
+      maxlength="200"
+      rows="3"
+      placeholder="Skriv max 200 tecken..."
+      required></textarea>
 
-      <div class="feedback-bottom-row">
-        <span id="feedback-count" class="feedback-count">0/200</span>
-        <button type="submit" class="btn sm secondary">Skicka</button>
-      </div>
+    <div class="feedback-bottom-row">
+      <span id="feedback-count" class="feedback-count">0/200</span>
+      <button type="submit" class="btn sm secondary">Skicka</button>
+    </div>
 
-      <p id="feedback-status" class="feedback-status" aria-live="polite"></p>
-    </form>
-  </div>
+    <p id="feedback-status" class="feedback-status" aria-live="polite"></p>
+  </form>
+</div>
 
 
   <!-- CONTACT -->
