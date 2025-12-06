@@ -31,7 +31,7 @@
       </a>
 
       <div class="nav-links">
-        <a href="#demo" onclick="window.botjahlOpenDemo?.(); return false;">Demo</a>
+        <a href="#demo">Demo</a>
         <a href="#pricing">Priser</a>
         <a href="#starta">Starta gratis</a>
         <a class="btn secondary" href="admin.html" aria-label="Öppna adminportalen">Logga in</a>
@@ -561,28 +561,37 @@
 
 
   <!-- Robust smooth scroll (bara om mål finns) -->
-  <script>
-    document.addEventListener('click', (e) => {
-      const a = e.target.closest('a[href^="#"]');
-      if (!a) return;
+<script>
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
 
-      const sel = a.getAttribute('href');
+    const sel = a.getAttribute('href');
 
-      // Låt "Demo"-länken skötas av JS-funktionen botjahlOpenDemo i stället
-      if (sel === '#demo') {
-        if (window.botjahlOpenDemo) {
-          e.preventDefault();
-          window.botjahlOpenDemo();
-        }
-        return;
-      }
-
-      const target = document.querySelector(sel);
-      if (!target) return;
+    
+    if (sel === '#demo') {
       e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  </script>
+
+      if (window.botjahlOpenDemo) {
+        
+        window.botjahlOpenDemo();
+      } else {
+       
+        const target = document.querySelector(sel);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+      return;
+    }
+
+    const target = document.querySelector(sel);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
+
 
   <!-- Chat launcher nere till höger -->
   <button id="botjahl-launcher" type="button" aria-label="Öppna demo-chat">
@@ -618,53 +627,56 @@
     </section>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const launcher = document.getElementById('botjahl-launcher');
-      const widget   = document.getElementById('botjahl-widget');
-      const closeBtn = document.getElementById('botjahl-close');
+ <script>
+  (function () {
+    const launcher = document.getElementById('botjahl-launcher');
+    const widget   = document.getElementById('botjahl-widget');
+    const closeBtn = document.getElementById('botjahl-close');
 
-      if (!launcher || !widget) return;
+    function noop() {}
 
-      function openWidget() {
-        widget.classList.add('botjahl-open');
-        widget.classList.remove('botjahl-hidden');
-        widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    if (!launcher || !widget) {
+      window.botjahlOpenDemo = noop;
+      return;
+    }
 
-      function closeWidget() {
-        widget.classList.remove('botjahl-open');
-        widget.classList.add('botjahl-hidden');
-      }
+    function openWidget() {
+      widget.classList.add('botjahl-open');
+      widget.classList.remove('botjahl-hidden');
+      widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-      function toggleWidget() {
-        const isOpen = widget.classList.contains('botjahl-open');
-        if (isOpen) closeWidget(); else openWidget();
-      }
+    function closeWidget() {
+      widget.classList.remove('botjahl-open');
+      widget.classList.add('botjahl-hidden');
+    }
 
-      launcher.addEventListener('click', function (e) {
-        e.preventDefault();
-        toggleWidget();
-      });
+    function toggleWidget() {
+      const isOpen = widget.classList.contains('botjahl-open');
+      if (isOpen) closeWidget(); else openWidget();
+    }
 
-      if (closeBtn) {
-        closeBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          closeWidget();
-        });
-      }
-
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-          closeWidget();
-        }
-      });
-
-      window.botjahlOpenDemo = function () {
-        openWidget();
-      };
+    launcher.addEventListener('click', function (e) {
+      e.preventDefault();
+      toggleWidget();
     });
-  </script>
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        closeWidget();
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeWidget();
+      }
+    });
+
+    window.botjahlOpenDemo = openWidget;
+  })();
+</script>
 
 </body>
 </html>
