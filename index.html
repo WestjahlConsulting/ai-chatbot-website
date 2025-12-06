@@ -253,6 +253,38 @@
     </div>
   </section>
 
+<!-- Feedback-widget -->
+<div id="feedback-widget" class="feedback-widget" aria-label="Skicka feedback om BotJahl">
+  <button
+    id="feedback-toggle"
+    type="button"
+    class="feedback-toggle"
+    aria-expanded="false"
+    aria-label="Öppna feedback-formulär">
+    <span class="bj-icon">💬</span>
+    <span class="bj-label">Feedback</span>
+  </button>
+
+  <form id="feedback-form" class="feedback-panel" autocomplete="off" novalidate>
+    <label for="feedback-message">Har du feedback på BotJahl?</label>
+    <textarea
+      id="feedback-message"
+      name="message"
+      maxlength="200"
+      rows="3"
+      placeholder="Skriv max 200 tecken..."
+      required></textarea>
+
+    <div class="feedback-bottom-row">
+      <span id="feedback-count" class="feedback-count">0/200</span>
+      <button type="submit" class="btn sm secondary">Skicka</button>
+    </div>
+
+    <p id="feedback-status" class="feedback-status" aria-live="polite"></p>
+  </form>
+</div>
+
+
   <!-- CONTACT -->
   <section>
     <div class="container narrow stack center">
@@ -265,6 +297,8 @@
       </p>
     </div>
   </section>
+
+
 
   <!-- Denna ersätts av GitHub Actions vid deploy -->
   <script>
@@ -445,29 +479,119 @@
     </div>
   </footer>
 
-  <!-- Robust smooth scroll (bara om mål finns) -->
   <script>
-    document.addEventListener('click', (e) => {
-      const a = e.target.closest('a[href^="#"]');
-      if (!a) return;
+    // ===== Feedback-widget kopplad till /api/public/feedback =====
+    (async function initFeedback(){
+      const widget  = document.getElementById("feedback-widget");
+      const toggle  = document.getElementById("feedback-toggle");
+      const form    = document.getElementById("feedback-form");
+      const textarea= document.getElementById("feedback-message");
+      const status  = document.getElementById("feedback-status");
+      const counter = document.getElementById("feedback-count");
 
-      const sel = a.getAttribute('href');
+      if (!widget || !toggle || !form || !textarea) return;
 
-      // Låt "Demo"-länken skötas av JS-funktionen botjahlOpenDemo i stället
-      if (sel === '#demo') {
-        if (window.botjahlOpenDemo) {
-          e.preventDefault();
-          window.botjahlOpenDemo();
-        }
+      let apiBase = null;
+      try {
+        apiBase = await API_PROMISE;
+      } catch {
+        // Om API-basen inte kan bestämmas, göm widgeten
+        widget.style.display = "none";
         return;
       }
 
-      const target = document.querySelector(sel);
-      if (!target) return;
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+      function updateCount(){
+        const len = textarea.value.length;
+        counter.textContent = `${len}/200`;
+      }
+      textarea.addEventListener("input", updateCount);
+      updateCount();
+
+      toggle.addEventListener("click", () => {
+        widget.classList.toggle("open");
+        const isOpen = widget.classList.contains("open");
+        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        if (isOpen) textarea.focus();
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        status.textContent = "";
+
+        const msg = textarea.value.trim();
+        if (!msg) {
+          status.textContent = "Skriv gärna några ord först.";
+          return;
+        }
+        if (msg.length > 200) {
+          status.textContent = "Feedback får vara max 200 tecken.";
+          return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        toggle.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+          const res = await fetch(`${apiBase}/api/public/site-feedback`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg })
+          });
+
+          if (res.ok) {
+            status.textContent = "Tack för din feedback!";
+            textarea.value = "";
+            updateCount();
+          } else if (res.status === 400) {
+            const body = await res.json().catch(() => ({}));
+            status.textContent = body?.message || "Feedbacken kunde inte tas emot.";
+          } else {
+            status.textContent = "Något gick fel. Försök igen senare.";
+          }
+        } catch {
+          status.textContent = "Nätverksfel. Försök igen senare.";
+        } finally {
+          toggle.disabled = false;
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    })();
   </script>
+
+
+  <!-- Robust smooth scroll (bara om mål finns) -->
+<script>
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+
+    const sel = a.getAttribute('href');
+
+    
+    if (sel === '#demo') {
+      e.preventDefault();
+
+      if (window.botjahlOpenDemo) {
+        
+        window.botjahlOpenDemo();
+      } else {
+       
+        const target = document.querySelector(sel);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+      return;
+    }
+
+    const target = document.querySelector(sel);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
+
 
   <!-- Chat launcher nere till höger -->
   <button id="botjahl-launcher" type="button" aria-label="Öppna demo-chat">
@@ -503,53 +627,56 @@
     </section>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const launcher = document.getElementById('botjahl-launcher');
-      const widget   = document.getElementById('botjahl-widget');
-      const closeBtn = document.getElementById('botjahl-close');
+ <script>
+  (function () {
+    const launcher = document.getElementById('botjahl-launcher');
+    const widget   = document.getElementById('botjahl-widget');
+    const closeBtn = document.getElementById('botjahl-close');
 
-      if (!launcher || !widget) return;
+    function noop() {}
 
-      function openWidget() {
-        widget.classList.add('botjahl-open');
-        widget.classList.remove('botjahl-hidden');
-        widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    if (!launcher || !widget) {
+      window.botjahlOpenDemo = noop;
+      return;
+    }
 
-      function closeWidget() {
-        widget.classList.remove('botjahl-open');
-        widget.classList.add('botjahl-hidden');
-      }
+    function openWidget() {
+      widget.classList.add('botjahl-open');
+      widget.classList.remove('botjahl-hidden');
+      // widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-      function toggleWidget() {
-        const isOpen = widget.classList.contains('botjahl-open');
-        if (isOpen) closeWidget(); else openWidget();
-      }
+    function closeWidget() {
+      widget.classList.remove('botjahl-open');
+      widget.classList.add('botjahl-hidden');
+    }
 
-      launcher.addEventListener('click', function (e) {
-        e.preventDefault();
-        toggleWidget();
-      });
+    function toggleWidget() {
+      const isOpen = widget.classList.contains('botjahl-open');
+      if (isOpen) closeWidget(); else openWidget();
+    }
 
-      if (closeBtn) {
-        closeBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          closeWidget();
-        });
-      }
-
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-          closeWidget();
-        }
-      });
-
-      window.botjahlOpenDemo = function () {
-        openWidget();
-      };
+    launcher.addEventListener('click', function (e) {
+      e.preventDefault();
+      toggleWidget();
     });
-  </script>
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        closeWidget();
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeWidget();
+      }
+    });
+
+    window.botjahlOpenDemo = openWidget;
+  })();
+</script>
 
 </body>
 </html>
