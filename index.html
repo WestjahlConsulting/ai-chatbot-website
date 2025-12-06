@@ -258,7 +258,7 @@
     <button
       id="feedback-toggle"
       type="button"
-      class="feedback-toggle"
+      class="botjahl-launcher feedback-launcher-blue"
       aria-expanded="false">
       Feedback
     </button>
@@ -531,7 +531,7 @@
         if (submitBtn) submitBtn.disabled = true;
 
         try {
-          const res = await fetch(`${apiBase}/api/public/feedback`, {
+          const res = await fetch(`${apiBase}/api/public/site-feedback`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: msg })

@@ -915,5 +915,25 @@ section {
   }
 }
 
+/* Feedback-knapp som återanvänder botjahl-launcher-stilen men i blått */
+.feedback-launcher-blue {
+  background: #38bdf8;              /* blå */
+  color: #f9fafb;
+  box-shadow: 0 12px 30px rgba(56, 189, 248, 0.45);
+}
+
+/* hover/active-effekter så den känns lika “levande” som Testa demot */
+.feedback-launcher-blue:hover {
+  background: #0ea5e9;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(56, 189, 248, 0.55);
+}
+
+.feedback-launcher-blue:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.75);
+}
+
+
 
 
