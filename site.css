@@ -836,7 +836,8 @@ section {
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-.botjahl-open {
+/* Ny kod: Vi lägger till ID:t framför klassen för att höja prioriteten */
+#botjahl-widget.botjahl-open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;

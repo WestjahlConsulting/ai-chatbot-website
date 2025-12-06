@@ -31,7 +31,7 @@
       </a>
 
       <div class="nav-links">
-        <a href="#demo">Demo</a>
+        <a href="#demo" onclick="window.botjahlOpenDemo?.(); return false;">Demo</a>
         <a href="#pricing">Priser</a>
         <a href="#starta">Starta gratis</a>
         <a class="btn secondary" href="admin.html" aria-label="Öppna adminportalen">Logga in</a>
@@ -643,7 +643,7 @@
     function openWidget() {
       widget.classList.add('botjahl-open');
       widget.classList.remove('botjahl-hidden');
-      widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function closeWidget() {
