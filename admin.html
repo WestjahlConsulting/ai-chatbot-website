@@ -182,56 +182,106 @@
         </div>
       </section>
 
-      <!-- Chat-utseende -->
-      <section class="glass stack" style="margin-top:16px;">
+ <!-- NYTT: Chat-utseende -->
+      <section id="theme-card" class="glass stack" style="margin-top:16px;">
         <h2>Chat-utseende</h2>
         <p class="muted small">
-          Här kan du ändra hur chatten ser ut på din webbplats. Du kan alltid ändra detta senare utan att byta kodsnutt.
+          Här kan du ändra hur chatten ser ut på din webbplats. Du ser resultatet både
+          i förhandsvisningen nedan och på sidan med kodsnutten.
         </p>
 
+        <!-- Ikon + primär färg -->
         <div class="form-row-2" style="margin-top:10px;">
           <div>
-            <label for="themeLauncherIcon">Chat-ikon (emoji)</label>
-            <input id="themeLauncherIcon" maxlength="4" placeholder="💬 eller 🤖" />
+            <label for="themeLauncherCustom">Chat-ikon</label>
+            <input type="hidden" id="themeLauncherIcon" />
+
+            <div class="actions" style="gap:6px;flex-wrap:wrap;margin-top:4px;">
+              <button type="button" class="btn ghost small theme-icon-btn" data-theme-icon="💬">💬</button>
+              <button type="button" class="btn ghost small theme-icon-btn" data-theme-icon="🤖">🤖</button>
+              <button type="button" class="btn ghost small theme-icon-btn" data-theme-icon="🔥">🔥</button>
+              <button type="button" class="btn ghost small theme-icon-btn" data-theme-icon="❓">❓</button>
+            </div>
+
+            <div style="margin-top:8px;">
+              <label class="small muted" for="themeLauncherCustom">
+                Egen ikon (emoji, valfritt)
+              </label>
+              <input id="themeLauncherCustom"
+                     placeholder="t.ex. 💡"
+                     maxlength="4"
+                     style="width:120px;margin-top:4px;" />
+            </div>
+
+            <p class="small muted" style="margin-top:6px;">
+              Välj en av knapparna eller skriv in en egen emoji.
+            </p>
           </div>
+
           <div>
-            <label for="themePrimaryColor">Primär färg (hex)</label>
-            <input id="themePrimaryColor" placeholder="#2563eb" />
+            <label for="themePrimaryColor">Primär färg</label>
+            <div class="actions" style="gap:10px;align-items:center;margin-top:4px;">
+              <input id="themePrimaryColor" type="color" value="#2563eb"
+                     style="width:46px;height:34px;padding:0;border-radius:8px;border:1px solid rgba(255,255,255,.25);" />
+              <span id="themePrimaryCode" class="small muted">#2563eb</span>
+            </div>
+            <p class="small muted" style="margin-top:6px;">
+              Används för knappar och chat-bubblans accent.
+            </p>
           </div>
         </div>
 
-        <div class="form-row-2" style="margin-top:10px;">
+        <!-- Bubbel-färger -->
+        <div class="form-row-2" style="margin-top:14px;">
           <div>
             <label for="themeUserBubble">Färg på dina bubblor</label>
-            <input id="themeUserBubble" placeholder="#eef2ff" />
+            <div class="actions" style="gap:10px;align-items:center;margin-top:4px;">
+              <input id="themeUserBubble" type="color" value="#eef2ff"
+                     style="width:46px;height:34px;padding:0;border-radius:8px;border:1px solid rgba(255,255,255,.25);" />
+              <span id="themeUserCode" class="small muted">#eef2ff</span>
+            </div>
           </div>
           <div>
             <label for="themeBotBubble">Färg på botens bubblor</label>
-            <input id="themeBotBubble" placeholder="#dcfce7" />
+            <div class="actions" style="gap:10px;align-items:center;margin-top:4px;">
+              <input id="themeBotBubble" type="color" value="#dcfce7"
+                     style="width:46px;height:34px;padding:0;border-radius:8px;border:1px solid rgba(255,255,255,.25);" />
+              <span id="themeBotCode" class="small muted">#dcfce7</span>
+            </div>
           </div>
         </div>
 
-        <div style="margin-top:10px;">
+        <!-- Typsnitt -->
+        <div style="margin-top:14px;max-width:260px;">
           <label for="themeFont">Typsnitt i chatten</label>
-          <select id="themeFont">
-            <option value="">Standard (system-font)</option>
-            <option value="Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial">
-              Inter
+          <select id="themeFont" style="margin-top:4px;">
+            <option value="">System/UI (standard)</option>
+            <option value="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+              Inter (modern sans-serif)
             </option>
-            <option value="system-ui,-apple-system,Segoe UI,Roboto,Arial">
-              System/UI
+            <option value="Georgia, 'Times New Roman', serif">
+              Serif (mer klassiskt)
+            </option>
+            <option value="'Courier New', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">
+              Monospace (kodstil)
             </option>
           </select>
+          <p class="small muted" style="margin-top:6px;">
+            Typsnittet påverkar bara själva chatten – inte resten av din webbplats.
+          </p>
         </div>
 
-        <div class="actions" style="margin-top:12px;">
+        <div class="actions" style="margin-top:14px;">
           <button id="saveThemeBtn" class="btn secondary">Spara utseende</button>
+          <button id="resetThemeBtn" class="btn ghost small" type="button">
+            Återställ standard
+          </button>
         </div>
 
-        <p id="themeMsg" class="banner small muted"></p>
+        <p id="themeMsg" class="banner small muted" style="margin-top:4px;"></p>
       </section>
 
-      <!-- Förhandsvisning -->
+      <!-- Uppdaterad Förhandsvisning -->
       <section class="glass stack" style="margin-top:16px;">
         <h2>Förhandsvisning</h2>
         <p class="muted small">
@@ -243,7 +293,7 @@
           <iframe
             id="chatPreviewFrame"
             title="Förhandsvisning av chat"
-            src="/portal/theme"
+            srcdoc="<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#64748b'>Laddar förhandsvisning…</p>"
             style="width:100%; height:520px; border:0; background:#020617;">
           </iframe>
         </div>
@@ -429,6 +479,112 @@
     const successLink = document.getElementById("successLink");
     const whoDomain   = document.getElementById("whoDomain");
 
+        // --- Chat-utseende DOM ---
+    const themeLauncherIconInput = document.getElementById("themeLauncherIcon");
+    const themeLauncherCustom    = document.getElementById("themeLauncherCustom");
+    const themeIconButtons       = document.querySelectorAll(".theme-icon-btn");
+
+    const themePrimaryColor      = document.getElementById("themePrimaryColor");
+    const themeUserBubble        = document.getElementById("themeUserBubble");
+    const themeBotBubble         = document.getElementById("themeBotBubble");
+    const themeFont              = document.getElementById("themeFont");
+    const themeMsg               = document.getElementById("themeMsg");
+
+    const themePrimaryCodeSpan   = document.getElementById("themePrimaryCode");
+    const themeUserCodeSpan      = document.getElementById("themeUserCode");
+    const themeBotCodeSpan       = document.getElementById("themeBotCode");
+
+    const saveThemeBtn           = document.getElementById("saveThemeBtn");
+    const resetThemeBtn          = document.getElementById("resetThemeBtn");
+
+    // Förhandsvisning
+    const chatPreviewFrame       = document.getElementById("chatPreviewFrame");
+    const reloadPreviewBtn       = document.getElementById("reloadPreviewBtn");
+    const WIDGET_URL             = "https://westjahlconsulting.github.io/ai-chatbot-frontend/widget.html";
+
+    function makeSid() {
+      return (self.crypto && crypto.randomUUID && crypto.randomUUID()) ||
+             (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    }
+
+    function syncColorLabel(input, label) {
+      if (!input || !label) return;
+      label.textContent = (input.value || "").toLowerCase();
+    }
+
+    function selectIconButton(value) {
+      if (!themeIconButtons) return;
+      themeIconButtons.forEach(btn => {
+        const v = btn.getAttribute("data-theme-icon") || btn.textContent.trim();
+        btn.classList.toggle("primary", v === value);
+      });
+    }
+
+    function applyThemeFormFromData(data) {
+      if (!data) data = {};
+
+      const icon = data.chatLauncherIcon || "💬";
+      if (themeLauncherIconInput) {
+        themeLauncherIconInput.value = icon;
+        selectIconButton(icon);
+      }
+
+      if (themePrimaryColor) {
+        themePrimaryColor.value = data.chatPrimaryColor || themePrimaryColor.value || "#2563eb";
+        syncColorLabel(themePrimaryColor, themePrimaryCodeSpan);
+      }
+      if (themeUserBubble) {
+        themeUserBubble.value = data.chatUserBubbleColor || themeUserBubble.value || "#eef2ff";
+        syncColorLabel(themeUserBubble, themeUserCodeSpan);
+      }
+      if (themeBotBubble) {
+        themeBotBubble.value = data.chatBotBubbleColor || themeBotBubble.value || "#dcfce7";
+        syncColorLabel(themeBotBubble, themeBotCodeSpan);
+      }
+
+      if (themeFont && data.chatFontFamily) {
+        themeFont.value = data.chatFontFamily;
+      }
+    }
+
+        // Ikon-knappar
+    if (themeIconButtons && themeIconButtons.length) {
+      themeIconButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const v = btn.getAttribute("data-theme-icon") || btn.textContent.trim();
+          if (themeLauncherIconInput) themeLauncherIconInput.value = v;
+          if (themeLauncherCustom) themeLauncherCustom.value = "";
+          selectIconButton(v);
+        });
+      });
+    }
+
+    // Egen emoji
+    if (themeLauncherCustom) {
+      themeLauncherCustom.addEventListener("input", () => {
+        const v = (themeLauncherCustom.value || "").trim();
+        if (themeLauncherIconInput) themeLauncherIconInput.value = v || "💬";
+        // Avmarkera presets om man skriver egen
+        selectIconButton("__custom__");
+      });
+    }
+
+    // Färg-labels
+    if (themePrimaryColor) {
+      syncColorLabel(themePrimaryColor, themePrimaryCodeSpan);
+      themePrimaryColor.addEventListener("input", () => syncColorLabel(themePrimaryColor, themePrimaryCodeSpan));
+    }
+    if (themeUserBubble) {
+      syncColorLabel(themeUserBubble, themeUserCodeSpan);
+      themeUserBubble.addEventListener("input", () => syncColorLabel(themeUserBubble, themeUserCodeSpan));
+    }
+    if (themeBotBubble) {
+      syncColorLabel(themeBotBubble, themeBotCodeSpan);
+      themeBotBubble.addEventListener("input", () => syncColorLabel(themeBotBubble, themeBotCodeSpan));
+    }
+
+
+
     // Sök + sort dokument
     const fileSearchInput = document.getElementById("fileSearch");
     const sortByNameBtn   = document.getElementById("sortByNameBtn");
@@ -443,15 +599,6 @@
 
     // Tema DOM
     const themeLauncherIcon = document.getElementById("themeLauncherIcon");
-    const themePrimaryColor = document.getElementById("themePrimaryColor");
-    const themeUserBubble   = document.getElementById("themeUserBubble");
-    const themeBotBubble    = document.getElementById("themeBotBubble");
-    const themeFont         = document.getElementById("themeFont");
-    const themeMsg          = document.getElementById("themeMsg");
-
-    // Preview DOM
-    const chatPreviewFrame  = document.getElementById("chatPreviewFrame");
-    const reloadPreviewBtn  = document.getElementById("reloadPreviewBtn");
 
     const loading     = document.getElementById("loading");
     const loadingText = document.getElementById("loadingText");
@@ -578,25 +725,22 @@
       }
     }
 
-    // Spara tema-inställningar
-    async function saveTheme() {
-      if (!themeLauncherIcon || !themePrimaryColor || !themeUserBubble || !themeBotBubble || !themeFont) {
-        return;
-      }
+      async function saveTheme() {
+      if (!themeMsg) return;
 
       themeMsg.textContent = "";
       themeMsg.classList.remove("err");
 
       const body = {
-        chatLauncherIcon:  themeLauncherIcon.value.trim() || null,
-        chatPrimaryColor:  themePrimaryColor.value.trim() || null,
-        chatUserBubbleColor: themeUserBubble.value.trim() || null,
-        chatBotBubbleColor:  themeBotBubble.value.trim() || null,
-        chatFontFamily:      themeFont.value || null
+        launcherIcon:    (themeLauncherIconInput?.value || "").trim() || null,
+        primaryColor:    (themePrimaryColor?.value || "").trim() || null,
+        userBubbleColor: (themeUserBubble?.value || "").trim() || null,
+        botBubbleColor:  (themeBotBubble?.value || "").trim() || null,
+        fontFamily:      (themeFont?.value || "").trim() || null
       };
 
       try {
-        const { res, data } = await api("/api/portal/account", {
+        const { res, data } = await api("/api/portal/theme", {
           method: "PATCH",
           body: JSON.stringify(body)
         });
@@ -609,7 +753,7 @@
         if (!res.ok) {
           const msg =
             (data && typeof data === "object" && (data.error || data.message)) ||
-            (typeof data === "string" ? data : "Kunde inte spara temat.");
+            (typeof data === "string" ? data : "Kunde inte spara utseendet.");
           themeMsg.textContent = msg;
           themeMsg.classList.add("err");
           return;
@@ -618,19 +762,68 @@
         themeMsg.textContent = "Utseendet är sparat.";
         themeMsg.classList.remove("err");
 
-        // Ladda om förhandsvisningen så att kunden ser nya färgerna direkt
-        if (chatPreviewFrame) {
-          chatPreviewFrame.src = chatPreviewFrame.src;
-        }
+        // ladda om förhandsvisningen med nya färgerna
+        refreshChatPreview();
+
       } catch (e) {
         console.error(e);
-        themeMsg.textContent = "Något gick fel när temat skulle sparas.";
+        themeMsg.textContent = "Något gick fel när utseendet skulle sparas.";
         themeMsg.classList.add("err");
       }
     }
 
-    async function loadMeAndRenderWho() {
+    function resetThemeToDefaults() {
+      if (themeLauncherIconInput) {
+        themeLauncherIconInput.value = "💬";
+        if (themeLauncherCustom) themeLauncherCustom.value = "";
+        selectIconButton("💬");
+      }
+      if (themePrimaryColor) themePrimaryColor.value = "#2563eb";
+      if (themeUserBubble)  themeUserBubble.value  = "#eef2ff";
+      if (themeBotBubble)   themeBotBubble.value   = "#dcfce7";
+
+      syncColorLabel(themePrimaryColor, themePrimaryCodeSpan);
+      syncColorLabel(themeUserBubble,  themeUserCodeSpan);
+      syncColorLabel(themeBotBubble,   themeBotCodeSpan);
+
+      if (themeFont) themeFont.value = "";
+
+      if (themeMsg) {
+        themeMsg.textContent = "Standardutseende återställt – glöm inte att spara.";
+        themeMsg.classList.remove("err");
+      }
+    }
+
+        function refreshChatPreview() {
+      if (!chatPreviewFrame) return;
+
       const cid = getCid();
+      if (!cid || !API) {
+        chatPreviewFrame.srcdoc =
+          "<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#64748b'>" +
+          "Logga in för att se förhandsvisningen." +
+          "</p>";
+        return;
+      }
+
+      const sid = makeSid();
+      const url =
+        WIDGET_URL +
+        "?customerId=" + encodeURIComponent(cid) +
+        "&api="        + encodeURIComponent(API) +
+        "&preview=1" +
+        "&sessionId="  + encodeURIComponent(sid);
+
+      chatPreviewFrame.removeAttribute("srcdoc");
+      chatPreviewFrame.src = url;
+    }
+
+
+        async function loadMeAndRenderWho() {
+      const who       = document.getElementById("who");
+      const whoDomain = document.getElementById("whoDomain");
+      const cid       = getCid();
+
       const fallback = cid ? `Inloggad (kund-ID ${cid})` : "Inloggad kund";
 
       try {
@@ -652,7 +845,7 @@
             domainText = new URL(domainRaw).host || domainRaw;
           }
         } catch {
-          // ignore
+          // om parse failar, använd rå text
         }
 
         const parts = [];
@@ -669,32 +862,20 @@
             : "";
         }
 
+        // Fyll konto-fälten
         if (accNameInput)   accNameInput.value   = company || "";
         if (accEmailInput)  accEmailInput.value  = data.email || "";
         if (accDomainInput) accDomainInput.value = domainRaw || "";
 
-        // Tema-fält från backend (om de finns)
-        if (themeLauncherIcon) {
-          themeLauncherIcon.value = data.chatLauncherIcon || "💬";
-        }
-        if (themePrimaryColor) {
-          themePrimaryColor.value = data.chatPrimaryColor || "";
-        }
-        if (themeUserBubble) {
-          themeUserBubble.value = data.chatUserBubbleColor || "";
-        }
-        if (themeBotBubble) {
-          themeBotBubble.value = data.chatBotBubbleColor || "";
-        }
-        if (themeFont && data.chatFontFamily) {
-          themeFont.value = data.chatFontFamily;
-        }
+        
+        applyThemeFormFromData(data);
 
       } catch (e) {
         who.textContent = fallback;
         if (whoDomain) whoDomain.textContent = "";
       }
     }
+
 
     async function readBody(res){
       const text = await res.text();
@@ -1030,9 +1211,18 @@
     document.getElementById("saveAccountBtn").onclick = saveAccount;
     document.getElementById("deleteAccountBtn").onclick = deleteAccount;
 
-    if (document.getElementById("saveThemeBtn")) {
-      document.getElementById("saveThemeBtn").onclick = saveTheme;
-    }
+    if (saveThemeBtn) {
+  saveThemeBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    saveTheme();
+  });
+}
+if (resetThemeBtn) {
+  resetThemeBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    resetThemeToDefaults();
+  });
+}
 
     if (reloadPreviewBtn && chatPreviewFrame) {
       reloadPreviewBtn.addEventListener("click", () => {
@@ -1080,6 +1270,10 @@
 
         await loadMeAndRenderWho();
         await refreshStatus();
+        await loadMeAndRenderWho();
+        await refreshStatus();
+        refreshChatPreview();   
+
       }
     })();
   </script>
