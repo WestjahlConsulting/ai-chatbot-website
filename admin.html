@@ -25,9 +25,9 @@
     .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .file{ width:100%; }
     .upload-area{
-      margin-top:16px;     /* luft mellan reindex-knappar och "Välj filer" */
+      margin-top:16px;
       display:grid;
-      gap:12px;            /* avstånd mellan "Välj filer" och knapparna under */
+      gap:12px;
       align-items:flex-start;
     }
 
@@ -47,7 +47,7 @@
     .status-pill.pending{ background:rgba(234,179,8,.16); color:#facc15; }
 
     .small{ font-size:12px; }
-     /* Sökfältet i "Dina dokument" – samma stil som övriga inputs */
+
     #fileSearch{
       width:100%;
       padding:12px 14px;
@@ -102,6 +102,7 @@
   <main class="container stack">
     <!-- Banner för köp av extra frågor -->
     <p id="topupBanner" class="banner ok hidden" style="margin-bottom:0;"></p>
+
     <!-- LOGIN -->
     <div id="login-card" class="glass">
       <h2>Logga in</h2>
@@ -120,7 +121,7 @@
 
     <!-- APP -->
     <div id="app" class="hidden">
-      
+
       <!-- Konto-inställningar + inloggningsrad -->
       <section id="account-card" class="glass stack" style="margin-bottom:16px;">
         <div>
@@ -164,7 +165,7 @@
             <p id="whoDomain" class="muted small" style="margin:0;"></p>
           </div>
 
-                    <!-- Höger: knappar -->
+          <!-- Höger: knappar -->
           <div class="actions" style="gap:8px;flex-wrap:wrap;">
             <button id="deleteAccountBtn"
                     class="btn ghost small"
@@ -180,28 +181,179 @@
           </div>
         </div>
       </section>
-      
+      <!-- Chat-utseende -->
+<section class="glass stack" id="theme-card" style="margin-top:16px;">
+  <h2>Chat-utseende</h2>
+  <p class="muted small">
+    Här kan du ändra hur chatten ser ut på din webbplats. Resultatet syns både i förhandsvisningen
+    nedan och på sidan med kodsnutten.
+  </p>
 
+  <!-- Chat-ikon -->
+  <div class="field-group">
+    <label class="field-label">Chat-ikon</label>
+    <p class="muted small" style="margin-bottom:6px;">
+      Välj en ikon-stil eller använd en egen emoji.
+    </p>
+
+    <!-- Preset-ikoner i vågrät rad -->
+  <div id="iconChoices" class="icon-choices">
+    <!-- 1) Rund pratbubbla -->
+    <button type="button" class="icon-choice" data-icon-value="preset:bubble" aria-label="Pratbubbla">
+      <span class="icon-inner">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" fill="#111827"/>
+          <rect x="12" y="13" width="16" height="11" rx="3"
+                fill="#0b1120" stroke="#f9fafb" stroke-width="2"/>
+        </svg>
+      </span>
+    </button>
+
+    <!-- 2) Fylld chattbubbla -->
+    <button type="button" class="icon-choice" data-icon-value="preset:chat" aria-label="Fylld chattbubbla">
+      <span class="icon-inner">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" fill="#0b1120"/>
+          <path d="M13 14h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-6l-4 3v-3h-4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z"
+                fill="#f9fafb"/>
+        </svg>
+      </span>
+    </button>
+
+    <!-- 3) Robot -->
+    <button type="button" class="icon-choice" data-icon-value="preset:robot" aria-label="Robot-ikon">
+      <span class="icon-inner">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" fill="#111827"/>
+          <rect x="11" y="14" width="18" height="12" rx="4" fill="#e5e7eb"/>
+          <circle cx="17" cy="19" r="1.6" fill="#0f172a"/>
+          <circle cx="23" cy="19" r="1.6" fill="#0f172a"/>
+          <rect x="17" y="23" width="6" height="1.4" rx="0.7" fill="#0f172a"/>
+        </svg>
+      </span>
+    </button>
+
+    <!-- 4) Blixt -->
+    <button type="button" class="icon-choice" data-icon-value="preset:bolt" aria-label="Blixt-ikon">
+      <span class="icon-inner">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" fill="#111827"/>
+          <path d="M22 10l-10 12h6l-2 8 10-13h-6z" fill="#facc15"/>
+        </svg>
+      </span>
+    </button>
+
+    <!-- Emoji-läge -->
+    <button type="button" class="icon-choice" data-icon-value="emoji" aria-label="Egen emoji">
+      <span class="icon-inner">😊</span>
+    </button>
+  </div>
+
+
+    <!-- Rad för egen emoji (visas bara om man valt emoji-läget) -->
+    <div id="emojiRow" class="emoji-row hidden" style="margin-top:8px;">
+      <label for="themeLauncherEmoji" class="small muted">Egen ikon (emoji)</label>
+      <input id="themeLauncherEmoji"
+             maxlength="4"
+             placeholder="t.ex. 💬"
+             style="max-width:140px;" />
+    </div>
+
+    <!-- Dolt fält som faktiskt skickas till backend -->
+    <input id="themeLauncherIcon" type="hidden" />
+  </div>
+
+  <!-- Primär färg -->
+  <div class="field-group">
+    <label for="themePrimaryColor" class="field-label">Primär färg</label>
+    <div class="color-row">
+      <input id="themePrimaryColor" type="color" value="#2563eb" />
+      <span class="muted small">Används för knappar och chat-knappens bakgrund.</span>
+    </div>
+  </div>
+
+  <!-- Bubbel-färger -->
+  <div class="field-group">
+    <label class="field-label">Färg på bubblor</label>
+    <div class="color-row">
+      <div>
+        <label for="themeUserBubble" class="small muted">Dina bubblor</label><br />
+        <input id="themeUserBubble" type="color" value="#eef2ff" />
+      </div>
+      <div>
+        <label for="themeBotBubble" class="small muted">Botens bubblor</label><br />
+        <input id="themeBotBubble" type="color" value="#dcfce7" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Typsnitt -->
+  <div class="field-group">
+    <label for="themeFont" class="field-label">Typsnitt i chatten</label>
+    <select id="themeFont">
+      <option value="">System/UI (standard)</option>
+      <option value="Inter, system-ui, -apple-system, Segoe UI, sans-serif">Inter</option>
+      <option value="Georgia, 'Times New Roman', serif">Serif</option>
+      <option value="'Courier New', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+        Monospace
+      </option>
+    </select>
+    <p class="muted small">
+      Typsnittet påverkar bara själva chatten – inte resten av din webbplats.
+    </p>
+  </div>
+
+  <div class="actions" style="margin-top:12px;">
+    <button id="themeSaveBtn" class="btn primary">Spara utseende</button>
+    <button id="themeResetBtn" class="btn secondary">Återställ standard</button>
+  </div>
+
+  <p id="themeMsg" class="banner small muted" style="margin-top:6px;"></p>
+</section>
+
+
+      <!-- Uppdaterad Förhandsvisning -->
+      <section class="glass stack" style="margin-top:16px;">
+        <h2>Förhandsvisning</h2>
+        <p class="muted small">
+          Så här ser din chat ut med dina nuvarande inställningar.
+          Förhandsvisningen påverkar inte din hemsida förrän du bäddar in koden där.
+        </p>
+
+        <div style="border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
+          <iframe
+            id="chatPreviewFrame"
+            title="Förhandsvisning av chat"
+            srcdoc="<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#64748b'>Laddar förhandsvisning…</p>"
+            style="width:100%; height:520px; border:0; background:#020617;">
+          </iframe>
+        </div>
+
+        <button id="reloadPreviewBtn" class="btn ghost small" style="margin-top:8px;">
+          Uppdatera förhandsvisning
+        </button>
+      </section>
+
+      <!-- Uppladdning + dokument -->
       <div class="glass">
-<div class="actions" style="justify-content:space-between">
-  <div>
-    <h2>Uppladdning</h2>
-    <p class="muted" style="margin:6px 0 4px">
-      Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.
-    </p>
-    <p class="small muted" style="margin:0">
-      <strong>Tips:</strong> Använd
-      <em>Reindexera webbplatsen</em> när du ändrat innehåll på din hemsida
-      och <em>Reindexera alla dokument</em> när du vill att boten ska läsa in dina uppladdade
-      filer på nytt.
-    </p>
-  </div>
-  <div class="actions">
-    <button id="reindexSiteBtn" class="btn secondary">Reindexera webbplatsen</button>
-    <button id="reindexAllBtn" class="btn secondary">Reindexera alla dokument</button>
-  </div>
-</div>
-
+        <div class="actions" style="justify-content:space-between">
+          <div>
+            <h2>Uppladdning</h2>
+            <p class="muted" style="margin:6px 0 4px">
+              Stöd: PDF, DOCX, TXT, MD. Max-storlek styrs av servern.
+            </p>
+            <p class="small muted" style="margin:0">
+              <strong>Tips:</strong> Använd
+              <em>Reindexera webbplatsen</em> när du ändrat innehåll på din hemsida
+              och <em>Reindexera alla dokument</em> när du vill att boten ska läsa in dina uppladdade
+              filer på nytt.
+            </p>
+          </div>
+          <div class="actions">
+            <button id="reindexSiteBtn" class="btn secondary">Reindexera webbplatsen</button>
+            <button id="reindexAllBtn" class="btn secondary">Reindexera alla dokument</button>
+          </div>
+        </div>
 
         <div class="upload-area">
           <input id="file" class="file" type="file" multiple accept=".pdf,.docx,.txt,.md" />
@@ -214,73 +366,77 @@
 
         <ul id="log"></ul>
 
+        <div class="glass" style="margin-top:16px;">
+          <h2>Dina dokument</h2>
 
-        <div class="glass">
-        <h2>Dina dokument</h2>
-
-        <!-- Sök + sortering -->
-        <div class="actions" style="margin:4px 0 10px; flex-wrap:wrap; gap:8px; align-items:flex-end;">
-          <div style="flex:1; min-width:200px;">
-            <label for="fileSearch" class="small muted">Sök bland dina dokument</label>
-            <input id="fileSearch" type="text" placeholder="Sök på filnamn eller filtyp…" />
+          <!-- Sök + sortering -->
+          <div class="actions" style="margin:4px 0 10px; flex-wrap:wrap; gap:8px; align-items:flex-end;">
+            <div style="flex:1; min-width:200px;">
+              <label for="fileSearch" class="small muted">Sök bland dina dokument</label>
+              <input id="fileSearch" type="text" placeholder="Sök på filnamn eller filtyp…" />
+            </div>
+            <button id="sortByNameBtn" type="button" class="btn secondary small">
+              Sortera A–Ö
+            </button>
           </div>
-          <button id="sortByNameBtn" type="button" class="btn secondary small">
-            Sortera A–Ö
-          </button>
+
+          <ul id="files"></ul>
         </div>
 
-        <ul id="files"></ul>
-      </div>
-
-      <!-- Quota card -->
-      <section id="quota-card" class="card" style="margin-top:16px; display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-          <div>
-            <h3 style="margin:0 0 6px">Lagringsanvändning</h3>
-            <p id="quota-sub" class="muted" style="margin:0">Laddar…</p>
-            <p class="small muted" id="quota-domain" style="display:none;"></p>
+        <!-- Quota card -->
+        <section id="quota-card" class="card" style="margin-top:16px; display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <h3 style="margin:0 0 6px">Lagringsanvändning</h3>
+              <p id="quota-sub" class="muted" style="margin:0">Laddar…</p>
+              <p class="small muted" id="quota-domain" style="display:none;"></p>
+            </div>
+            <span id="quota-pill" class="status-pill ok">0%</span>
           </div>
-          <span id="quota-pill" class="status-pill ok">0%</span>
-        </div>
 
-        <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
-          <div id="quota-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#60a5fa)"></div>
-        </div>
+          <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
+            <div id="quota-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#60a5fa)"></div>
+          </div>
 
-        <p class="small muted" id="quota-foot" style="margin-top:8px"></p>
-      </section>
+          <p class="small muted" id="quota-foot" style="margin-top:8px"></p>
+        </section>
 
-      
         <!-- Chat-frågor / statistik -->
-      <section id="chat-usage-card" class="card" style="margin-top:16px; display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-          <div>
-            <h3 style="margin:0 0 6px">Frågeanvändning</h3>
-            <p id="chat-usage-sub" class="muted" style="margin:0">Laddar…</p>
+        <section id="chat-usage-card" class="card" style="margin-top:16px; display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <h3 style="margin:0 0 6px">Frågeanvändning</h3>
+              <p id="chat-usage-sub" class="muted" style="margin:0">Laddar…</p>
+            </div>
+            <span id="chat-usage-pill" class="status-pill ok">0%</span>
           </div>
-          <span id="chat-usage-pill" class="status-pill ok">0%</span>
-        </div>
 
-        <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
-          <div id="chat-usage-bar"
-               style="height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:999px;">
+          <div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;height:12px">
+            <div id="chat-usage-bar"
+                 style="height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:999px;">
+            </div>
           </div>
-        </div>
 
-        <div id="chat-usage-foot" class="small muted" style="margin-top:8px"></div>
+          <div id="chat-usage-foot" class="small muted" style="margin-top:8px"></div>
 
-        <div style="margin-top:14px;display:flex;justify-content:flex-end;">
-          <button id="buyQuestionsBtn" type="button" class="btn primary small">
-            Köp fler frågor
-          </button>
-        </div>
-      </section>
-
+          <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+            <button id="buyQuestionsBtn" type="button" class="btn primary small">
+              Köp fler frågor
+            </button>
+          </div>
+        </section>
+      </div>
     </div>
   </main>
 
-
-  <footer><div class="container">© 2025 BotJahl – Enkelt. Smart. Anpassat.</div></footer>
+  <footer>
+    <div class="container">
+      © 2025 BotJahl – Enkelt. Smart. Anpassat.
+      · <a href="terms.html">Användarvillkor</a>
+      · <a href="privacy.html">Integritetspolicy</a>
+      · <a href="dpa.html">Personuppgiftsbiträdesavtalet (DPA)</a>
+    </div>
+  </footer>
 
   <!-- Loader overlay -->
   <div id="loading" class="loader-backdrop" aria-live="polite" aria-busy="true">
@@ -291,62 +447,60 @@
     </div>
   </div>
 
-  <!-- Huvudscript (login + uppladdning + status) -->
+  <!-- Huvudscript (login + uppladdning + status + tema) -->
   <script>
-        // och ev. snippet använder samma src
+    const rawApi = (
+      new URLSearchParams(location.search).get("api") ||
+      window.API_BASE ||
+      window.API ||
+      ""
+    ).trim();
 
-const rawApi = (
-  new URLSearchParams(location.search).get("api") ||
-  window.API_BASE ||
-  window.API ||
-  ""
-).trim();
+    if (!rawApi) {
+      console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
+    }
 
-if (!rawApi) {
-  console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
-}
+    const API = rawApi.replace(/\/+$/, "");
 
-const API = rawApi.replace(/\/+$/, "");
+    const qs = new URLSearchParams(location.search);
+    const presetCid = qs.get("cid");
+    if (presetCid) document.getElementById("cid").value = presetCid;
 
-
-  const qs = new URLSearchParams(location.search);
-  const presetCid = qs.get("cid");
-  if (presetCid) document.getElementById("cid").value = presetCid;
     const tokenKey    = "botjahl.portal.token";
     const customerKey = "botjahl.portal.customer";
-   // ---- Topup-banner (efter köp av extra frågor) ----
-  const topupBanner = document.getElementById("topupBanner");
-  const topup       = qs.get("topup");
-  const topupQStr   = qs.get("questions");
-  const topupQ      = topupQStr ? parseInt(topupQStr, 10) : NaN;
 
-  if (topupBanner && topup === "ok") {
-    const qText =
-      !isNaN(topupQ) && topupQ > 0
-        ? ` Du har köpt ${topupQ.toLocaleString("sv-SE")} extra frågor.`
-        : " Du har köpt fler frågor.";
+    // ---- Topup-banner ----
+    const topupBanner = document.getElementById("topupBanner");
+    const topup       = qs.get("topup");
+    const topupQStr   = qs.get("questions");
+    const topupQ      = topupQStr ? parseInt(topupQStr, 10) : NaN;
 
-    topupBanner.classList.remove("hidden");
-    topupBanner.classList.remove("err");
-    topupBanner.classList.add("ok");
-    topupBanner.innerHTML = `🎉 <strong>Klart!</strong>${qText}`;
-  } else if (topupBanner && topup === "cancel") {
-    topupBanner.classList.remove("hidden");
-    topupBanner.classList.remove("ok");
-    topupBanner.classList.add("err");
-    topupBanner.innerHTML =
-      "Köp av extra frågor avbröts. Du kan försöka igen när du vill.";
-  }
+    if (topupBanner && topup === "ok") {
+      const qText =
+        !isNaN(topupQ) && topupQ > 0
+          ? ` Du har köpt ${topupQ.toLocaleString("sv-SE")} extra frågor.`
+          : " Du har köpt fler frågor.";
 
-  // Rensa bort topup-parametrar ur adressen efter visning
-  if (topup) {
-    qs.delete("topup");
-    qs.delete("questions");
-    const url = new URL(location.href);
-    url.search = qs.toString();
-    window.history.replaceState({}, "", url.toString());
-  }
+      topupBanner.classList.remove("hidden");
+      topupBanner.classList.remove("err");
+      topupBanner.classList.add("ok");
+      topupBanner.innerHTML = `🎉 <strong>Klart!</strong>${qText}`;
+    } else if (topupBanner && topup === "cancel") {
+      topupBanner.classList.remove("hidden");
+      topupBanner.classList.remove("ok");
+      topupBanner.classList.add("err");
+      topupBanner.innerHTML =
+        "Köp av extra frågor avbröts. Du kan försöka igen när du vill.";
+    }
 
+    // Rensa bort topup-parametrar ur adressen efter visning
+    if (topup) {
+      qs.delete("topup");
+      qs.delete("questions");
+      const url = new URL(location.href);
+      url.search = qs.toString();
+      window.history.replaceState({}, "", url.toString());
+    }
 
     const loginCard   = document.getElementById("login-card");
     const app         = document.getElementById("app");
@@ -354,13 +508,121 @@ const API = rawApi.replace(/\/+$/, "");
     const filesUl     = document.getElementById("files");
     const logUl       = document.getElementById("log");
     const successLink = document.getElementById("successLink");
-    // Nytt: sök + sortering för dokument
+    const whoDomain   = document.getElementById("whoDomain");
+
+    
+    // --- Chat-utseende DOM ---
+    const themeLauncherIconInput   = document.getElementById("themeLauncherIcon");
+    const themeLauncherEmojiInput  = document.getElementById("themeLauncherEmoji");
+    const iconButtons              = Array.from(document.querySelectorAll(".icon-choice"));
+    const emojiRow                 = document.getElementById("emojiRow");
+
+    const themePrimaryColor        = document.getElementById("themePrimaryColor");
+    const themeUserBubble          = document.getElementById("themeUserBubble");
+    const themeBotBubble           = document.getElementById("themeBotBubble");
+    const themeFont                = document.getElementById("themeFont");
+    const themeMsg                 = document.getElementById("themeMsg");
+
+    const themePrimaryCodeSpan     = document.getElementById("themePrimaryCode");
+    const themeUserCodeSpan        = document.getElementById("themeUserCode");
+    const themeBotCodeSpan         = document.getElementById("themeBotCode");
+
+    const themeSaveBtn             = document.getElementById("themeSaveBtn");
+    const themeResetBtn            = document.getElementById("themeResetBtn");
+
+
+    // Förhandsvisning
+    const chatPreviewFrame       = document.getElementById("chatPreviewFrame");
+    const reloadPreviewBtn       = document.getElementById("reloadPreviewBtn");
+    const WIDGET_URL             = "https://westjahlconsulting.github.io/ai-chatbot-frontend/widget.html";
+
+    function makeSid() {
+      return (self.crypto && crypto.randomUUID && crypto.randomUUID()) ||
+             (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    }
+
+
+    function setLauncherIconValue(modeOrValue) {
+    if (!themeLauncherIconInput) return;
+
+    // emoji-läge → använd emoji-fältet
+    if (modeOrValue === "emoji") {
+      const emoji = (themeLauncherEmojiInput?.value || "").trim();
+      themeLauncherIconInput.value = emoji || "💬";
+    } else {
+      // presets, t.ex. "preset:bubble"
+      themeLauncherIconInput.value = modeOrValue || "preset:bubble";
+    }
+
+    iconButtons.forEach(btn => {
+      const v = btn.getAttribute("data-icon-value");
+      const currentValue = themeLauncherIconInput.value;
+      
+      if (v === modeOrValue) {
+        btn.classList.add("active");
+      } else if (v === "emoji" && !currentValue.startsWith("preset:") && modeOrValue === "emoji") {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    if (emojiRow) {
+      const isEmoji =
+        modeOrValue === "emoji" ||
+        (themeLauncherIconInput.value && !themeLauncherIconInput.value.startsWith("preset:"));
+      emojiRow.classList.toggle("hidden", !isEmoji);
+    }
+  }
+
+  const activeIconStyle = document.createElement("style");
+  activeIconStyle.textContent = `
+    .icon-choice {
+      opacity: 0.5;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      border: 2px solid transparent;
+    }
+    
+    .icon-choice:hover {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+    
+    .icon-choice.active {
+      opacity: 1;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+    }
+  `;
+  document.head.appendChild(activeIconStyle);
+
+
+
+        // Ikon-knappar
+    iconButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = btn.getAttribute("data-icon-value") || "";
+        setLauncherIconValue(v);
+      });
+    });
+
+    if (themeLauncherEmojiInput) {
+      themeLauncherEmojiInput.addEventListener("input", () => {
+        setLauncherIconValue("emoji");
+      });
+    }
+    // default-val tills /me laddats
+    setLauncherIconValue("preset:bubble");
+
+
+
+
+
+    // Sök + sort dokument
     const fileSearchInput = document.getElementById("fileSearch");
     const sortByNameBtn   = document.getElementById("sortByNameBtn");
-    let filesCache        = [];  // senast hämtade dokument
-    let sortAscending     = true; // A–Ö som default
-
-    const whoDomain   = document.getElementById("whoDomain");
+    let filesCache        = [];
+    let sortAscending     = true;
 
     // Konto-inställningar
     const accNameInput   = document.getElementById("accName");
@@ -368,13 +630,14 @@ const API = rawApi.replace(/\/+$/, "");
     const accDomainInput = document.getElementById("accDomain");
     const accountMsg     = document.getElementById("accountMsg");
 
+    // Tema DOM
+    const themeLauncherIcon = document.getElementById("themeLauncherIcon");
 
     const loading     = document.getElementById("loading");
     const loadingText = document.getElementById("loadingText");
     function showLoading(text){ if(text) loadingText.textContent = text; loading.classList.add("show"); }
     function hideLoading(){ loading.classList.remove("show"); }
 
-    // HTML-escape för värden som läggs i innerHTML / attribut
     function esc(value){
       return (value ?? "").toString().replace(/[&<>"']/g, c => {
         switch (c) {
@@ -382,7 +645,7 @@ const API = rawApi.replace(/\/+$/, "");
           case "<": return "&lt;";
           case ">": return "&gt;";
           case '"': return "&quot;";
-          default:  return "&#39;"; // '
+          default:  return "&#39;";
         }
       });
     }
@@ -390,7 +653,7 @@ const API = rawApi.replace(/\/+$/, "");
     function setAuth(token, cid){
       if (token) {
         localStorage.setItem(tokenKey, token);
-        localStorage.setItem("bj_jwt", token); // för quota-scriptet
+        localStorage.setItem("bj_jwt", token);
         window.dispatchEvent(new CustomEvent("bj:auth", { detail: { token } }));
       }
       if (cid) localStorage.setItem(customerKey, cid);
@@ -411,8 +674,7 @@ const API = rawApi.replace(/\/+$/, "");
       filesUl.innerHTML = "";
     }
 
-        async function deleteAccount() {
-      // Dubbel-confirm så man inte råkar klicka fel
+    async function deleteAccount() {
       if (!confirm("Är du säker på att du vill radera ditt konto och alla uppladdade filer?")) return;
       if (!confirm("Detta går inte att ångra. Kvitton/fakturor ligger kvar i Stripe. Fortsätt?")) return;
 
@@ -422,7 +684,6 @@ const API = rawApi.replace(/\/+$/, "");
         const { res, data } = await api("/api/portal/account", {
           method: "DELETE",
           body: JSON.stringify({
-            // matchar DeleteAccountReq (case-insensitiv i backend)
             cancelStripeSubscriptions: true,
             deleteStripeCustomer: false
           })
@@ -445,7 +706,6 @@ const API = rawApi.replace(/\/+$/, "");
 
         alert("Ditt konto och dina uppladdade filer har nu raderats. Eventuella kvitton finns kvar i Stripe för bokföring.");
         logout();
-        // Skicka användaren till startsidan efter radering
         window.location.href = "index.html";
       } catch (e) {
         hideLoading();
@@ -454,8 +714,7 @@ const API = rawApi.replace(/\/+$/, "");
       }
     }
 
-
-        async function saveAccount() {
+    async function saveAccount() {
       if (!accNameInput || !accEmailInput || !accDomainInput) return;
 
       accountMsg.textContent = "";
@@ -490,7 +749,6 @@ const API = rawApi.replace(/\/+$/, "");
         accountMsg.textContent = "Ändringarna är sparade.";
         accountMsg.classList.remove("err");
 
-        // Hämta om info-raden + fälten (ifall backend normaliserar domän)
         await loadMeAndRenderWho();
 
       } catch (e) {
@@ -500,8 +758,136 @@ const API = rawApi.replace(/\/+$/, "");
       }
     }
 
+      async function saveTheme() {
+      if (!themeMsg) return;
 
-          async function loadMeAndRenderWho() {
+      themeMsg.textContent = "";
+      themeMsg.classList.remove("err");
+
+      const body = {
+        launcherIcon:    (themeLauncherIconInput?.value || "").trim() || null,
+        primaryColor:    (themePrimaryColor?.value || "").trim() || null,
+        userBubbleColor: (themeUserBubble?.value || "").trim() || null,
+        botBubbleColor:  (themeBotBubble?.value || "").trim() || null,
+        fontFamily:      (themeFont?.value || "").trim() || null
+      };
+
+      try {
+        const { res, data } = await api("/api/portal/theme", {
+          method: "PATCH",
+          body: JSON.stringify(body)
+        });
+
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+
+        if (!res.ok) {
+          const msg =
+            (data && typeof data === "object" && (data.error || data.message)) ||
+            (typeof data === "string" ? data : "Kunde inte spara utseendet.");
+          themeMsg.textContent = msg;
+          themeMsg.classList.add("err");
+          return;
+        }
+
+        themeMsg.textContent = "Utseendet är sparat.";
+        themeMsg.classList.remove("err");
+
+        // ladda om förhandsvisningen med nya färgerna
+        refreshChatPreview();
+
+      } catch (e) {
+        console.error(e);
+        themeMsg.textContent = "Något gick fel när utseendet skulle sparas.";
+        themeMsg.classList.add("err");
+      }
+    }
+
+  function resetThemeToDefaults() {
+  if (themePrimaryColor) themePrimaryColor.value = "#2563eb";
+  if (themeUserBubble)   themeUserBubble.value   = "#eef2ff";
+  if (themeBotBubble)    themeBotBubble.value    = "#dcfce7";
+  if (themeFont)         themeFont.value         = "";
+
+  if (themeLauncherEmojiInput) themeLauncherEmojiInput.value = "💬";
+  setLauncherIconValue("emoji");
+
+  if (themeMsg) {
+    themeMsg.textContent = "Standardutseende återställt – glöm inte att spara.";
+    themeMsg.classList.remove("err");
+  }
+}
+
+
+        function refreshChatPreview() {
+      if (!chatPreviewFrame) return;
+
+      const cid = getCid();
+      if (!cid || !API) {
+        chatPreviewFrame.srcdoc =
+          "<p style='font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:12px;color:#64748b'>" +
+          "Logga in för att se förhandsvisningen." +
+          "</p>";
+        return;
+      }
+
+      const sid = makeSid();
+      const url =
+        WIDGET_URL +
+        "?customerId=" + encodeURIComponent(cid) +
+        "&api="        + encodeURIComponent(API) +
+        "&preview=1" +
+        "&sessionId="  + encodeURIComponent(sid);
+
+      chatPreviewFrame.removeAttribute("srcdoc");
+      chatPreviewFrame.src = url;
+    }
+
+      function applyThemeFormFromData(me) {
+      if (!me) return;
+      const t = me.theme || {};
+
+      const launcherIcon = t.launcherIcon || null;
+      const primaryColor = t.primaryColor || null;
+      const userBubble   = t.userBubbleColor || null;
+      const botBubble    = t.botBubbleColor || null;
+      const fontFamily   = t.fontFamily || null;
+
+      if (launcherIcon) {
+        if (launcherIcon.startsWith("preset:")) {
+          // Det är en preset-ikon
+          setLauncherIconValue(launcherIcon);
+          if (themeLauncherEmojiInput) themeLauncherEmojiInput.value = "";
+        } else {
+          // Det är en emoji
+          if (themeLauncherEmojiInput) themeLauncherEmojiInput.value = launcherIcon;
+          setLauncherIconValue("emoji");
+        }
+      } else {
+        // Ingen ikon sparad, använd default
+        setLauncherIconValue("preset:bubble");
+        if (themeLauncherEmojiInput) themeLauncherEmojiInput.value = "";
+      }
+
+      if (themePrimaryColor) {
+        themePrimaryColor.value = primaryColor || "#2563eb";
+      }
+      if (themeUserBubble) {
+        themeUserBubble.value = userBubble || "#eef2ff";
+      }
+      if (themeBotBubble) {
+        themeBotBubble.value = botBubble || "#dcfce7";
+      }
+      if (themeFont) {
+        themeFont.value = fontFamily || "";
+      }
+    }
+
+
+
+      async function loadMeAndRenderWho() {
       const who       = document.getElementById("who");
       const whoDomain = document.getElementById("whoDomain");
       const cid       = getCid();
@@ -549,12 +935,14 @@ const API = rawApi.replace(/\/+$/, "");
         if (accEmailInput)  accEmailInput.value  = data.email || "";
         if (accDomainInput) accDomainInput.value = domainRaw || "";
 
+        
+        applyThemeFormFromData(data);
+
       } catch (e) {
         who.textContent = fallback;
         if (whoDomain) whoDomain.textContent = "";
       }
     }
-
 
 
     async function readBody(res){
@@ -598,68 +986,61 @@ const API = rawApi.replace(/\/+$/, "");
     }
 
     async function login(){
-  const customerId = document.getElementById("cid").value.trim();
-  const email      = document.getElementById("email").value.trim();
-  const msg        = document.getElementById("loginMsg");
+      const customerId = document.getElementById("cid").value.trim();
+      const email      = document.getElementById("email").value.trim();
+      const msg        = document.getElementById("loginMsg");
 
-  msg.textContent = "";
-  msg.classList.add("hidden");
+      msg.textContent = "";
+      msg.classList.add("hidden");
 
-  try{
-    showLoading("Loggar in…");
-    const res  = await fetch(API + "/api/portal/login", {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({ customerId, email })
-    });
-    const data = await readBody(res);
+      try{
+        showLoading("Loggar in…");
+        const res  = await fetch(API + "/api/portal/login", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ customerId, email })
+        });
+        const data = await readBody(res);
 
-    if (!res.ok) {
-      const errText =
-        (data && typeof data === "object" && (data.error || data.message)) ||
-        (typeof data === "string" ? data : "Felaktiga uppgifter.");
-      throw new Error(errText);
+        if (!res.ok) {
+          const errText =
+            (data && typeof data === "object" && (data.error || data.message)) ||
+            (typeof data === "string" ? data : "Felaktiga uppgifter.");
+          throw new Error(errText);
+        }
+
+        if (data && data.demo && data.token && data.customerId) {
+          setAuth(data.token, data.customerId);
+
+          hideLoading();
+          loginCard.classList.add("hidden");
+          app.classList.remove("hidden");
+          successLink.href = "success.html?cid=" + encodeURIComponent(data.customerId);
+
+          await loadMeAndRenderWho();
+          await refreshStatus();
+
+          msg.textContent = "Du är nu inloggad som demo-kund.";
+          msg.classList.remove("hidden");
+          msg.classList.remove("err");
+          return;
+        }
+
+        hideLoading();
+        msg.textContent =
+          (data && data.message) ||
+          "Om uppgifterna stämmer har vi skickat en inloggningslänk till din e-post.";
+        msg.classList.remove("hidden");
+        msg.classList.remove("err");
+
+      }catch(e){
+        hideLoading();
+        msg.textContent = e.message || "Kunde inte skicka inloggningslänk.";
+        msg.classList.remove("hidden");
+        msg.classList.add("err");
+      }
     }
 
-    // 🔹 DEMO-KUND: token returneras direkt → logga in omedelbart
-    if (data && data.demo && data.token && data.customerId) {
-      setAuth(data.token, data.customerId);
-
-      hideLoading();
-      loginCard.classList.add("hidden");
-      app.classList.remove("hidden");
-      successLink.href = "success.html?cid=" + encodeURIComponent(data.customerId);
-
-      // uppdatera rubrik + konto-fält
-      await loadMeAndRenderWho();
-      await refreshStatus();
-
-      // litet info-meddelande om att man är inne som demo
-      msg.textContent = "Du är nu inloggad som demo-kund.";
-      msg.classList.remove("hidden");
-      msg.classList.remove("err");
-      return;
-    }
-
-    // 🔹 Vanlig kund → samma text som tidigare (magic-link via mejl)
-    hideLoading();
-    msg.textContent =
-      (data && data.message) ||
-      "Om uppgifterna stämmer har vi skickat en inloggningslänk till din e-post.";
-    msg.classList.remove("hidden");
-    msg.classList.remove("err");
-
-  }catch(e){
-    hideLoading();
-    msg.textContent = e.message || "Kunde inte skicka inloggningslänk.";
-    msg.classList.remove("hidden");
-    msg.classList.add("err");
-  }
-}
-
-
-
-     // Rendera dokumentlistan baserat på cache + sök + sortering
     function renderFiles(){
       filesUl.innerHTML = "";
 
@@ -670,10 +1051,8 @@ const API = rawApi.replace(/\/+$/, "");
 
       const q = (fileSearchInput?.value || "").trim().toLowerCase();
 
-      // 1) utgå från hela listan
       let list = filesCache.slice();
 
-      // 2) filtrera på söksträng om den finns
       if (q) {
         list = list.filter(it => {
           const name = (it.displayName || it.objectName || "").toLowerCase();
@@ -682,7 +1061,6 @@ const API = rawApi.replace(/\/+$/, "");
         });
       }
 
-      // 3) sortera på namn (A–Ö eller Ö–A)
       list.sort((a, b) => {
         const na = (a.displayName || a.objectName || "").toLowerCase();
         const nb = (b.displayName || b.objectName || "").toLowerCase();
@@ -696,7 +1074,6 @@ const API = rawApi.replace(/\/+$/, "");
         return;
       }
 
-      // 4) bygg upp DOM enligt befintlig layout
       for (const it of list){
         const li   = document.createElement("li");
         const when = it.lastModified ? new Date(it.lastModified).toLocaleString() : "-";
@@ -707,7 +1084,6 @@ const API = rawApi.replace(/\/+$/, "");
             '</span>'
           : ' • <span class="status-pill pending">ej indexerad</span>';
 
-        // Filnamn – använd DisplayName om den finns
         const rawName =
           (it.displayName && it.displayName.trim())
             ? it.displayName
@@ -734,7 +1110,6 @@ const API = rawApi.replace(/\/+$/, "");
         filesUl.appendChild(li);
       }
 
-      // koppla knapparna i listan
       filesUl.querySelectorAll('button[data-act="reindex"]').forEach(b => {
         b.onclick = () => reindexOne(b.dataset.name);
       });
@@ -743,7 +1118,6 @@ const API = rawApi.replace(/\/+$/, "");
       });
     }
 
-    // Hämtar status från API och uppdaterar cache + UI
     async function refreshStatus(){
       filesUl.innerHTML = "<li class='muted'>Laddar…</li>";
       const { res, data } = await api("/api/uploads/status");
@@ -769,7 +1143,7 @@ const API = rawApi.replace(/\/+$/, "");
       renderFiles();
     }
 
-        async function reindexWebsite(){
+    async function reindexWebsite(){
       const { res, data } = await api("/api/portal/reindex-website", {
         method: "POST"
       });
@@ -786,7 +1160,6 @@ const API = rawApi.replace(/\/+$/, "");
 
       alert("Webbplatsen har köats för ny indexering. Det kan ta upp till någon minut innan svaren uppdateras.");
     }
-
 
     async function reindexAll(){
       const before = await getStatusRaw();
@@ -896,19 +1269,37 @@ const API = rawApi.replace(/\/+$/, "");
       }
     }
 
-document.getElementById("loginBtn").onclick      = login;
-document.getElementById("logoutBtn").onclick     = logout;
-document.getElementById("refreshBtn").onclick    = refreshStatus;
-document.getElementById("uploadBtn").onclick     = upload;
-document.getElementById("reindexAllBtn").onclick = reindexAll;
-document.getElementById("reindexSiteBtn").onclick = reindexWebsite;
-document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
-document.getElementById("saveAccountBtn").onclick = saveAccount;
-document.getElementById("deleteAccountBtn").onclick = deleteAccount;
+    document.getElementById("loginBtn").onclick      = login;
+    document.getElementById("logoutBtn").onclick     = logout;
+    document.getElementById("refreshBtn").onclick    = refreshStatus;
+    document.getElementById("uploadBtn").onclick     = upload;
+    document.getElementById("reindexAllBtn").onclick = reindexAll;
+    document.getElementById("reindexSiteBtn").onclick = reindexWebsite;
+    document.getElementById("email").addEventListener("keydown", (e)=>{ if (e.key === "Enter") login(); });
+    document.getElementById("saveAccountBtn").onclick = saveAccount;
+    document.getElementById("deleteAccountBtn").onclick = deleteAccount;
+
+    if (themeSaveBtn) {
+      themeSaveBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        saveTheme();
+      });
+    }
+
+    if (themeResetBtn) {
+      themeResetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        resetThemeToDefaults();
+      });
+    }
 
 
+    if (reloadPreviewBtn && chatPreviewFrame) {
+      reloadPreviewBtn.addEventListener("click", () => {
+        chatPreviewFrame.src = chatPreviewFrame.src;
+      });
+    }
 
-   // Sök + sort
     if (fileSearchInput) {
       fileSearchInput.addEventListener("input", () => {
         renderFiles();
@@ -923,17 +1314,14 @@ document.getElementById("deleteAccountBtn").onclick = deleteAccount;
       });
     }
 
-        (async function boot(){
-      // 1) Plocka ev. token + cid från URL:en (magic-link)
+    (async function boot(){
       const url         = new URL(location.href);
       const tokenFromUrl = url.searchParams.get("token") || url.searchParams.get("jwt");
       const cidFromUrl   = url.searchParams.get("cid");
 
       if (tokenFromUrl) {
-        // Spara auth-info i localStorage + trigga bj:auth-event
         setAuth(tokenFromUrl, cidFromUrl || null);
 
-        // Rensa känsliga parametrar ur adressfältet
         url.searchParams.delete("token");
         url.searchParams.delete("jwt");
         if (cidFromUrl) {
@@ -942,79 +1330,75 @@ document.getElementById("deleteAccountBtn").onclick = deleteAccount;
         history.replaceState({}, "", url.toString());
       }
 
-      // 2) Läs ev. befintlig auth från storage/cookies
       const token = getToken();
       const cid   = getCid();
 
-            if (token && cid){
+      if (token && cid){
         loginCard.classList.add("hidden");
         app.classList.remove("hidden");
         successLink.href = "success.html?cid=" + encodeURIComponent(cid);
 
-        await loadMeAndRenderWho();  // <-- NYTT: visa namn + domän
+        await loadMeAndRenderWho();
         await refreshStatus();
+        await loadMeAndRenderWho();
+        await refreshStatus();
+        refreshChatPreview();   
+
       }
     })();
-
   </script>
 
+  <!-- Intro-text login/loggad in -->
   <script>
-(function() {
-  const intro = document.getElementById("introText");
+  (function() {
+    const intro = document.getElementById("introText");
 
-  function setLoggedOutText() {
-    if (!intro) return;
-    intro.innerHTML = `
-      Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
-      Du får en inloggningslänk skickad till din e-post.
-      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
-      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
-    `;
-  }
+    function setLoggedOutText() {
+      if (!intro) return;
+      intro.innerHTML = `
+        Logga in med ditt <strong>kund-ID</strong> och den <strong>e-post</strong> som angavs vid registrering.
+        Du får en inloggningslänk skickad till din e-post.
+        Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+        När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+      `;
+    }
 
-  function setLoggedInText() {
-    if (!intro) return;
-    intro.innerHTML = `
-      Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
-      När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
-      Får du slut på frågor kan du alltid köpa fler enkelt genom att klicka på knappen
-      <strong>"Köp fler frågor"</strong>.
-    `;
-  }
+    function setLoggedInText() {
+      if (!intro) return;
+      intro.innerHTML = `
+        Här kan du ladda upp dokument (PDF/DOCX/TXT/MD), se status, reindexera och ta bort filer.
+        När en fil är <strong>indexerad</strong> används dess innehåll som kontext när din bot svarar.
+        Får du slut på frågor kan du alltid köpa fler enkelt genom att klicka på knappen
+        <strong>"Köp fler frågor"</strong>.
+      `;
+    }
 
-  // Lyssna på login-eventet
-  window.addEventListener("bj:auth", () => {
-    setLoggedInText();
-  });
+    window.addEventListener("bj:auth", () => {
+      setLoggedInText();
+    });
 
-  // Körs vid sidstart
-  const token = localStorage.getItem("botjahl.portal.token") ||
-                localStorage.getItem("bj_jwt");
+    const token = localStorage.getItem("botjahl.portal.token") ||
+                  localStorage.getItem("bj_jwt");
 
-  if (token) {
-    setLoggedInText();
-  } else {
-    setLoggedOutText();
-  }
+    if (token) {
+      setLoggedInText();
+    } else {
+      setLoggedOutText();
+    }
+  })();
+  </script>
 
-})();
-</script>
-
-
-  <!-- Quota + me card driver (lagring + domän) -->
-<script>
+  <!-- Quota + me card driver -->
+  <script>
   (function () {
-    // Bas-url för API:t (samma logik som tidigare)
     const rawBase2 = (window.API_BASE || window.API || "").trim();
 
-if (!rawBase2) {
-  console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
-}
+    if (!rawBase2) {
+      console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats");
+    }
 
-const API_BASE = rawBase2.replace(/\/+$/, "");
+    const API_BASE = rawBase2.replace(/\/+$/, "");
 
-
-    // --- Token-hantering: plocka bästa JWT vi hittar ---
     function readCookie(name) {
       const m = document.cookie.match(
         new RegExp("(^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)")
@@ -1023,17 +1407,14 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
     }
 
     function getBestToken() {
-      // 1) localStorage / sessionStorage (huvudvägen – samma som login)
       const storageKeys = ["bj_jwt", "jwt", "token", "botjahl.portal.token"];
       for (const k of storageKeys) {
         const v = localStorage.getItem(k) || sessionStorage.getItem(k);
-        if (v) return v; // rå JWT, utan "Bearer "
+        if (v) return v;
       }
 
-      // 2) ev. global variabel
       if (window.JWT) return window.JWT;
 
-      // 3) cookies (fallback)
       const cookieKeys = ["bj_jwt", "jwt", "token", "botjahl.portal.token"];
       for (const ck of cookieKeys) {
         const v = readCookie(ck);
@@ -1042,47 +1423,42 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
       return "";
     }
 
-   async function fetchJson(path) {
-  const token = getBestToken();
-  if (!token) {
-    throw new Error("no_token");
-  }
+    async function fetchJson(path) {
+      const token = getBestToken();
+      if (!token) {
+        throw new Error("no_token");
+      }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Accept": "application/json"
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        }
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {}
+
+      if (res.status === 401) {
+        try {
+          localStorage.removeItem("botjahl.portal.token");
+          localStorage.removeItem("bj_jwt");
+          localStorage.removeItem("jwt");
+          localStorage.removeItem("token");
+        } catch {}
+
+        throw new Error("unauthorized");
+      }
+
+      if (!res.ok) {
+        throw new Error((data && data.error) || `HTTP ${res.status}`);
+      }
+
+      return data;
     }
-  });
 
-  let data = null;
-  try {
-    data = await res.json();
-  } catch {
-    /* ignore parse error */
-  }
-
-  if (res.status === 401) {
-    // städa bort ogiltig token så vi inte spammar 401
-    try {
-      localStorage.removeItem("botjahl.portal.token");
-      localStorage.removeItem("bj_jwt");
-      localStorage.removeItem("jwt");
-      localStorage.removeItem("token");
-    } catch {}
-
-    throw new Error("unauthorized");
-  }
-
-  if (!res.ok) {
-    throw new Error((data && data.error) || `HTTP ${res.status}`);
-  }
-
-  return data;
-}
-
-
-    // --- DOM-element för kortet ---
     const card   = document.getElementById("quota-card");
     const sub    = document.getElementById("quota-sub");
     const pill   = document.getElementById("quota-pill");
@@ -1115,9 +1491,7 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
             domain.style.display = "";
             return;
           }
-        } catch {
-          // om URL inte går att parsa, göm raden
-        }
+        } catch {}
       }
 
       domain.textContent = "";
@@ -1152,19 +1526,17 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
 
         renderUsage(usage);
         renderDomain(me);
-  } catch (err) {
-    // vid no_token/unauthorized → bara visa utloggat läge, spamma inte konsolen
-    if (err && (err.message === "no_token" || err.message === "unauthorized")) {
-      renderLoggedOut();
-      return;
+      } catch (err) {
+        if (err && (err.message === "no_token" || err.message === "unauthorized")) {
+          renderLoggedOut();
+          return;
+        }
+
+        console.error("usage / me error:", err);
+        renderLoggedOut();
+      }
     }
 
-    console.error("usage / me error:", err);
-    renderLoggedOut();
-  }
-    }
-
-    // Lyssna på att token ändras (t.ex. när man loggar in/loggar ut)
     window.addEventListener("storage", (e) => {
       if (["botjahl.portal.token", "bj_jwt", "jwt", "token", "auth_token"].includes(e.key)) {
         tick();
@@ -1172,25 +1544,23 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
     });
     window.addEventListener("bj:auth", () => tick());
 
-    // Första körningen + polling
     tick();
     setInterval(tick, 60000);
   })();
-</script>
+  </script>
 
-
-    <!-- Chat usage card driver -->
+  <!-- Chat usage card driver -->
   <script>
   (function(){
-  const rawBase3 = (window.API_BASE || window.API || "").trim();
+    const rawBase3 = (window.API_BASE || window.API || "").trim();
 
-  if (!rawBase3) {
-    console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats av GitHub Actions.");
-  }
+    if (!rawBase3) {
+      console.error("API_BASE saknas! Kontrollera att __API_BASE__ har injicerats av GitHub Actions.");
+    }
 
-  const API_BASE = rawBase3.replace(/\/+$/,"");
+    const API_BASE = rawBase3.replace(/\/+$/,"");
 
-  function readCookie(name){
+    function readCookie(name){
       const parts = document.cookie.split(";");
       for (let p of parts){
         p = p.trim();
@@ -1267,8 +1637,8 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
     }
 
     if (card){
-      tick();                 // första hämtningen
-      setInterval(tick, 60000); // uppdatera varje minut
+      tick();
+      setInterval(tick, 60000);
     }
 
     if (buyBtn){
@@ -1286,14 +1656,14 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
               "Authorization": `Bearer ${token}`,
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({ pack: "small" }) // börja med en standard-pack
+            body: JSON.stringify({ pack: "small" })
           });
           const data = await res.json();
           if (!res.ok || !data.url){
             alert(data.error || "Kunde inte starta köp av frågor.");
             return;
           }
-          location.href = data.url; // vidare till Stripe Checkout
+          location.href = data.url;
         }catch(err){
           console.error(err);
           alert("Något gick fel när köpet skulle startas.");
@@ -1303,98 +1673,78 @@ const API_BASE = rawBase2.replace(/\/+$/, "");
   })();
   </script>
 
+  <!-- Global 401-hanterare -->
+  <script>
+  (function() {
+    const TOKEN_KEYS = [
+      "botjahl.portal.token",
+      "bj_jwt",
+      "jwt",
+      "token",
+      "auth_token"
+    ];
 
-  <footer>
-    <div class="container">
-      © 2025 BotJahl – Enkelt. Smart. Anpassat.
-      · <a href="terms.html">Användarvillkor</a>
-      · <a href="privacy.html">Integritetspolicy</a>
-      · <a href="dpa.html">Personuppgiftsbiträdesavtalet (DPA)</a>
-    </div>
-  </footer>
+    function clearAllTokens() {
+      try {
+        for (const key of TOKEN_KEYS) {
+          localStorage.removeItem(key);
+          sessionStorage.removeItem(key);
+          document.cookie = key + "=; Max-Age=0; path=/;";
+        }
+      } catch (e) {
+        console.warn("Token cleanup failed:", e);
+      }
+    }
 
-<script>
-(function() {
-
-  const TOKEN_KEYS = [
-    "botjahl.portal.token",
-    "bj_jwt",
-    "jwt",
-    "token",
-    "auth_token"
-  ];
-
-  // Rensar alla tokens i localStorage + sessionStorage + cookies
-  function clearAllTokens() {
-    try {
+    function getStoredToken() {
       for (const key of TOKEN_KEYS) {
-        localStorage.removeItem(key);
-        sessionStorage.removeItem(key);
-        document.cookie = key + "=; Max-Age=0; path=/;";
+        const v =
+          localStorage.getItem(key) ||
+          sessionStorage.getItem(key);
+        if (v) return v;
       }
-    } catch (e) {
-      console.warn("Token cleanup failed:", e);
+      return null;
     }
-  }
 
-  // Hämtar bästa token från storage/cookies
-  function getStoredToken() {
-    for (const key of TOKEN_KEYS) {
-      const v =
-        localStorage.getItem(key) ||
-        sessionStorage.getItem(key);
-      if (v) return v;
-    }
-    return null;
-  }
+    window.addEventListener("bj:auth", () => {
+      const token = getStoredToken();
+      if (!token) return;
+      console.log("Auth stored:", token.substring(0, 20) + "...");
+    });
 
-  // Lyssna på bj:auth-event när token skapas (vid magic-link)
-  window.addEventListener("bj:auth", () => {
-    const token = getStoredToken();
-    if (!token) return;
-    // Token finns – OK
-    console.log("Auth stored:", token.substring(0, 20) + "...");
-  });
+    const origFetch = window.fetch;
+    window.fetch = async function(url, opts = {}) {
+      const resp = await origFetch(url, opts);
 
-  // Global fetch override som fångar 401 överallt
-  const origFetch = window.fetch;
-  window.fetch = async function(url, opts = {}) {
-    const resp = await origFetch(url, opts);
+      if (resp.status === 401) {
+        console.warn("401 detected – clearing tokens automatically…");
+        clearAllTokens();
 
-    if (resp.status === 401) {
-      console.warn("401 detected – clearing tokens automatically…");
-      
-      clearAllTokens();
+        const app = document.getElementById("app");
+        const login = document.getElementById("login-card");
+        if (app && login) {
+          app.classList.add("hidden");
+          login.classList.remove("hidden");
+        }
+      }
 
-      // Visa login-kortet igen om admin är laddad
+      return resp;
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = getStoredToken();
       const app = document.getElementById("app");
       const login = document.getElementById("login-card");
-      if (app && login) {
-        app.classList.add("hidden");
-        login.classList.remove("hidden");
+
+      if (!token) {
+        console.log("No valid token found on load — showing login");
+        if (app && login) {
+          app.classList.add("hidden");
+          login.classList.remove("hidden");
+        }
       }
-    }
-
-    return resp;
-  };
-
-  // Direkt vid sidstart: om token saknas → logga ut användaren
-  document.addEventListener("DOMContentLoaded", () => {
-    const token = getStoredToken();
-    if (!token) {
-      console.log("No valid token found on load — showing login");
-      const app = document.getElementById("app");
-      const login = document.getElementById("login-card");
-      if (app && login) {
-        app.classList.add("hidden");
-        login.classList.remove("hidden");
-      }
-    }
-  });
-
-})();
-</script>
-
-
+    });
+  })();
+  </script>
 </body>
 </html>
