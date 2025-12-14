@@ -897,6 +897,142 @@ width: 100%;
 height: 100%;
 border: 0;
 }
+
+.field-group{ margin-top:14px; display:grid; gap:6px; }
+.field-label{ font-weight:600; }
+
+.icon-choices{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.icon-choice{
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.6);
+  background:#020617;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  padding:0;
+}
+
+.icon-choice .icon-inner{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+  font-size:20px;
+}
+
+/* “Aktiv” ikon */
+.icon-choice.active{
+  border-color:#3b82f6;
+  box-shadow:0 0 0 2px rgba(59,130,246,.5);
+}
+
+/* Mobil – radbryt om det behövs */
+@media (max-width:640px){
+  .icon-choices{
+    gap:6px;
+  }
+}
+
+.emoji-row.hidden{ display:none; }
+
+.color-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.color-row input[type="color"]{
+  width:46px;
+  height:32px;
+  padding:0;
+  border-radius:8px;
+  border:1px solid rgba(148,163,184,.6);
+  background:#020617;
+}
+
+/* små “glyphs” för ikoner – enkel stil som färgas av currentColor */
+.icon-bubble::before{
+  content:"";
+  display:block;
+  width:18px;
+  height:14px;
+  border-radius:6px;
+  border:2px solid currentColor;
+  border-bottom-left-radius:2px;
+  position:relative;
+}
+.icon-bubble::after{
+  content:"";
+  position:relative;
+  display:block;
+  width:0;
+  height:0;
+  border-style:solid;
+  border-width:6px 6px 0 0;
+  border-color:currentColor transparent transparent transparent;
+  left:2px;
+  top:-2px;
+}
+
+.icon-chat::before{
+  content:"";
+  display:block;
+  width:18px;
+  height:14px;
+  border-radius:6px;
+  background:currentColor;
+  position:relative;
+}
+.icon-chat::after{
+  content:"...";
+  position:absolute;
+  top:3px;
+  left:5px;
+  font-size:10px;
+  color:#020617;
+}
+
+/* enkel robot-ikon */
+.icon-robot::before{
+  content:"";
+  display:block;
+  width:18px;
+  height:14px;
+  border-radius:4px;
+  border:2px solid currentColor;
+  position:relative;
+}
+.icon-robot::after{
+  content:"••";
+  position:absolute;
+  top:2px;
+  left:4px;
+  letter-spacing:4px;
+  font-size:10px;
+}
+
+/* blixt */
+.icon-bolt::before{
+  content:"";
+  display:block;
+  width:0;
+  height:0;
+  border-style:solid;
+  border-width:0 8px 16px 8px;
+  border-color:transparent transparent currentColor transparent;
+  transform:skewX(-10deg);
+}
+
+
 /* ========================================
 MOBIL-ANPASSNINGAR
 ======================================== */
