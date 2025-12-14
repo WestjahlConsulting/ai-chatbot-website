@@ -644,3 +644,40 @@ input[type="color"]::-moz-color-swatch{border:none;border-radius:6px}
   .btn,.card{transition:none}
   body::before{animation:none}
 }
+
+.bj-ai-badge {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: help;
+  position: relative;
+}
+
+.bj-ai-tooltip {
+  position: absolute;
+  bottom: 125%;
+  left: 0;
+  transform: translateY(4px);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  width: max-content;
+  max-width: 220px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+
+.bj-ai-badge:hover .bj-ai-tooltip,
+.bj-ai-badge:focus .bj-ai-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
