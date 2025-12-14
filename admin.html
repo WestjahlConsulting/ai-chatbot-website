@@ -543,35 +543,58 @@
 
 
     function setLauncherIconValue(modeOrValue) {
-      if (!themeLauncherIconInput) return;
+    if (!themeLauncherIconInput) return;
 
-      // emoji-läge → använd emoji-fältet
-      if (modeOrValue === "emoji") {
-        const emoji = (themeLauncherEmojiInput?.value || "").trim();
-        themeLauncherIconInput.value = emoji || "💬";
-      } else {
-        // presets, t.ex. "preset:bubble"
-        themeLauncherIconInput.value = modeOrValue || "preset:bubble";
-      }
-
-      // uppdatera vilken knapp som är aktiv
-      iconButtons.forEach(btn => {
-        const v = btn.getAttribute("data-icon-value");
-        btn.classList.toggle(
-          "active",
-          v === modeOrValue ||
-          (modeOrValue && !modeOrValue.startsWith("preset:") && v === "emoji")
-        );
-      });
-
-      // visa/göm emoji-raden
-      if (emojiRow) {
-        const isEmoji =
-          modeOrValue === "emoji" ||
-          (themeLauncherIconInput.value && !themeLauncherIconInput.value.startsWith("preset:"));
-        emojiRow.classList.toggle("hidden", !isEmoji);
-      }
+    // emoji-läge → använd emoji-fältet
+    if (modeOrValue === "emoji") {
+      const emoji = (themeLauncherEmojiInput?.value || "").trim();
+      themeLauncherIconInput.value = emoji || "💬";
+    } else {
+      // presets, t.ex. "preset:bubble"
+      themeLauncherIconInput.value = modeOrValue || "preset:bubble";
     }
+
+    iconButtons.forEach(btn => {
+      const v = btn.getAttribute("data-icon-value");
+      const currentValue = themeLauncherIconInput.value;
+      
+      if (v === modeOrValue) {
+        btn.classList.add("active");
+      } else if (v === "emoji" && !currentValue.startsWith("preset:") && modeOrValue === "emoji") {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    if (emojiRow) {
+      const isEmoji =
+        modeOrValue === "emoji" ||
+        (themeLauncherIconInput.value && !themeLauncherIconInput.value.startsWith("preset:"));
+      emojiRow.classList.toggle("hidden", !isEmoji);
+    }
+  }
+
+  const activeIconStyle = document.createElement("style");
+  activeIconStyle.textContent = `
+    .icon-choice {
+      opacity: 0.5;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      border: 2px solid transparent;
+    }
+    
+    .icon-choice:hover {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+    
+    .icon-choice.active {
+      opacity: 1;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+    }
+  `;
+  document.head.appendChild(activeIconStyle);
 
 
 
@@ -834,23 +857,32 @@
 
       if (launcherIcon) {
         if (launcherIcon.startsWith("preset:")) {
+          // Det är en preset-ikon
           setLauncherIconValue(launcherIcon);
+          if (themeLauncherEmojiInput) themeLauncherEmojiInput.value = "";
         } else {
+          // Det är en emoji
           if (themeLauncherEmojiInput) themeLauncherEmojiInput.value = launcherIcon;
           setLauncherIconValue("emoji");
         }
       } else {
+        // Ingen ikon sparad, använd default
         setLauncherIconValue("preset:bubble");
+        if (themeLauncherEmojiInput) themeLauncherEmojiInput.value = "";
       }
 
-      if (themePrimaryColor && primaryColor) themePrimaryColor.value = primaryColor;
-      if (themeUserBubble && userBubble)     themeUserBubble.value  = userBubble;
-      if (themeBotBubble && botBubble)       themeBotBubble.value   = botBubble;
-      if (themeFont && fontFamily)           themeFont.value        = fontFamily;
-
-      syncColorLabel(themePrimaryColor, themePrimaryCodeSpan);
-      syncColorLabel(themeUserBubble,  themeUserCodeSpan);
-      syncColorLabel(themeBotBubble,   themeBotCodeSpan);
+      if (themePrimaryColor) {
+        themePrimaryColor.value = primaryColor || "#2563eb";
+      }
+      if (themeUserBubble) {
+        themeUserBubble.value = userBubble || "#eef2ff";
+      }
+      if (themeBotBubble) {
+        themeBotBubble.value = botBubble || "#dcfce7";
+      }
+      if (themeFont) {
+        themeFont.value = fontFamily || "";
+      }
     }
 
 
